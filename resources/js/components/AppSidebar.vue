@@ -5,14 +5,21 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
     {
         title: 'Inicio',
         href: '/dashboard',
-        icon: LayoutGrid,
+        icon: 'proicons:home',
+    },
+];
+
+const adminNavItems: NavItem[] = [
+    {
+        title: 'Usuarios',
+        href: '/users',
+        icon: 'proicons:person-multiple',
     },
 ];
 
@@ -20,7 +27,7 @@ const footerNavItems: NavItem[] = [
     {
         title: 'Ayuda',
         href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
+        icon: 'proicons:question-circle',
     },
 ];
 </script>
@@ -40,7 +47,10 @@ const footerNavItems: NavItem[] = [
         </SidebarHeader>
 
         <SidebarContent>
-            <NavMain :items="mainNavItems" />
+            <NavMain 
+                :items="mainNavItems" 
+                :adminItems="adminNavItems" 
+            />
         </SidebarContent>
 
         <SidebarFooter>
