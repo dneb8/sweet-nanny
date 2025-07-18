@@ -20,8 +20,6 @@ class UserController extends Controller
     {
         // Gate::authorize('viewAny', User::class);
 
-        $authUser = Auth::user();
-
         $users = $userService->indexFetch();
 
         return Inertia::render('User/Index', [

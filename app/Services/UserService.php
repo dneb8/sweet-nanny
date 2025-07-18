@@ -23,11 +23,6 @@ class UserService
         $searchables = ['email'];
 
         $users = Fetcher::for($users->whereNot('id', $user->id)->with(['roles']))
-            ->allowFilters([
-                'role' => [
-                    'using' => fn (Filter $filter) => $filter->usingScope('filtrarPorRole')
-                ],
-            ])
             ->allowSort($sortables)
             ->allowSearch($searchables)
             ->paginate(10);
