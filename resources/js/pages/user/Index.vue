@@ -9,6 +9,7 @@ import UserCard from './components/UserCard.vue'
 defineProps<{
   users: FetcherResponse<User>
 }>()
+
 </script>
 
 <template>
@@ -18,9 +19,10 @@ defineProps<{
       :items="users.data"
       filter-column="name"
       :per-page="9"
+      :title="'Listado de Usuarios'"
     >
       <template #default="{ item }">
-        <UserCard :user="item" :columns="['name', 'email']" />
+        <UserCard :user="item" :columns="['name', 'email']"/>
       </template>
     </CardList>
   </div>

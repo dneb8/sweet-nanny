@@ -1,6 +1,7 @@
 <!-- components/UserCard.vue -->
 <script setup lang="ts">
 import type { User } from '@/types/User'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
 defineProps<{
   user: User
@@ -9,12 +10,14 @@ defineProps<{
 </script>
 
 <template>
-  <div class="rounded-xl border shadow p-4 bg-white space-y-2">
-    <div v-if="columns.includes('name')">
-      <h2 class="text-lg font-bold">{{ user.name }}</h2>
-    </div>
-    <div v-if="columns.includes('email')">
-      <p class="text-sm text-gray-600">{{ user.email }}</p>
-    </div>
-  </div>
+    <Card>
+        <CardHeader>
+            <CardTitle>{{ user.name }} {{ user.first_surname}} {{user.last_surname }}</CardTitle>
+            <CardDescription>{{user.email}}</CardDescription>
+            </CardHeader>
+        <CardContent>
+        </CardContent>
+        <CardFooter>
+        </CardFooter>
+    </Card>
 </template>
