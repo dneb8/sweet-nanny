@@ -12,20 +12,22 @@ import {
 
 const props = defineProps<{
   items: any[]
-  filterColumn: string
-  title: string
+  searchables: string[]
+  sortables: string[]
 }>()
 
 const currentPage = ref(1)
 const perPage = 12
 const filterValue = ref('')
 
-// Filtrar los datos
+// Filtrar los datos en búsquedas
 const filteredItems = computed(() =>
   props.items.filter(item =>
-    String(item[props.filterColumn])
-      .toLowerCase()
-      .includes(filterValue.value.toLowerCase())
+    props.searchables.some(column =>
+      String(item[column] ?? '')
+        .toLowerCase()
+        .includes(filterValue.value.toLowerCase())
+    )
   )
 )
 
@@ -68,12 +70,10 @@ const pagesToShow = computed(() => {
 </script>
 
 <template>
-  <div class="space-y-4">
-        <!-- Input de búsqueda al final -->
-    <div>{{title}}</div>     
+  <div class="space-y-4"> 
     <Input
-      class="max-w-sm"
-      :placeholder="`Buscar por ${filterColumn}...`"
+      class="w-full"
+      :placeholder="`Buscar usuarios`"
       v-model="filterValue"
     />
     <!-- Cards -->

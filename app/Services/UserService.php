@@ -19,12 +19,7 @@ class UserService
 
         $users = User::query();
 
-        $sortables = ['email'];
-        $searchables = ['name, email'];
-
         $users = Fetcher::for($users->whereNot('id', $user->id)->with(['roles']))
-            ->allowSort($sortables)
-            ->allowSearch($searchables)
             ->paginate(User::whereNot('id', Auth::id())->count());
 
         return $users;

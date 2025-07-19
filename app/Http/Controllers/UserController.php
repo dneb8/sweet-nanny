@@ -20,11 +20,15 @@ class UserController extends Controller
     {
         // Gate::authorize('viewAny', User::class);
 
+        $sortables = ['email'];
+        $searchables = ['name', 'email'];
         $users = $userService->indexFetch();
 
         return Inertia::render('User/Index', [
             'users' => $users,
             'roles' => RoleEnum::cases(),
+            'sortables' => $sortables,
+            'searchables' => $searchables,
         ]);
     }
 

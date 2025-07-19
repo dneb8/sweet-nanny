@@ -7,23 +7,24 @@ import CardList from '@/components/datatable/CardList.vue'
 import UserCard from './components/UserCard.vue'
 
 defineProps<{
-  users: FetcherResponse<User>
+    users: FetcherResponse<User>
+    searchables: string[]
+    sortables: string[]
 }>()
 
 </script>
 
 <template>
   <Head title="Usuarios" />
-  <div class="p-4">
     <CardList
       :items="users.data"
-      filter-column="name"
       :per-page="9"
-      :title="'Listado de Usuarios'"
+      :sortables="sortables"
+      :searchables="searchables"
     >
       <template #default="{ item }">
         <UserCard :user="item" :columns="['name', 'email']"/>
       </template>
     </CardList>
-  </div>
+
 </template>
