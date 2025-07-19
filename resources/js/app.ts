@@ -6,6 +6,7 @@ import { createApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
 import { initializeTheme } from './composables/useAppearance';
 import { Icon } from '@iconify/vue';
+ import { vGsapVue } from 'v-gsap-nuxt/vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 
 
@@ -25,6 +26,7 @@ createInertiaApp({
             .use(plugin)
             .use(ZiggyVue)
             .component('Icon', Icon) 
+            .directive('gsap', vGsapVue())
             .mount(el);
     },
     progress: {

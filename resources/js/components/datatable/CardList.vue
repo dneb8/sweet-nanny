@@ -71,18 +71,24 @@ const pagesToShow = computed(() => {
 
 <template>
   <div class="space-y-4"> 
-    <Input
-      class="w-full"
-      :placeholder="`Buscar usuarios`"
-      v-model="filterValue"
-    />
+    <div class="relative w-full items-center">
+        <Input v-model="filterValue"  :placeholder="`Buscar usuarios`" class="pl-10" />
+        <span class="absolute start-1 inset-y-0 flex items-center justify-center px-2">
+        <Icon icon="mdi:magnify" class="h-5 w-5 text-gray-400" />
+        </span>
+    </div>
     <!-- Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
       <slot v-for="item in paginatedItems" :item="item" :key="item.id" />
     </div>
 
     <!-- Paginación -->
-    <Pagination v-if="lastPage > 1" class="justify-center" :items-per-page="perPage" :total-items="filteredItems.length">
+    <Pagination 
+        v-if="lastPage > 1"
+        class="justify-center" 
+        :items-per-page="perPage" 
+        :total-items="filteredItems.length"
+    >
       <PaginationContent class="flex items-center space-x-5">
         <!-- Anterior -->
         <PaginationItem :value="currentPage">
