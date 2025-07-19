@@ -15,7 +15,7 @@ withDefaults(defineProps<Props>(), {
 
 <template>
     <AppShell class="flex-col">
-        <AppHeader :breadcrumbs="breadcrumbs" />
+        <AppHeader :breadcrumbs="breadcrumbs" class="sticky" />
         <AppContent>
             <slot />
         </AppContent>
