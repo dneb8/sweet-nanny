@@ -2,7 +2,7 @@
 import { Head } from '@inertiajs/vue3'
 import type { FetcherResponse } from '@/types/FetcherResponse'
 import type { User } from '@/types/User'
-import Title from '@/components/ui/Title.vue'
+import Heading from '@/components/Heading.vue';
 
 import CardList from '@/components/datatable/CardList.vue'
 import UserCard from './components/UserCard.vue'
@@ -17,7 +17,7 @@ defineProps<{
 
 <template>
   <Head title="Usuarios" />
-  <Title icon='proicons:person-multiple'>Listado de Usarios</Title>
+  <Heading icon='proicons:person-multiple' title="Listado de Usuarios"/>
     <CardList
       :items="users.data"
       :per-page="9"

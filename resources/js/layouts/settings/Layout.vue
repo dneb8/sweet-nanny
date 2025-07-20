@@ -9,14 +9,17 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'Profile',
         href: '/settings/profile',
+        icon: 'proicons:person',
     },
     {
         title: 'Password',
         href: '/settings/password',
+        icon: 'proicons:lock',
     },
     {
         title: 'Appearance',
         href: '/settings/appearance',
+        icon: 'proicons:color-palette',
     },
 ];
 
@@ -26,8 +29,8 @@ const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.locati
 </script>
 
 <template>
-    <div class="px-4 py-6">
-        <Heading title="Settings" description="Manage your profile and account settings" />
+    <div class="">
+        <Heading title="Settings" description="Manage your profile and account settings" icon="proicons:settings"/>
 
         <div class="flex flex-col space-y-8 md:space-y-0 lg:flex-row lg:space-y-0 lg:space-x-12">
             <aside class="w-full max-w-xs lg:w-48">
@@ -40,6 +43,7 @@ const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.locati
                         as-child
                     >
                         <Link :href="item.href">
+                            <Icon :icon="item.icon"/>
                             {{ item.title }}
                         </Link>
                     </Button>
