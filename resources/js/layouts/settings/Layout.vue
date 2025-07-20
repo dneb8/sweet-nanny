@@ -30,8 +30,8 @@ const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.locati
         <Heading title="Settings" description="Manage your profile and account settings" />
 
         <div class="flex flex-col space-y-8 md:space-y-0 lg:flex-row lg:space-y-0 lg:space-x-12">
-            <aside class="w-full max-w-xl lg:w-48">
-                <nav class="flex flex-col space-y-1 space-x-0">
+            <aside class="w-full max-w-xs lg:w-48">
+                <nav class="flex flex-col space-y-1 space-x-0 mb-5">
                     <Button
                         v-for="item in sidebarNavItems"
                         :key="item.href"

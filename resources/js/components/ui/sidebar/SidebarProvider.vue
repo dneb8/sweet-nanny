@@ -2,7 +2,7 @@
 import { cn } from '@/lib/utils'
 import { useEventListener, useMediaQuery, useVModel } from '@vueuse/core'
 import { TooltipProvider } from 'reka-ui'
-import { computed, type HTMLAttributes, type Ref, ref } from 'vue'
+import { onMounted, computed, type HTMLAttributes, type Ref, ref } from 'vue'
 import { provideSidebarContext, SIDEBAR_COOKIE_MAX_AGE, SIDEBAR_COOKIE_NAME, SIDEBAR_KEYBOARD_SHORTCUT, SIDEBAR_WIDTH, SIDEBAR_WIDTH_ICON } from './utils'
 
 const props = withDefaults(defineProps<{
@@ -17,6 +17,18 @@ const props = withDefaults(defineProps<{
 const emits = defineEmits<{
   'update:open': [open: boolean]
 }>()
+
+const isDark = ref(document.documentElement.classList.contains('dark'))
+
+onMounted(() =>
+  new MutationObserver(() =>
+    isDark.value = document.documentElement.classList.contains('dark')
+  ).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+)
+
+const backgroundImage = computed(() =>
+  `url('/images/layout-bg${isDark.value ? '-dark' : ''}.svg')`
+)
 
 const isMobile = useMediaQuery('(max-width: 768px)')
 const openMobile = ref(false)
@@ -66,17 +78,31 @@ provideSidebarContext({
 
 <template>
   <TooltipProvider :delay-duration="0">
-    <!-- poner fondo de sidebar aqui -->
     <div
       data-slot="sidebar-wrapper"
+      :class="cn('group/sidebar-wrapper relative flex min-h-svh w-full overflow-hidden', props.class)"
+      v-bind="$attrs"
       :style="{
         '--sidebar-width': SIDEBAR_WIDTH,
         '--sidebar-width-icon': SIDEBAR_WIDTH_ICON,
-      }" 
-      :class="cn('group/sidebar-wrapper has-data-[variant=inset]:bg-pink-500 flex min-h-svh w-full', props.class)"
-      v-bind="$attrs"
+      }"
     >
+      <!-- Fondo con blur (solo la imagen) -->
+      <div
+        class="absolute inset-0 z-0"
+        :style="{
+          backgroundImage,
+          backgroundSize: 'cover',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
+          filter: 'blur(100px)',
+        }"
+      ></div>
+
+      <!-- Contenido normal -->
       <slot />
     </div>
   </TooltipProvider>
 </template>
+
+

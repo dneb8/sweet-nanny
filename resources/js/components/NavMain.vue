@@ -12,7 +12,7 @@ const page = usePage();
 </script>
 
 <template>
-    <SidebarGroup class="px-4 py-0">
+    <SidebarGroup class="pl-4 py-0">
         <SidebarGroupLabel> Menú</SidebarGroupLabel>
         <SidebarMenu>
             <SidebarMenuItem v-for="item in items" :key="item.title">
@@ -25,7 +25,7 @@ const page = usePage();
             </SidebarMenuItem>
         </SidebarMenu>
     </SidebarGroup>
-    <SidebarGroup class="px-4 py-0">
+    <SidebarGroup class="pl-4 py-0">
         <SidebarGroupLabel>Administración</SidebarGroupLabel>
         <SidebarMenu>
             <SidebarMenuItem v-for="item in adminItems" :key="item.title">
