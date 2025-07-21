@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { HTMLAttributes } from 'vue';
 
 defineOptions({
@@ -14,5 +13,6 @@ defineProps<Props>();
 </script>
 
 <template>
-    <SidebarTrigger />
+    <!-- #DEB: LOGO VA AQUI -->
+    <Icon icon="ic:twotone-cloud" style="width: 24px; height: 24px;" class="text-primary"/>
 </template>

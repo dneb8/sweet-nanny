@@ -10,14 +10,17 @@ defineProps<{
 </script>
 
 <template>
-    <Card>
-        <CardHeader>
-            <CardTitle>{{ user.name }} {{ user.first_surname}} {{user.last_surname }}</CardTitle>
-            <CardDescription>{{user.email}}</CardDescription>
-            </CardHeader>
-        <CardContent>
-        </CardContent>
-        <CardFooter>
-        </CardFooter>
-    </Card>
+  <Card class="max-h-48">
+    <CardHeader>
+      <CardTitle>{{ user.name }} {{ user.first_surname }} {{ user.last_surname }}</CardTitle>
+      <CardDescription class="hyphens-manual">{{ user.email }}</CardDescription>
+    </CardHeader>
+    <CardContent>
+      <!-- contenido dinámico aquí -->
+    </CardContent>
+    <CardFooter>
+      <!-- footer si es necesario -->
+    </CardFooter>
+  </Card>
 </template>
+

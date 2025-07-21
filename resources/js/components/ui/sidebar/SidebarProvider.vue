@@ -80,7 +80,7 @@ provideSidebarContext({
   <TooltipProvider :delay-duration="0">
     <div
       data-slot="sidebar-wrapper"
-      :class="cn('group/sidebar-wrapper relative flex min-h-svh w-full overflow-hidden', props.class)"
+      :class="cn('group/sidebar-wrapper relative flex min-h-svh w-full overflow-visible md:overflow-hidden', props.class)"
       v-bind="$attrs"
       :style="{
         '--sidebar-width': SIDEBAR_WIDTH,
