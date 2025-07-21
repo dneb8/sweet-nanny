@@ -39,5 +39,9 @@ class Tutor extends Model
     {
         return $this->morphMany(Address::class, 'addressable');
     }
+    public function children()
+    {
+        return $this->hasMany(Child::class);
+    }
 
 }

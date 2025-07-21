@@ -5,7 +5,7 @@ namespace App\Enums\Children;
 enum KinkshipEnum: string
 {
     case HIJO = 'hijo';
-    case SOBRINO = 'sorino';
+    case SOBRINO = 'sobrino';
     case PRIMO = 'primo';
     case HERMANO = 'hermano';
     case OTRO = 'otro';
