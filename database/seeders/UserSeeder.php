@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\User\RoleEnum;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
@@ -17,6 +18,7 @@ class UserSeeder extends Seeder
             $user = User::factory()->state([
             'name' => $role->label(),
             'email' => strtolower($role->value) . '@test.com',
+            'password' => Hash::make('password'),
            ])->create();
 
            $user->assignRole($role->value);

@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import { Link } from '@inertiajs/vue3';
 </script>
 
 <template>
-    <div class="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
-        <AppLogoIcon class="size-5 fill-current text-white dark:text-black" />
+  <Link href="/" class="flex flex-row items-center no-underline hover:opacity-80">
+    <div class="flex border-none aspect-square size-10 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
+      <AppLogoIcon class="size-5 fill-current text-white dark:text-black" />
     </div>
-    <div class="ml-1 grid flex-1 text-left text-sm">
-        <span class="mb-0.5 truncate leading-tight font-semibold">SweetNanny</span>
+    <div class="ml-1 grid text-left text-base">
+      <span class="mb-0.5 truncate leading-tight font-semibold">SweetNanny</span>
     </div>
+  </Link>
 </template>

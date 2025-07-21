@@ -8,6 +8,11 @@ import { Label } from '@/components/ui/label';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
+import AuthLayout from '@/layouts/AuthLayout.vue';
+
+defineOptions({
+    layout: AuthLayout,
+});
 
 defineProps<{
     status?: string;

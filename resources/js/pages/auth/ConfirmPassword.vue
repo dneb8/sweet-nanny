@@ -7,6 +7,10 @@ import AuthLayout from '@/layouts/AuthLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
 
+defineOptions({
+    layout: AuthLayout,
+});
+
 const form = useForm({
     password: '',
 });
