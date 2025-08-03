@@ -16,7 +16,9 @@ defineProps<{
       <CardDescription class="hyphens-manual">{{ user.email }}</CardDescription>
     </CardHeader>
     <CardContent>
-      <!-- contenido dinámico aquí -->
+      <div><strong>Número:</strong> {{ user.number }}</div>
+      <div v-for="role in user.roles" :key="role.id"><strong>Roles:</strong> {{ role.name}}</div>
+      <!-- Add more fields as needed -->
     </CardContent>
     <CardFooter>
       <!-- footer si es necesario -->
