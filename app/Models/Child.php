@@ -32,7 +32,7 @@ class Child extends Model
         });
     }
 
-    // Relación con Tutor (aún no existe)
+    // Relación con Tutor 
     public function tutor()
     {
         return $this->belongsTo(Tutor::class); 
