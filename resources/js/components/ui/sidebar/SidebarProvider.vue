@@ -95,7 +95,7 @@ provideSidebarContext({
           backgroundSize: 'cover',
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'center',
-          filter: 'blur(100px)',
+          filter: 'blur(80px)',
         }"
       ></div>
 

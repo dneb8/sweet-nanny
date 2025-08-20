@@ -70,7 +70,6 @@ const pagesToShow = computed(() => {
   return range
 })
 
-const showFilters = ref(true) 
 const selectedFilters = ref({})
 const popoverOpen = ref(false)
 
@@ -87,65 +86,41 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
 })
-
 </script>
 
 <template>
   <div class="space-y-4">
-<div class="relative w-full flex items-center gap-2">
-  <div class="relative flex-1">
-    <Input v-model="filterValue" :placeholder="`Buscar usuarios`" class="pl-10" />
-    <span class="absolute left-2 inset-y-0 flex items-center text-gray-400">
-      <Icon icon="mdi:magnify" class="h-5 w-5" />
-    </span>
-  </div>
+    <div class="relative w-full flex items-center gap-2">
+      <div class="relative flex-1">
+        <Input v-model="filterValue" :placeholder="`Buscar...`" class="pl-10" />
+        <span class="absolute left-2 inset-y-0 flex items-center text-gray-400">
+          <Icon icon="mdi:magnify" class="h-5 w-5" />
+        </span>
+      </div>
 
-  <!-- Botón en pantallas grandes (toggle de panel lateral) -->
-  <button
-    class="p-2 rounded-md hover:bg-muted transition hidden md:flex"
-    @click="showFilters = !showFilters"
-  >
-    <Icon icon="mdi:filter-variant" class="h-5 w-5 text-gray-500" />
-  </button>
+      <!-- Botón único que abre el Popover -->
+      <Popover v-model:open="popoverOpen">
+        <PopoverTrigger as-child>
+          <button class="p-2 rounded-md hover:bg-muted transition">
+            <Icon icon="mdi:filter-variant" class="h-5 w-5 text-gray-500" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent class="w-[300px] p-4">
+          <component :is="FilterPanel"
+            :show="true"
+            :sortables="props.sortables"
+            :selectedFilters="selectedFilters"
+          />
+        </PopoverContent>
+      </Popover>
+    </div>
 
-  <!-- Botón en móviles: dispara el Popover -->
-  <Popover v-model:open="popoverOpen">
-    <PopoverTrigger as-child>
-      <button class="p-2 rounded-md hover:bg-muted transition md:hidden block">
-        <Icon icon="mdi:filter-variant" class="h-5 w-5 text-gray-500" />
-      </button>
-    </PopoverTrigger>
-    <PopoverContent class="w-[300px] p-4">
-      <component :is="FilterPanel"
-        :show="true"
-        :sortables="props.sortables"
-        :selectedFilters="selectedFilters"
-      />
-    </PopoverContent>
-  </Popover>
-</div>
+    <!-- Contenedor de Cards -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 w-full">
+      <slot v-for="item in paginatedItems" :item="item" :key="item.id" />
+    </div>
 
-
-
-<!-- Contenedor de Cards y Filtros -->
-<div class="flex flex-row w-full gap-4">
-  <!-- Cards -->
-  <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-    <slot v-for="item in paginatedItems" :item="item" :key="item.id" />
-  </div>
-
-  <!-- Panel de filtros lateral (solo en pantallas grandes) -->
-  <div class="hidden md:block" v-show="showFilters">
-    <component :is="FilterPanel"
-      :show="showFilters"
-      :sortables="props.sortables"
-      :selectedFilters="selectedFilters"
-    />
-  </div>
-</div>
-
-
-    <!-- Paginación siempre abajo -->
+    <!-- Paginación -->
     <div class="mt-auto">
       <Pagination
         v-if="lastPage > 1"
@@ -186,4 +161,3 @@ onUnmounted(() => {
     </div>
   </div>
 </template>
-
