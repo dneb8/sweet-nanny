@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
+import { Card, CardHeader } from '@/components/ui/card'
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -21,7 +21,7 @@ const props = defineProps<{
   user: User
 }>()
 
-// usamos nuestro "servicio"
+// User Service con funciones para manejar acciones del usuario
 const {
   showDeleteModal,
   fakeSkills,
