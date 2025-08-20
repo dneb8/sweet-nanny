@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Nanny extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasUlids;
 
     protected $fillable = [
         'user_id',
@@ -47,5 +48,19 @@ class Nanny extends Model
     {
     return $this->morphMany(Review::class, 'reviewable');}
     
-    
+    public function uniqueIds()
+    {
+        // Generación automática de ulid para la columna ulid.
+        return [
+            'ulid',
+        ];
+    }
+
+    /**
+     * Usar ulid para obtener los modelos en los parámetros de rutas.
+     */
+    public function getRouteKeyName()
+    {
+        return 'ulid';
+    }
 }

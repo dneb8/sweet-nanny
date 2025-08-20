@@ -24,12 +24,6 @@ class Tutor extends Model
         'verification_status' => VerificationStatusEnum::class,
     ];
 
-    public function uniqueIds()
-    {
-        return [
-            'ulid',
-        ];
-    }
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -38,6 +32,22 @@ class Tutor extends Model
     public function addresses()
     {
         return $this->morphMany(Address::class, 'addressable');
+    }
+
+    public function uniqueIds()
+    {
+        // Generación automática de ulid para la columna ulid.
+        return [
+            'ulid',
+        ];
+    }
+
+    /**
+     * Usar ulid para obtener los modelos en los parámetros de rutas.
+     */
+    public function getRouteKeyName()
+    {
+        return 'ulid';
     }
 
 }
