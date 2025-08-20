@@ -1,7 +1,12 @@
+import { Rol } from "./Rol";
 export interface User {
-    name: string;
-    first_surname: string;
-    last_surname: string;
-    email: string;
-    number: string;
+  ulid: string;
+  name: string;
+  surnames: string;
+  email: string;
+  email_verified_at: date;
+  number: string;
+  roles: Array<Rol>;
+  tutor?: Tutor; 
+  nanny?: Nanny; 
 }
