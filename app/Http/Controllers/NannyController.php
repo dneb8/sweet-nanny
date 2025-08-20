@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Tutor\{CreateTutorRequest, UpdateTutorRequest};
-use App\Models\Tutor;
-class TutorController extends Controller
+use App\Models\Nanny;
+use App\Http\Requests\Nanny\{CreateNannyRequest, UpdateNannyRequest};
+
+class NannyController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -25,7 +26,7 @@ class TutorController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(CreateTutorRequest $request)
+    public function store(CreateNannyRequest $request)
     {
         //
     }
@@ -33,7 +34,7 @@ class TutorController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Tutor $tutor)
+    public function show(Nanny $nanny)
     {
         //
     }
@@ -41,7 +42,7 @@ class TutorController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Tutor $tutor)
+    public function edit(Nanny $nanny)
     {
         //
     }
@@ -49,7 +50,7 @@ class TutorController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateTutorRequest $request, Tutor $tutor)
+    public function update(UpdateNannyRequest $request, Nanny $nanny)
     {
         //
     }
@@ -57,7 +58,7 @@ class TutorController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Tutor $tutor)
+    public function destroy(Nanny $nanny)
     {
         //
     }
