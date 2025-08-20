@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -11,7 +13,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles, HasUlids;
 
     /**
      * The attributes that are mass assignable.
@@ -20,8 +22,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'first_surname',
-        'last_surname',
+        'surnames',
         'email',
         'number',
         'password',
@@ -58,5 +59,21 @@ class User extends Authenticatable
         public function nanny()
     {
         return $this->hasOne(Nanny::class);
+    }
+
+    public function uniqueIds()
+    {
+        // Generación automática de ulid para la columna ulid.
+        return [
+            'ulid',
+        ];
+    }
+
+    /**
+     * Usar ulid para obtener los modelos en los parámetros de rutas.
+     */
+    public function getRouteKeyName()
+    {
+        return 'ulid';
     }
 }

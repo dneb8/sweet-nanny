@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('tutors', function (Blueprint $table) {
             $table->id();
             $table->ulid('ulid')->unique();
-            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('address_id')->nullable()->constrained()->nullOnDelete();
             $table->string('emergency_contact')->nullable();
             $table->string('emergency_number')->nullable();

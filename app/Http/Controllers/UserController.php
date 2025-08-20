@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\User\RoleEnum;
-use App\Http\Requests\User\{ActualizarUserRequest, CrearUserRequest};
+use App\Http\Requests\User\{ActualizarUserRequest, CreateUserRequest, UpdateUserRequest};
 use App\Models\{User, Persona};
 use App\Services\UserService;
 use Illuminate\Http\RedirectResponse;
@@ -21,7 +21,7 @@ class UserController extends Controller
         // Gate::authorize('viewAny', User::class);
 
         $sortables = ['email'];
-        $searchables = ['name', 'email'];
+        $searchables = ['name', 'email', 'surnames'];
         $users = $userService->indexFetch();
 
         return Inertia::render('User/Index', [
@@ -32,44 +32,93 @@ class UserController extends Controller
         ]);
     }
 
-//     /**
-//      * Redirige a la página para crear un usuario
-//      */
-//     public function create(): Response
-//     {
-//         // Gate::authorize('create', User::class);
-// 
-//     }
+    /**
+     * Redirige a la página para crear un usuario
+     */
+    public function create(): Response
+    {
+        // Gate::authorize('create', User::class);
+        $roles = RoleEnum::cases();
+        return Inertia::render('User/Create', [
+            'roles' => $roles,
+        ]);
 
-//     /**
-//      * Crea un usuario
-//      */
-//     public function store(UserService $userService, CrearUserRequest $request): RedirectResponse
-//     {
-//         // Gate::authorize('create', User::class);
-//     }
-// 
-//     /**
-//      * Redirige a la página para editar un usuario
-//      */
-//     public function edit(User $user): Response
-//     {
-//         // Gate::authorize('update', $user);
-//     }
-// 
-//     /**
-//      * Actualiza un usuario
-//      */
-//     public function update(UserService $userService, ActualizarUserRequest $request, User $user): RedirectResponse
-//     {
-//         // Gate::authorize('update', $user);
-//     }
-// 
-//     /**
-//      * Elimina un usuario
-//      */
-//     public function destroy(UserService $userService, User $user): RedirectResponse
-//     {
-//         // Gate::authorize('delete', $user);
-//     }
+    }
+
+    /**
+     * Crea un usuario
+     */
+    public function store(UserService $userService, CreateUserRequest $request): RedirectResponse
+    {
+        // Gate::authorize('create', User::class);
+
+        $userService->createUser($request);
+
+        return redirect()->route('users.index')->with([
+            'message' => [
+                'title' => 'Usuario creado',
+                'description' => 'El usuario ha sido creado correctamente.',
+            ]
+        ]);
+
+    }
+
+    /**
+     * Redirige a la página para editar un usuario
+     */
+    public function edit(User $user): Response
+    {
+        // Gate::authorize('update', $user);
+        
+        return Inertia::render('User/Edit', [
+            'user' => $user->load(['roles']),
+            'roles' => RoleEnum::cases(),
+        ]);
+    }
+
+    /**
+     * Actualiza un usuario
+     */
+    public function update(UserService $userService, UpdateUserRequest $request, User $user): RedirectResponse
+    {
+        // Gate::authorize('update', $user);
+
+        $userService->updateUser( $user, $request);
+
+        return redirect()->route('users.index')->with([
+            'message' => [
+                'title' => 'Usuario actualizado',
+                'description' => 'El usuario ha sido actualizado correctamente.',
+            ]
+        ]);
+    }
+        /**
+     * Redirige al listado de usuarios
+     */
+    public function show(User $user): Response
+    {
+        // Gate::authorize('view', $user);
+
+        return Inertia::render('User/Show', [
+            'user' => $user->load(['roles', 'tutor.address', 'nanny.address']),
+        ]);
+    }
+
+
+    /**
+     * Elimina un usuario
+     */
+    public function destroy(User $user): RedirectResponse
+    {
+        // Gate::authorize('delete', $user);
+
+        User::destroy($user->id);
+
+        return redirect()->back()->with([
+            'message' => [
+                'title' => 'Usuario eliminado',
+                'description' => 'El usuario ha sido eliminado correctamente.',
+            ]
+        ]);
+    }
 }
