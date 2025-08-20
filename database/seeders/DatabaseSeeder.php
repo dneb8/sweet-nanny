@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             CareerSeeder::class,
             CareerNannySeeder::class,
             QualitySeeder::class,
+            ChildSeeder::class,
             // NannyQualitySeeder::class,
         ]);
 
