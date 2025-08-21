@@ -29,9 +29,10 @@ class Nanny extends Model
     public function careers()
     {
         return $this->belongsToMany(Career::class, 'career_nanny')
-                    ->withPivot('education_level', 'occupation')
+                    ->withPivot('degree', 'status', 'institution') // ✅ estos sí existen
                     ->withTimestamps();
     }
+
 
     // Relación N:N con cualidades
     public function qualities()
