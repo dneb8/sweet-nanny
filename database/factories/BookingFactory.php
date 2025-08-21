@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Tutor;
+use App\Models\Address;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,8 +19,10 @@ class BookingFactory extends Factory
     public function definition(): array
     {
         return [
-              'description' => $this->faker->sentence(),
-              'recurrent' => $this->faker->boolean(),
+            'description' => $this->faker->sentence(),
+            'recurrent'   => $this->faker->boolean(),
+            'tutor_id'    => Tutor::factory(),   
+            'address_id'  => Address::factory(), 
         ];
     }
 }

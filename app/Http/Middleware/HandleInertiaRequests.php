@@ -37,16 +37,31 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        return [
-            ...parent::share($request),
-            'name' => config('app.name'),
-            'auth' => [
-                'user' => $request->user()
-                ? $request->user()->only('id', 'name', 'email')
-                : null,
+          return array_merge(parent::share($request), [
+            'csrf_token' => fn () => csrf_token(),
+
+            // Rutas
+            'route.current' => function () use ($request) {
+                $currentRoute = $request->route()->getName();
+                if (!$currentRoute) return null;
+                return route($currentRoute, $request->route()->parameters);
+            },
+
+            // Mensajes y notificaciones
+            'flash' => [
+                'message' => fn () => $request->session()->get('message'),
+                'notification' => fn () => $request->session()->get('notification'),
             ],
 
-            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-        ];
+            // Breadcrumbs
+            // 'breadcrumbs' => fn () => Breadcrumbs::exists() ? Breadcrumbs::render()->breadcrumbs : [],
+
+            // Usuario autenticado
+            'auth.user' => fn () => $request->user() ? [
+                'id' => $request->user()->id,
+                'name' => $request->user()->name,
+                'email' => $request->user()->email,
+            ] : null,
+        ]);
     }
 }

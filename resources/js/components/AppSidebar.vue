@@ -22,7 +22,7 @@ const adminNavItems: NavItem[] = [
     },
     {
         title: 'Niñeras',
-        href: '/#',
+        href: '/nannies',
         icon: 'mdi:face-female-shimmer-outline',
     },
     {
