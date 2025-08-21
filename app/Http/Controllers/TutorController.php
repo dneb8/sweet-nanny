@@ -4,14 +4,28 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Tutor\{CreateTutorRequest, UpdateTutorRequest};
 use App\Models\Tutor;
+use App\Services\TutorService;
+use Inertia\{Inertia, Response};
+
+
 class TutorController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(TutorService $tutorService): Response
     {
-        //
+        // Gate::authorize('viewAny', User::class);
+
+        $sortables = ['email'];
+        $searchables = ['name', 'surnames'];
+        $tutors = $tutorService->indexFetch();
+
+        return Inertia::render('Tutor/Index', [
+            'tutors' => $tutors,
+            'sortables' => $sortables,
+            'searchables' => $searchables,
+        ]);
     }
 
     /**

@@ -18,14 +18,14 @@ class NannyService
      */
     public function indexFetch(): LengthAwarePaginator
     {
-        $nanny = Auth::nanny();
 
-        $nannys = Nanny::query()->orderBy('created_at', 'desc');
+        $nannies = Nanny::query()->orderBy('created_at', 'desc');
 
-        $nannys = Fetcher::for($nannys->whereNot('id', $nanny->id)->with(['roles']))
-            ->paginate(Nanny::whereNot('id', Auth::id())->count());
+        $nannies = Fetcher::for(
+            $nannies->with(['user.roles', 'courses', 'careers', 'qualities', 'reviews'])
+        )->paginate();
 
-        return $nannys;
+        return $nannies;
     }
 
     /**

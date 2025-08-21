@@ -18,12 +18,12 @@ class TutorService
      */
     public function indexFetch(): LengthAwarePaginator
     {
-        $tutor = Auth::tutor();
 
         $tutors = Tutor::query()->orderBy('created_at', 'desc');
 
-        $tutors = Fetcher::for($tutors->whereNot('id', $tutor->id)->with(['roles']))
-            ->paginate(Tutor::whereNot('id', Auth::id())->count());
+        $tutors = Fetcher::for(
+            $tutors->with(['user.roles', 'courses', 'careers', 'qualities', 'reviews'])
+        )->paginate();
 
         return $tutors;
     }

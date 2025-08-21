@@ -4,15 +4,28 @@ namespace App\Http\Controllers;
 
 use App\Models\Nanny;
 use App\Http\Requests\Nanny\{CreateNannyRequest, UpdateNannyRequest};
+use App\Services\NannyService;
+use Inertia\{Inertia, Response};
+
 
 class NannyController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(NannyService $nannyService): Response
     {
-        //
+        // Gate::authorize('viewAny', User::class);
+
+        $sortables = ['email'];
+        $searchables = ['name', 'surnames'];
+        $nannies = $nannyService->indexFetch();
+
+        return Inertia::render('Nanny/Index', [
+            'nannies' => $nannies,
+            'sortables' => $sortables,
+            'searchables' => $searchables,
+        ]);
     }
 
     /**

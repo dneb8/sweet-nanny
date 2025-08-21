@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\User\RoleEnum;
-use App\Http\Requests\User\{ActualizarUserRequest, CreateUserRequest, UpdateUserRequest};
-use App\Models\{User, Persona};
+use App\Http\Requests\User\{CreateUserRequest, UpdateUserRequest};
+use App\Models\{User};
 use App\Services\UserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;

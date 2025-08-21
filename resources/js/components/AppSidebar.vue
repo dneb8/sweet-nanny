@@ -20,6 +20,16 @@ const adminNavItems: NavItem[] = [
         href: '/users',
         icon: 'proicons:person-multiple',
     },
+    {
+        title: 'Niñeras',
+        href: '/#',
+        icon: 'mdi:face-female-shimmer-outline',
+    },
+    {
+        title: 'Tutores',
+        href: '/#',
+        icon: 'fluent-mdl2:family',
+    },
 ];
 
 const footerNavItems: NavItem[] = [
