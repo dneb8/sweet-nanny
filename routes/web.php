@@ -3,6 +3,7 @@
 use App\Http\Controllers\{
     UserController,
     NannyController,
+    DashboardController
 };
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -14,6 +15,7 @@ Route::get('/', function () {
 Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
 
 Route::middleware(['auth', 'verified'])->prefix('users')->name('users.')->group(function () {
     Route::get('/', [UserController::class, 'index'])->name('index');
@@ -35,6 +37,9 @@ Route::middleware(['auth', 'verified'])->prefix('nannies')->name('nannies.')->gr
     Route::delete('/{user}', [NannyController::class, 'destroy'])->name('destroy');
 });
 
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+});
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
