@@ -20,7 +20,7 @@ class UserController extends Controller
     {
         // Gate::authorize('viewAny', User::class);
 
-        $sortables = ['email'];
+        $sortables = ['role', 'email_verified_at'];
         $searchables = ['name', 'email', 'surnames'];
         $users = $userService->indexFetch();
 

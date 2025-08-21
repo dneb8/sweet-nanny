@@ -16,6 +16,7 @@ import { Icon } from '@iconify/vue'
 
 import type { User } from '@/types/User'
 import { useUserService } from '@/services/UserService'
+import { getRoleLabelByString, RoleEnum } from '@/enums/role.enum'
 
 const props = defineProps<{
   user: User
@@ -46,7 +47,7 @@ const {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" class="w-44">
           <DropdownMenuGroup>
-            <DropdownMenuItem @click="showUser" class="group text-primary hover:bg-muted">
+            <DropdownMenuItem v-if="props.user.roles?.[0]?.name !== RoleEnum.ADMIN" @click="showUser" class="group text-primary hover:bg-muted">
               <Icon icon="mdi:account-eye-outline" class="w-4 h-4 mr-2 text-primary" />
               Ver perfil
             </DropdownMenuItem>
@@ -70,8 +71,11 @@ const {
         <div class="w-16 h-16 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center border overflow-hidden">
           <Icon icon="mdi:image-outline" class="w-8 h-8 text-slate-400" />
         </div>
-        <Button @click="showUser" class="mt-4 h-7 px-2 text-xs">
-          Ver perfil
+        <Button
+          @click="props.user.roles?.[0]?.name === RoleEnum.ADMIN ? editUser() : showUser()"
+          class="mt-4 h-7 px-2 text-xs"
+        >
+          {{ props.user.roles?.[0]?.name === RoleEnum.ADMIN ? 'Editar usuario' : 'Ver perfil' }}
         </Button>
       </div>
 
@@ -80,7 +84,7 @@ const {
         <span
           :class="['inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium', getRoleBadgeClass(props.user.roles?.[0]?.name)]"
         >
-          {{ props.user.roles?.[0]?.name ?? 'Sin rol' }}
+          {{ getRoleLabelByString(props.user.roles?.[0]?.name) ?? 'Sin rol' }}
         </span>
 
         <div class="mt-2 flex items-center gap-2 min-w-0">
