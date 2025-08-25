@@ -42,6 +42,7 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        //$user->assignRole('tutor');  //Usar para hacer pruebas únicamente
         event(new Registered($user));
 
         Auth::login($user);
