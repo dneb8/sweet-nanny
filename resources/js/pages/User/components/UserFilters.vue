@@ -3,6 +3,8 @@ import { ref, watch, nextTick } from 'vue'
 import { Checkbox } from "@/components/ui/checkbox"
 import { getRoleLabelByString, RoleEnum } from '@/enums/role.enum'
 import { Label } from '@/components/ui/label';
+import Button from '@/components/ui/button/Button.vue';
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 defineProps({
   show: Boolean,
@@ -24,10 +26,11 @@ function toggleRole(role: string) {
   }
 }
 
-// Toggle verified (mutuamente exclusivo)
-function toggleVerified(status: string) {
-  verifiedFilter.value = verifiedFilter.value === status ? null : status
-}
+// Toggle verified 
+// Emitir cuando cambie
+watch(verifiedFilter, (val) => {
+  console.log("Nuevo valor:", val) 
+})
 
 // Reset filters: reinicia refs y fuerza actualización del DOM
 function resetFilters() {
@@ -98,26 +101,31 @@ watch(
     </div>
 
     <!-- Verified -->
-     <Label>Verificación de correo</Label>
-    <div v-if="sortables?.includes('email_verified_at')" class="flex gap-4 flex-wrap mt-2">
-      <div class="flex items-center space-x-2">
-        <Checkbox :checked="verifiedFilter === 'verified'" @click="toggleVerified('verified')" id="verified-yes" />
-        <label for="verified-yes">Verificados</label>
-      </div>
-      <div class="flex items-center space-x-2">
-        <Checkbox :checked="verifiedFilter === 'unverified'" @click="toggleVerified('unverified')" id="verified-no" />
-        <label for="verified-no">No verificados</label>
-      </div>
+  <div>
+    <Label>Verificación de correo</Label>
+      <ToggleGroup 
+        type="single"
+        v-model="verifiedFilter"
+        class="flex gap-2 mt-2"
+      >
+        <ToggleGroupItem value="verified" aria-label="Verificados">
+          Verificados
+        </ToggleGroupItem>
+        <ToggleGroupItem value="unverified" aria-label="No verificados">
+          No verificados
+        </ToggleGroupItem>
+      </ToggleGroup>
     </div>
 
     <!-- Botón reset -->
-    <div class="pt-2">
-      <button
+    <div class="pt-2 flex justify-end">
+      <Button
         @click="resetFilters"
-        class="px-3 py-1 rounded bg-red-500 text-white hover:bg-red-600 text-sm"
+        class=""
       >
+      <Icon icon="solar:restart-circle-linear" class="size-6"/>
         Limpiar filtros
-      </button>
+      </Button>
     </div>
   </div>
 </template>

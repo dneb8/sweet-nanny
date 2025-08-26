@@ -17,6 +17,7 @@ import { Icon } from '@iconify/vue'
 import type { User } from '@/types/User'
 import { useUserService } from '@/services/UserService'
 import { getRoleLabelByString, RoleEnum } from '@/enums/role.enum'
+import { getQualityLabelByString } from '@/enums/quality.enum'
 
 const props = defineProps<{
   user: User
@@ -25,7 +26,6 @@ const props = defineProps<{
 // User Service con funciones para manejar acciones del usuario
 const {
   showDeleteModal,
-  fakeSkills,
   showUser,
   editUser,
   deleteUser,
@@ -97,20 +97,25 @@ const {
         <p class="mt-1 text-xs text-muted-foreground truncate">{{ props.user.email }}</p>
 
         <!-- ScrollArea habilidades -->
-        <div class="relative mt-3" ref="scrollContainer">
+        <div 
+          v-if="props.user.roles?.[0]?.name === RoleEnum.NANNY && props.user.nanny?.qualities?.length" 
+          class="relative mt-3" 
+          ref="scrollContainer"
+        >
           <ScrollArea class="w-full whitespace-nowrap" data-scroll-content>
             <div class="flex gap-2">
               <span
-                v-for="(skill, idx) in fakeSkills"
+                v-for="(quality, idx) in props.user.nanny.qualities"
                 :key="idx"
                 class="flex-none text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800"
               >
-                {{ skill }}
+                {{ getQualityLabelByString(quality.name) }}
               </span>
             </div>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
         </div>
+
       </div>
     </CardHeader>
 
