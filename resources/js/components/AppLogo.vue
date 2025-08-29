@@ -5,7 +5,7 @@ import { Link } from '@inertiajs/vue3';
 
 <template>
   <Link href="/" class="flex flex-row items-center no-underline hover:opacity-80">
-    <div class="flex border-none aspect-square size-10 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
+    <div class="flex border-none aspect-square size-10 items-center justify-center rounded-md text-sidebar-primary-foreground">
       <AppLogoIcon class="size-5 fill-current text-white dark:text-black" />
     </div>
     <div class="ml-1 grid text-left text-base">
