@@ -21,7 +21,7 @@ class BookingFactory extends Factory
         return [
             'description' => $this->faker->sentence(),
             'recurrent'   => $this->faker->boolean(),
-            'tutor_id'    => Tutor::factory(),   
+            'tutor_id' => Tutor::inRandomOrder()->first()?->id, // Usa un tutor existente
             'address_id'  => Address::factory(), 
         ];
     }
