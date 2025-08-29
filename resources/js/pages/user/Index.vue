@@ -8,12 +8,14 @@ import CardList from '@/components/datatable/CardList.vue'
 import UserCard from './components/UserCard.vue'
 import { Button } from '@/components/ui/button'
 
-defineProps<{
+const props = defineProps<{
     users: FetcherResponse<User>
     roles: Array<string>
     searchables: string[]
     sortables: string[]
 }>()
+
+console.log(props.users)
 
 </script>                                                                                                                                                                                                                                               
 

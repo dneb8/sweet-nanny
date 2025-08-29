@@ -12,7 +12,7 @@ const props = defineProps<{
   columns: string[]
 }>()
 
-// usamos nuestro "servicio"
+// Usamos nuestro servicio
 const {
   showDeleteModal,
   showUser,
