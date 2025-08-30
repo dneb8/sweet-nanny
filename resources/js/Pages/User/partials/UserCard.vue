@@ -17,7 +17,6 @@ import { Icon } from '@iconify/vue'
 import type { User } from '@/types/User'
 import { useUserService } from '@/services/UserService'
 import { getRoleLabelByString, RoleEnum } from '@/enums/role.enum'
-import { getQualityLabelByString } from '@/enums/quality.enum'
 
 const props = defineProps<{
   user: User
