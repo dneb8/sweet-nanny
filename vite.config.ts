@@ -1,7 +1,9 @@
 import vue from '@vitejs/plugin-vue';
 import laravel from 'laravel-vite-plugin';
-import tailwindcss from '@tailwindcss/vite';
-import { defineConfig } from 'vite';
+import path from 'path';
+import tailwindcss from "@tailwindcss/vite";
+import { resolve } from 'node:path';
+import { defineConfig, loadEnv } from 'vite';
 
 export default defineConfig({
     plugins: [
@@ -20,12 +22,18 @@ export default defineConfig({
             },
         }),
     ],
-     server: {
-        host: true,
-        port: 5173,
+    resolve: {
+        alias: {
+            '@': path.resolve(__dirname, './resources/js'),
+            'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
+        },
+    },
+    server: {
+        host: '0.0.0.0',
+        port: parseInt(loadEnv('', process.cwd()).VITE_PORT || '') || 5173,
         open: false,
         hmr: {
             host: 'localhost'
-        },
-    }
+        },
+    },
 });
