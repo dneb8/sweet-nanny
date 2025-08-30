@@ -3,9 +3,9 @@ import { Head, Link } from '@inertiajs/vue3'
 import type { FetcherResponse } from '@/types/FetcherResponse'
 import type { User } from '@/types/User'
 import Heading from '@/components/Heading.vue';
-import UserFilters from './components/UserFilters.vue'
+import UserFilters from './partials/UserFilters.vue'
 import CardList from '@/components/datatable/CardList.vue'
-import UserCard from './components/UserCard.vue'
+import UserCard from './partials/UserCard.vue'
 import { Button } from '@/components/ui/button'
 
 const props = defineProps<{
