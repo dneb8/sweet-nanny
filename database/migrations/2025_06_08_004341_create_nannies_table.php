@@ -9,22 +9,26 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
-        Schema::create('nannies', function (Blueprint $table) {
+public function up(): void
+{
+    Schema::create('nannies', function (Blueprint $table) {
         $table->id();
         $table->ulid('ulid')->unique();
-        $table->foreignId('user_id')->constrained('users');
-        $table->unsignedBigInteger('user_id')->nullable(); 
+
+        // user_id con relación a users
+        $table->foreignId('user_id')->constrained('users')->nullable();
+
         $table->text('bio');
         $table->boolean('availability');
         $table->date('start_date');
-        $table->foreignId('address_id')->constrained()->onDelete('cascade');
-        $table->unsignedBigInteger('address_id')->nullable(); 
+
+        // address_id con relación a addresses
+        $table->foreignId('address_id')->constrained()->onDelete('cascade')->nullable();
+
         $table->softDeletes();
         $table->timestamps();
-        });
-    }
+    });
+}
 
     /**
      * Reverse the migrations.

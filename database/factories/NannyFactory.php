@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\{Nanny, User};
+use App\Models\{Nanny, User, Address};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class NannyFactory extends Factory
@@ -16,7 +16,7 @@ class NannyFactory extends Factory
             'bio' => $this->faker->paragraph(),
             'availability' => $this->faker->boolean(),
             'start_date' => $this->faker->date(),
-            'address_id' => null, // Aún no existen addresses
+            'address_id' =>  Address::factory(), // Aún no existen addresses
 
         ];
     }

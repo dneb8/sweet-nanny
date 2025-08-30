@@ -16,6 +16,8 @@ import { Icon } from '@iconify/vue'
 
 import type { User } from '@/types/User'
 import { useUserService } from '@/services/UserService'
+import { getRoleLabelByString, RoleEnum } from '@/enums/role.enum'
+import { getQualityLabelByString } from '@/enums/quality.enum'
 
 const props = defineProps<{
   user: User
@@ -24,7 +26,6 @@ const props = defineProps<{
 // User Service con funciones para manejar acciones del usuario
 const {
   showDeleteModal,
-  fakeSkills,
   showUser,
   editUser,
   deleteUser,
@@ -46,7 +47,7 @@ const {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" class="w-44">
           <DropdownMenuGroup>
-            <DropdownMenuItem @click="showUser" class="group text-primary hover:bg-muted">
+            <DropdownMenuItem v-if="props.user.roles?.[0]?.name !== RoleEnum.ADMIN" @click="showUser" class="group text-primary hover:bg-muted">
               <Icon icon="mdi:account-eye-outline" class="w-4 h-4 mr-2 text-primary" />
               Ver perfil
             </DropdownMenuItem>
@@ -70,8 +71,11 @@ const {
         <div class="w-16 h-16 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center border overflow-hidden">
           <Icon icon="mdi:image-outline" class="w-8 h-8 text-slate-400" />
         </div>
-        <Button @click="showUser" class="mt-4 h-7 px-2 text-xs">
-          Ver perfil
+        <Button
+          @click="props.user.roles?.[0]?.name === RoleEnum.ADMIN ? editUser() : showUser()"
+          class="mt-4 h-7 px-2 text-xs"
+        >
+          {{ props.user.roles?.[0]?.name === RoleEnum.ADMIN ? 'Editar usuario' : 'Ver perfil' }}
         </Button>
       </div>
 
@@ -80,7 +84,7 @@ const {
         <span
           :class="['inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium', getRoleBadgeClass(props.user.roles?.[0]?.name)]"
         >
-          {{ props.user.roles?.[0]?.name ?? 'Sin rol' }}
+          {{ getRoleLabelByString(props.user.roles?.[0]?.name) ?? 'Sin rol' }}
         </span>
 
         <div class="mt-2 flex items-center gap-2 min-w-0">
@@ -93,20 +97,25 @@ const {
         <p class="mt-1 text-xs text-muted-foreground truncate">{{ props.user.email }}</p>
 
         <!-- ScrollArea habilidades -->
-        <div class="relative mt-3" ref="scrollContainer">
+        <div 
+          v-if="props.user.roles?.[0]?.name === RoleEnum.NANNY && props.user.nanny?.qualities?.length" 
+          class="relative mt-3" 
+          ref="scrollContainer"
+        >
           <ScrollArea class="w-full whitespace-nowrap" data-scroll-content>
             <div class="flex gap-2">
               <span
-                v-for="(skill, idx) in fakeSkills"
+                v-for="(quality, idx) in props.user.nanny.qualities"
                 :key="idx"
                 class="flex-none text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800"
               >
-                {{ skill }}
+                {{ getQualityLabelByString(quality.name) }}
               </span>
             </div>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
         </div>
+
       </div>
     </CardHeader>
 
