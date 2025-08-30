@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import UserForm from './components/UserForm.vue';
+import UserForm from './partials/UserForm.vue';
 import Heading from '@/components/Heading.vue';
 
 
