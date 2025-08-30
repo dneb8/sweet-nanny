@@ -1,0 +1,117 @@
+version: '3'
+services:
+  app: #CONTENEDOR
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - WWW_USER_ID=${DOCKER_UID:-1000}
+        - WWW_GROUP_ID=${DOCKER_GID:-1000}
+    image: "sweet-nanny"
+    restart: unless-stopped
+    tty: true
+    depends_on:
+      - db
+      - webserver
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    working_dir: /var/www
+    volumes:
+      - '/mnt/storage/archivos/:/var/archivos' #Archivos y carpetas que habrá en nuestro contenedor
+      #- '/mnt/storage/backups/campus/:/var/respaldo'                  # 
+      - './:/var/www'
+      - './php/local.ini:/usr/local/etc/php/conf.d/local.ini'
+      - '/home/${DOCKER_HOME_USER}/.ssh/:/home/www/.ssh/'
+      - './nginx/conf.d/:/etc/nginx/conf.d/'
+    networks:
+      - app-network
+  webserver:
+    image: 'nginx:alpine3.18-slim'
+    restart: unless-stopped
+    tty: true
+    expose:
+      - "80"
+    ports:
+      - '${DOCKER_WEB_PORT:-8085}:80'
+    environment:
+      - VIRTUAL_HOST=${DOCKER_PROXY_DOMAIN}
+      # - LETSENCRYPT_HOST=${DOCKER_PROXY_DOMAIN}
+      # - LETSENCRYPT_EMAIL=soporte.sigi@cucei.udg.mx
+    volumes:
+      - '/mnt/storage/archivos/:/var/archivos'
+      #- '/mnt/storage/backups/:/var/respaldo'
+      - './:/var/www' 
+      - './nginx/conf.d/:/etc/nginx/conf.d/'
+      - './php/local.ini:/usr/local/etc/php/conf.d/local.ini'
+    networks:
+      - app-network
+      - default
+  db:
+    image: 'mariadb:10.7.5-focal'
+    restart: unless-stopped
+    tty: true
+    ports:
+      - '${DOCKER_DB_PORT:-3307}:3306'
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+      LANG: C.UTF-8
+    volumes:
+      - 'dbdata:/var/lib/mysql/'
+      - './mysql/my.cnf:/etc/mysql/my.cnf'
+      #- '/mnt/storage/backups/campus/:/var/respaldo'
+    networks:
+      - app-network
+  
+  laravel-queue:
+    #build:
+    #  context: .
+    #  dockerfile: Dockerfile
+    image: "sweet-nanny"
+    #user: www:1002
+    restart: unless-stopped
+    volumes:
+      - './:/var/www'
+    depends_on:
+      - db
+    working_dir: /var/www/
+    entrypoint: ['php', '/var/www/artisan', 'queue:work']
+    networks:
+      - default
+      - app-network
+
+  npm:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - WWW_USER_ID=${DOCKER_UID:-1000}
+        - WWW_GROUP_ID=${DOCKER_GID:-1000}
+    image: "sweet-nanny"
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    ports:
+      - '${DOCKER_NPM_PORT:-5174}:5174'
+    working_dir: /var/www
+    depends_on:
+      - app
+    volumes:
+      - './:/var/www'
+    entrypoint: ['npm', 'run', 'dev', '--host']
+    networks:
+      - app-network
+networks:
+  default:
+    external:
+      name: nginx-proxy
+  app-network:
+    driver: bridge
+volumes:
+  dbdata:
+    driver: local
