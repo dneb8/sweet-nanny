@@ -25,7 +25,7 @@ const formService = new CourseFormService(
 );
 
 // Valores reactivos desde el servicio
-const { errors, loading, saveCourse, updateCourse, saved } = formService;
+const { errors, loading, saved } = formService;
 
 // Emitir saved a formservice
 watch(() => saved.value, (value) => {
