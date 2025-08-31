@@ -22,8 +22,14 @@ class UserService
 
         $users = User::query()->orderBy('created_at', 'desc');
 
-        $users = Fetcher::for($users->whereNot('id', $user->id)->with(['roles']))
-            ->paginate(User::whereNot('id', Auth::id())->count());
+        $users = Fetcher::for($users->whereNot('id', $user->id)
+            ->with([
+                'roles',
+                'tutor',
+                'nanny.qualities',
+                ]))
+            ->paginate(User::whereNot('id', Auth::id())
+            ->count());
 
         return $users;
     }
@@ -31,7 +37,7 @@ class UserService
     /**
      * Crea un usuario
      */
-    public function createUser(CreateUserRequest $request): void
+    public function createUser(CreateUserRequest $request): User
     {
         $validated = $request->safe();
 
@@ -43,8 +49,20 @@ class UserService
             'password' => bcrypt(Str::random(10)),
         ]);
 
-    $user->assignRole(RoleEnum::from($validated->roles));
+        $role = RoleEnum::from($validated->roles);
 
+        $user->assignRole($role);
+
+        // Crear relación dependiendo del rol
+        if ($role === RoleEnum::NANNY) {
+            $user->nanny()->create([]); 
+        }
+
+        if ($role === RoleEnum::TUTOR) {
+            $user->tutor()->create([]); 
+        }
+
+        return $user;
     }
 
     public function updateUser(User $user, UpdateUserRequest $request): void

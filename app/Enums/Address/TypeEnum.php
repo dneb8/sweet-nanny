@@ -4,32 +4,32 @@ namespace App\Enums\Address;
 
 enum TypeEnum: string
 {
-    case SUBDIVISION = 'subdivision';      
-    case HOUSE = 'house';                  
-    case BUILDING = 'building';          
-    case APARTMENT = 'apartment';         
-    case DUPLEX = 'duplex';              
-    case SHOP = 'shop';                   
-    case AMUSEMENT_PARK = 'amusement_park';
+    case FRACCIONAMIENTO = 'fraccionamiento';      
+    case CASA = 'casa';                  
+    case EDIFICIO = 'edificio';          
+    case DEPARTAMENTO = 'departamento';         
+    case DUPLEX = 'dúplex';              
+    case LOCAL = 'local';                   
+    case PARQUE_DIVERSIONES = 'parque_de_diversiones';
     case HOTEL = 'hotel';
-    case PARTY_VENUE = 'party_venue';
-    case CONDOMINIUM = 'condominium';     
-    case OTHER = 'other';                  
+    case SALON_FIESTAS = 'salon_de_fiestas';
+    case CONDOMINIO = 'condominio';     
+    case OTRO = 'otro';                  
 
     public function label(): string
     {
         return match ($this) {
-            self::SUBDIVISION => 'Fraccionamiento',
-            self::HOUSE => 'Casa',
-            self::BUILDING => 'Edificio',
-            self::APARTMENT => 'Departamento',
+            self::FRACCIONAMIENTO => 'Fraccionamiento',
+            self::CASA => 'Casa',
+            self::EDIFICIO => 'Edificio',
+            self::DEPARTAMENTO => 'Departamento',
             self::DUPLEX => 'Dúplex',
-            self::SHOP => 'Local',
-            self::AMUSEMENT_PARK => 'Parque de diversiones',
+            self::LOCAL => 'Local',
+            self::PARQUE_DIVERSIONES => 'Parque de diversiones',
             self::HOTEL => 'Hotel',
-            self::PARTY_VENUE => 'Salón de fiestas',
-            self::CONDOMINIUM => 'Condominio',
-            self::OTHER => 'Otro',
+            self::SALON_FIESTAS => 'Salón de fiestas',
+            self::CONDOMINIO => 'Condominio',
+            self::OTRO => 'Otro',
         };
     }
 

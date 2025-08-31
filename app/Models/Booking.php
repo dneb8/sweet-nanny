@@ -10,8 +10,8 @@ class Booking extends Model
     use HasFactory;
 
     protected $fillable = [
-        // 'tutor_id',
-        // 'address_id',
+        'tutor_id',
+        'address_id',
         'description',
         'recurrent',
     ];
@@ -19,6 +19,18 @@ class Booking extends Model
     // Relación uno a muchos con BookingService
     public function bookingServices()
     {
-       return $this->hasMany(BookingService::class);
+        return $this->hasMany(BookingService::class);
+    }
+
+    // Relación con Tutor (cada booking pertenece a un tutor)
+    public function tutor()
+    {
+        return $this->belongsTo(Tutor::class);
+    }
+
+    // Relación con Address (cada booking pertenece a una dirección)
+    public function address()
+    {
+        return $this->belongsTo(Address::class);
     }
 }

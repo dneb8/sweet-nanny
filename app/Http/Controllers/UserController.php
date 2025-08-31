@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\User\RoleEnum;
-use App\Http\Requests\User\{ActualizarUserRequest, CreateUserRequest, UpdateUserRequest};
-use App\Models\{User, Persona};
+use App\Http\Requests\User\{CreateUserRequest, UpdateUserRequest};
+use App\Models\{User};
 use App\Services\UserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +20,7 @@ class UserController extends Controller
     {
         // Gate::authorize('viewAny', User::class);
 
-        $sortables = ['email'];
+        $sortables = ['role', 'email_verified_at'];
         $searchables = ['name', 'email', 'surnames'];
         $users = $userService->indexFetch();
 
@@ -50,17 +50,28 @@ class UserController extends Controller
      */
     public function store(UserService $userService, CreateUserRequest $request): RedirectResponse
     {
-        // Gate::authorize('create', User::class);
+        $user = $userService->createUser($request);
 
-        $userService->createUser($request);
+        if ($user->hasRole(RoleEnum::NANNY->value)) {
+            return redirect()->route('nannies.show', $user->nanny)
+                ->with('message', [
+                    'title' => 'Usuario creado',
+                    'description' => 'La niñera ha sido creada correctamente.',
+                ]);
+        }
 
-        return redirect()->route('users.index')->with([
-            'message' => [
-                'title' => 'Usuario creado',
-                'description' => 'El usuario ha sido creado correctamente.',
-            ]
+        if ($user->hasRole(RoleEnum::TUTOR->value)) {
+            return redirect()->route('tutors.show', $user->tutor)
+                ->with('message', [
+                    'title' => 'Usuario creado',
+                    'description' => 'El tutor ha sido creado correctamente.',
+                ]);
+        }
+
+        return redirect()->route('users.index')->with('message', [
+            'title' => 'Usuario creado',
+            'description' => 'El usuario ha sido creado correctamente.',
         ]);
-
     }
 
     /**
@@ -92,15 +103,22 @@ class UserController extends Controller
             ]
         ]);
     }
-        /**
-     * Redirige al listado de usuarios
+
+    /**
+     * Muestra el perfil del usuario según su rol
      */
-    public function show(User $user): Response
+    public function show(User $user)
     {
-        // Gate::authorize('view', $user);
+        if ($user->hasRole('nanny')) {
+            return redirect()->route('nannies.show', $user->nanny);
+        }
+
+        if ($user->hasRole('tutor')) {
+            return redirect()->route('tutors.show', $user->tutor);
+        }
 
         return Inertia::render('User/Show', [
-            'user' => $user->load(['roles', 'tutor.address', 'nanny.address']),
+            'user' => $user->load(['roles']),
         ]);
     }
 

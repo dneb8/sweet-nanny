@@ -2,18 +2,30 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Tutor\{CreateTutorRequest, UpdateTutorRequest};
 use App\Models\Tutor;
-use App\Http\Requests\StoreTutorRequest;
-use App\Http\Requests\UpdateTutorRequest;
+use App\Services\TutorService;
+use Inertia\{Inertia, Response};
+
 
 class TutorController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(TutorService $tutorService): Response
     {
-        //
+        // Gate::authorize('viewAny', User::class);
+
+        $sortables = ['email'];
+        $searchables = ['name', 'surnames'];
+        $tutors = $tutorService->indexFetch();
+
+        return Inertia::render('Tutor/Index', [
+            'tutors' => $tutors,
+            'sortables' => $sortables,
+            'searchables' => $searchables,
+        ]);
     }
 
     /**
@@ -27,7 +39,7 @@ class TutorController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreTutorRequest $request)
+    public function store(CreateTutorRequest $request)
     {
         //
     }
@@ -37,7 +49,13 @@ class TutorController extends Controller
      */
     public function show(Tutor $tutor)
     {
-        //
+        return Inertia::render('Tutor/Show', [
+            'tutor' => $tutor->load([
+                'user',        // el usuario del tutor
+                'addresses',   // direcciones (morphMany)
+                'children',    // hijos
+            ]),
+        ]);
     }
 
     /**
