@@ -1,5 +1,6 @@
 import User from '.User';
 export interface Nanny {
+  id:number;
   ulid: number;
   user_id: number;
   bio?: string;
