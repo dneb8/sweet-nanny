@@ -14,16 +14,15 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             UserSeeder::class,
+            NannySeeder::class,
             TutorSeeder::class,
             BookingSeeder::class,
             ReviewSeeder::class,
-            NannySeeder::class,
             CourseSeeder::class,
             CareerSeeder::class,
             CareerNannySeeder::class,
-            QualitySeeder::class,
             ChildSeeder::class,
-            // NannyQualitySeeder::class,
+            NannyQualitySeeder::class,
         ]);
 
     }

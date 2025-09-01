@@ -12,12 +12,18 @@ class NannyFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(), // Aún no existen users
+            'user_id' => User::factory(), 
             'bio' => $this->faker->paragraph(),
             'availability' => $this->faker->boolean(),
             'start_date' => $this->faker->date(),
-            'address_id' =>  Address::factory(), // Aún no existen addresses
-
+            'address_id' => Address::factory(), 
         ];
+    }
+
+    public function configure()
+    {
+        return $this->afterCreating(function (Nanny $nanny) {
+            $nanny->user->assignRole('nanny'); 
+        });
     }
 }

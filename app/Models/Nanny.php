@@ -29,8 +29,8 @@ class Nanny extends Model
     public function careers()
     {
         return $this->belongsToMany(Career::class, 'career_nanny')
-                    ->withPivot('degree', 'status', 'institution') // ✅ estos sí existen
-                    ->withTimestamps();
+        ->withPivot('degree', 'status', 'institution') // ✅ estos sí existen
+        ->withTimestamps();
     }
 
 
@@ -43,6 +43,17 @@ class Nanny extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    //Relación 1:N con servicios 
+    public function bookingServices()
+    {
+        return $this->hasMany(BookingService::class);
+    }
+
+    public function address()
+    {
+        return $this->belongsTo(Address::class);
     }
 
     public function reviews()

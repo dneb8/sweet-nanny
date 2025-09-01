@@ -18,8 +18,10 @@ const routeKey = computed(() => page.url);
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div :key="routeKey" class="p-10 px-20 max-w-7xl mx-auto w-full h-full" v-gsap.entrance.slide-left>
-            <slot />
-        </div>
+        <UApp>
+            <div :key="routeKey" class="p-5 sm:p-10 max-w-7xl mx-auto w-full h-full" v-gsap.entrance.slide-left>
+                <slot />
+            </div>
+        </UApp>
     </AppLayout>
 </template>

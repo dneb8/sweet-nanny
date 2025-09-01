@@ -39,6 +39,12 @@ class Address extends Model
     {
         return $this->hasOne(Tutor::class);
     }
+
+    public function nannies()
+    {
+        return $this->hasOne(Tutor::class);
+    }
+
     public function bookingServices()
     {
         return $this->belongsToMany(BookingService::class);

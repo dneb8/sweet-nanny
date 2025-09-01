@@ -16,14 +16,14 @@ public function up(): void
         $table->ulid('ulid')->unique();
 
         // user_id con relación a users
-        $table->foreignId('user_id')->constrained('users')->nullable();
+        $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
 
-        $table->text('bio');
-        $table->boolean('availability');
-        $table->date('start_date');
+        $table->text('bio')->nullable();
+        $table->boolean('availability')->nullable();
+        $table->date('start_date')->nullable();
 
         // address_id con relación a addresses
-        $table->foreignId('address_id')->constrained()->onDelete('cascade')->nullable();
+        $table->foreignId('address_id')->nullable()->constrained()->onDelete('cascade');
 
         $table->softDeletes();
         $table->timestamps();

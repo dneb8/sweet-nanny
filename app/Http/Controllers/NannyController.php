@@ -11,24 +11,6 @@ use Inertia\{Inertia, Response};
 class NannyController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     */
-    public function index(NannyService $nannyService): Response
-    {
-        // Gate::authorize('viewAny', User::class);
-
-        $sortables = ['email'];
-        $searchables = ['name', 'surnames'];
-        $nannies = $nannyService->indexFetch();
-
-        return Inertia::render('Nanny/Index', [
-            'nannies' => $nannies,
-            'sortables' => $sortables,
-            'searchables' => $searchables,
-        ]);
-    }
-
-    /**
      * Show the form for creating a new resource.
      */
     public function create()
@@ -49,8 +31,19 @@ class NannyController extends Controller
      */
     public function show(Nanny $nanny)
     {
-        //
+        return Inertia::render('Nanny/Show', [
+            'nanny' => $nanny->load([
+                'user',
+                'address',
+                'courses',
+                'careers',         
+                'qualities',
+                'reviews',
+                'bookingServices.booking', 
+            ]),
+        ]);
     }
+
 
     /**
      * Show the form for editing the specified resource.
