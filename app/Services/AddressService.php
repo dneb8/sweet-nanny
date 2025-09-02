@@ -5,18 +5,19 @@ namespace App\Services;
 use App\Http\Requests\Address\CreateAddressRequest;
 use App\Http\Requests\Address\UpdateAddressRequest;
 use App\Models\Address;
-use App\Enums\Address\TypeEnum;
+use Illuminate\Support\Str;
 
 class AddressService
 {
     /**
-     * Crear una nueva dirección
+     * Crea una dirección
      */
     public function createAddress(CreateAddressRequest $request): Address
     {
-        $validated = $request->safe(); // Obtiene solo los datos validados
+        $validated = $request->safe();
 
         $address = Address::create([
+            'ulid' => Str::ulid(),
             'postal_code' => $validated->postal_code,
             'street' => $validated->street,
             'neighborhood' => $validated->neighborhood,
@@ -29,7 +30,7 @@ class AddressService
     }
 
     /**
-     * Actualizar una dirección existente
+     * Actualiza una dirección existente
      */
     public function updateAddress(Address $address, UpdateAddressRequest $request): void
     {
@@ -46,10 +47,10 @@ class AddressService
     }
 
     /**
-     * Eliminar una dirección
+     * Elimina una dirección
      */
     public function deleteAddress(Address $address): void
     {
-        $address->delete(); // Soft delete
+        $address->delete();
     }
 }
