@@ -5,7 +5,7 @@ namespace App\Http\Requests\Address;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Enums\Address\TypeEnum;
 
-class CreateAddressRequest extends FormRequest
+class UpdateAddressRequest extends FormRequest
 {
     /**
      * Determina si el usuario está autorizado para hacer este request.
@@ -16,7 +16,7 @@ class CreateAddressRequest extends FormRequest
     }
 
     /**
-     * Reglas de validación para crear una dirección
+     * Reglas de validación para actualizar una dirección
      */
     public function rules(): array
     {
