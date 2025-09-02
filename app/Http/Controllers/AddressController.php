@@ -1,53 +1,66 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Http\Requests\Address\{CreateAddressRequest, UpdateAddressRequest};
+
 use App\Models\Address;
-use App\Services\AddressService;
-use Illuminate\Http\RedirectResponse;
+use App\Http\Requests\StoreAddressRequest;
+use App\Http\Requests\UpdateAddressRequest;
 
 class AddressController extends Controller
 {
-
-     public function store(AddressService $addressService, CreateAddressRequest $request): RedirectResponse
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
     {
-        //Gate::authorize('create', Address::class);
-
-        $addressService->createAddress($request);
-
-        return redirect()->back()->with('message', [
-            'title' => 'Dirección creada',
-            'description' => 'La dirección ha sido creada correctamente.',
-        ]);
+        //
     }
 
     /**
-     * Actualiza una dirección existente
+     * Show the form for creating a new resource.
      */
-    public function update(AddressService $addressService, UpdateAddressRequest $request, Address $address): RedirectResponse
+    public function create()
     {
-        //Gate::authorize('edit', Address::class);
-
-        $addressService->updateAddress($address, $request);
-
-        return redirect()->back()->with('message', [
-            'title' => 'Dirección actualizada',
-            'description' => 'La dirección ha sido actualizada correctamente.',
-        ]);
+        //
     }
 
     /**
-     * Elimina una dirección
+     * Store a newly created resource in storage.
      */
-    public function destroy(Address $address): RedirectResponse
+    public function store(StoreAddressRequest $request)
     {
-        //Gate::authorize('delete', Address::class);
+        //
+    }
 
-        $address->delete();
+    /**
+     * Display the specified resource.
+     */
+    public function show(Address $address)
+    {
+        //
+    }
 
-        return redirect()->back()->with('message', [
-            'title' => 'Dirección eliminada',
-            'description' => 'La dirección ha sido eliminada correctamente.',
-        ]);
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Address $address)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(UpdateAddressRequest $request, Address $address)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Address $address)
+    {
+        //
     }
 }
