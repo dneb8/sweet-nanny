@@ -4,11 +4,11 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { watch, ref } from 'vue'
+import { watch } from 'vue'
 import { AddressFormService } from "@/services/AddressFormService";
 import { Nanny } from "@/types/Nanny"
 import { Address } from "@/types/Address"
-import { TypeEnum } from "@/Enums/Address/TypeEnum"
+import { TypeEnum } from "@/enums/addresses/type.enum"; 
 
 const props = defineProps<{
   address?: Address;
@@ -17,35 +17,35 @@ const props = defineProps<{
 
 const emit = defineEmits(["saved"])
 
-// Inicializar servicio con valores reactivos
-const formService = new AddressFormService(
-  props.address || {
-    nanny_id: props.nanny?.id,
-    postal_code: "",
-    street: "",
-    neighborhood: "",
-    type: "",
-    other_type: "",
-    internal_number: "",
-  }
-);
+const initialAddress: Address = {
+  nanny_id: props.nanny?.id ?? 0,
+  postal_code: "",
+  street: "",
+  neighborhood: "",
+  type: "",
+  other_type: "",
+  internal_number: "",
+}
 
-const { errors, loading, saved, formData } = formService;
+// Inicializar servicio con valores reactivos
+const formService = new AddressFormService(props.address || initialAddress)
+
+const { errors, loading, saved, values } = formService
 
 // Emitir saved
 watch(() => saved.value, (value) => {
-  if (value) emit("saved");
-});
+  if (value) emit("saved")
+})
 
 // Función de submit para crear o actualizar
 const submit = async () => {
-  console.log("Enviando formulario", formData.value);
+  console.log("Enviando formulario", values)
   if (props.address?.id) {
-    await formService.updateAddress();
+    await formService.updateAddress()
   } else {
-    await formService.saveAddress();
+    await formService.saveAddress()
   }
-};
+}
 </script>
 
 <template>

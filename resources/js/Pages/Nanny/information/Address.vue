@@ -23,9 +23,8 @@ const showDeleteModal = ref(false)
 
 // Abrir modal para agregar o editar dirección
 const openModal = (address: any | null = null) => {
-  console.log("Abriendo modal para dirección:", address)
   selectedAddress.value = address
-  showModal.value = true;
+  showModal.value = true
 }
 
 // Abrir modal de eliminar
@@ -37,7 +36,6 @@ const openDelete = (address: any) => {
 // Función para eliminar al confirmar
 const deleteAddress = () => {
   if (!selectedAddress.value) return
-  console.log("Eliminando dirección:", selectedAddress.value)
   router.delete(route('addresses.destroy', selectedAddress.value.id), {
     onSuccess: () => {
       selectedAddress.value = null
@@ -57,14 +55,14 @@ const deleteAddress = () => {
         <div class="flex items-center gap-2">
           <Icon icon="lucide:map-pin" /> Dirección
         </div>
-        <!-- Botón solo si es propietario y no tiene dirección -->
+        <!-- Botón para agregar nueva dirección -->
         <Button
-          v-if="isOwner && !props.nanny.address"
+          v-if="isOwner && !selectedAddress.value"
           size="sm"
           variant="outline"
           @click="openModal()"
         >
-          <Icon icon="lucide:plus" /> Agregar
+          <Icon icon="lucide:plus" /> Nuevo
         </Button>
       </CardTitle>
     </CardHeader>
@@ -78,7 +76,7 @@ const deleteAddress = () => {
           <p class="text-sm text-muted-foreground">{{ props.nanny.address.postal_code }}</p>
         </div>
 
-        <!-- Botones -->
+        <!-- Botones para editar/eliminar -->
         <div class="flex gap-2" v-if="isOwner">
           <Button size="sm" variant="ghost" @click="openModal(props.nanny.address)">
             <Icon icon="lucide:edit" />
@@ -96,7 +94,7 @@ const deleteAddress = () => {
     </CardContent>
   </Card>
 
-  <!-- Modales -->
+  <!-- Modal de formulario para crear o editar -->
   <FormModal
     v-model="showModal"
     :title="selectedAddress ? 'Editar Dirección' : 'Agregar Dirección'"
@@ -107,6 +105,7 @@ const deleteAddress = () => {
     }"
   />
 
+  <!-- Modal de confirmación de eliminación -->
   <DeleteModal
     v-model:show="showDeleteModal"
     title="dirección"
