@@ -6,6 +6,8 @@ use App\Models\Nanny;
 use App\Http\Requests\Nanny\{CreateNannyRequest, UpdateNannyRequest};
 use App\Services\NannyService;
 use Inertia\{Inertia, Response};
+use App\Http\Requests\Nanny\AsyncQualitiesRequest;
+use Illuminate\Http\JsonResponse;
 
 
 class NannyController extends Controller
@@ -67,5 +69,24 @@ class NannyController extends Controller
     public function destroy(Nanny $nanny)
     {
         //
+    }
+
+    public function asyncQualities(AsyncQualitiesRequest $request, Nanny $nanny): JsonResponse
+    {
+        // Validamos el request
+        $validated = $request->validated();
+
+        // Sincronizamos cualidades con la niñera
+        $nanny->qualities()->sync($validated['qualities']);
+
+        return response()->json([
+            'message' => 'Cualidades actualizadas correctamente',
+            'qualities' => $nanny->qualities, // devuelve las nuevas cualidades asignadas
+        ]);
+
+        //return redirect()->back()->with('message', [
+        //'title' => 'Cualidades actualizadas',
+        //'description' => 'Las cualidades de la niñera se han actualizado correctamente.',
+        //   ]);
     }
 }
