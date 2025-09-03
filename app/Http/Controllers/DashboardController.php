@@ -15,15 +15,15 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->hasRole(RoleEnum::NANNY->value)) {
+        if ($user->role === RoleEnum::NANNY->value) {
             return $this->nannyDashboard();
         }
 
-        if ($user->hasRole(RoleEnum::TUTOR->value)) {
+        if ($user->role === RoleEnum::TUTOR->value) {
             return $this->tutorDashboard();
         }
 
-        if ($user->hasRole(RoleEnum::ADMIN->value)) {
+        if ($user->role === RoleEnum::ADMIN->value) {
             return $this->adminDashboard();
         }
 

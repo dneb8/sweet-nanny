@@ -12,11 +12,6 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
-//Route::get('dashboard', function () {
-  //  return Inertia::render('Dashboard');
-//})->middleware(['auth', 'verified'])->name('dashboard');
-
-
 Route::middleware(['auth', 'verified'])->prefix('users')->name('users.')->group(function () {
     Route::get('/', [UserController::class, 'index'])->name('index');
     Route::get('/create', [UserController::class, 'create'])->name('create');
@@ -37,7 +32,6 @@ Route::middleware(['auth', 'verified'])->prefix('nannies')->name('nannies.')->gr
     Route::delete('/{user}', [NannyController::class, 'destroy'])->name('destroy');
 });
 
-//RUTA PARA REDIRIGIR SEGÚN LOS USUARIOS QUE INGRESEN
 Route::get('dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
