@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Address;
 use App\Models\User;
+use App\Models\Tutor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -11,6 +12,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class TutorFactory extends Factory
 {
+    protected $model = Tutor::class;
+
     /**
      * Define the model's default state.
      *
@@ -24,5 +27,12 @@ class TutorFactory extends Factory
             'emergency_contact' => $this->faker->optional()->name(),
             'emergency_number' => $this->faker->optional()->phoneNumber(),
         ];
+    }
+
+    public function configure()
+    {
+        return $this->afterCreating(function (Tutor $tutor) {
+            $tutor->user->assignRole('tutor'); 
+        });
     }
 }

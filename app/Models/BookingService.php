@@ -11,7 +11,7 @@ class BookingService extends Model
 
     protected $fillable = [
         'booking_id',
-        // 'nanny_id',
+        'nanny_id',
         'price_id',
         'start_date',
         'end_date',
@@ -26,10 +26,10 @@ class BookingService extends Model
         return $this->belongsTo(Booking::class);
     }
 
-    // public function nanny()
-    // {
-    //     return $this->belongsTo(Nanny::class);
-    // }
+    public function nanny()
+    {
+        return $this->belongsTo(Nanny::class);
+    }
 
     public function price()
     {

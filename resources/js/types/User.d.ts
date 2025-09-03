@@ -1,3 +1,4 @@
+import Nanny from "./Nanny";
 import { Rol } from "./Rol";
 export interface User {
   ulid: string;

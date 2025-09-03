@@ -26,7 +26,7 @@ const filterFn = ref<null | ((item: any) => boolean)>(null)
 
 const perPage = computed(() => props.perPage ?? 12)
 
-// 🔍 búsqueda global
+//búsqueda global
 const searchedItems = computed(() => {
   return props.items.filter(item =>
     props.searchables.some(column =>
@@ -37,14 +37,14 @@ const searchedItems = computed(() => {
   )
 })
 
-// 🔎 aplica filtro extra del panel
+//aplica filtro extra del panel
 const filteredItems = computed(() => {
   return filterFn.value
     ? searchedItems.value.filter(item => filterFn.value!(item))
     : searchedItems.value
 })
 
-// 📄 paginación
+//paginación
 const lastPage = computed(() =>
   Math.max(1, Math.ceil(filteredItems.value.length / perPage.value))
 )
@@ -54,12 +54,12 @@ const paginatedItems = computed(() => {
   return filteredItems.value.slice(start, start + perPage.value)
 })
 
-// resetear página si cambia algo
+//rsetear página si cambia algo
 watch([filterValue, selectedFilters], () => {
   currentPage.value = 1
 }, { deep: true })
 
-// 📑 páginas visibles
+//páginas visibles
 const pagesToShow = computed(() => {
   const total = lastPage.value
   const current = currentPage.value

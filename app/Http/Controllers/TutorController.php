@@ -49,7 +49,13 @@ class TutorController extends Controller
      */
     public function show(Tutor $tutor)
     {
-        //
+        return Inertia::render('Tutor/Show', [
+            'tutor' => $tutor->load([
+                'user',        // el usuario del tutor
+                'addresses',   // direcciones (morphMany)
+                'children',    // hijos
+            ]),
+        ]);
     }
 
     /**
