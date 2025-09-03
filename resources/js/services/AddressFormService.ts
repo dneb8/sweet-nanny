@@ -61,6 +61,7 @@ export class AddressFormService {
       this.errors.value = {};
 
       const form = useInertiaForm(values);
+      console.log(form)
 
       form.post(route("addresses.store"), {
         onSuccess: () => {

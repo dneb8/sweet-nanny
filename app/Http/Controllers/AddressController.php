@@ -15,6 +15,7 @@ class AddressController extends Controller
     public function store(AddressService $addressService, CreateAddressRequest $request): RedirectResponse
     {
         // Gate::authorize('create', Address::class);
+        dd($request);
 
         $addressService->createAddress($request);
 

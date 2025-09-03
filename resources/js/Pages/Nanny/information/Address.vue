@@ -57,7 +57,6 @@ const deleteAddress = () => {
         </div>
         <!-- Botón para agregar nueva dirección -->
         <Button
-          v-if="isOwner && !selectedAddress.value"
           size="sm"
           variant="outline"
           @click="openModal()"
