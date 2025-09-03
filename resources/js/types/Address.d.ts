@@ -1,4 +1,6 @@
-export interface Address {
+import { User } from "./User"
+export interface Address 
+{
   id?: number
   postal_code: string
   street: string
@@ -7,4 +9,5 @@ export interface Address {
   other_type: string
   internal_number: string
   nanny_id?: number  
+  user?: User
 }

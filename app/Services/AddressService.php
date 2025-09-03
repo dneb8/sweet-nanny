@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Http\Requests\Address\CreateAddressRequest;
 use App\Http\Requests\Address\UpdateAddressRequest;
 use App\Models\Address;
+use App\Models\User;
 use Illuminate\Support\Str;
 
 class AddressService
@@ -17,7 +18,6 @@ class AddressService
         $validated = $request->safe();
 
         $address = Address::create([
-            'ulid' => Str::ulid(),
             'postal_code' => $validated->postal_code,
             'street' => $validated->street,
             'neighborhood' => $validated->neighborhood,
@@ -25,6 +25,17 @@ class AddressService
             'other_type' => $validated->other_type ?? null,
             'internal_number' => $validated->internal_number ?? null,
         ]);
+
+        $userId = $request->tutor_id ?? $request->nanny_id;
+
+        if ($userId) {
+            $user = User::find($userId);
+        
+            if ($user) {
+                $user->address()->associate($address);
+                $user->save();
+            }
+        }
 
         return $address;
     }

@@ -10,6 +10,26 @@ import { Nanny } from "@/types/Nanny"
 import { Address } from "@/types/Address"
 import { TypeEnum } from "@/enums/addresses/type.enum"; 
 
+
+//const props = defineProps<{
+  //address?: Address;
+  //modeltype?: Nanny | Tutor;
+  //model_type?: REUTILIZARLO PARA TUTOR Y NANNY TODO EL ADDRESS FORM  EN EL MODELTYPE VA A SER UN TIPO DE 
+  //OBJETO DE NANNY O TUTOR
+//}>()
+
+// const emit = defineEmits(["saved"])
+
+// // Inicializar valores
+// const initialAddress: Address = {
+//   user_id: props.modeltype?.user.id,
+//   postal_code: "",
+//   street: "",
+//   neighborhood: "",
+//   type: "",
+//   other_type: "",
+//   internal_number: "",
+// }
 const props = defineProps<{
   address?: Address;
   nanny?: Nanny;
@@ -17,8 +37,9 @@ const props = defineProps<{
 
 const emit = defineEmits(["saved"])
 
+// Inicializar valores
 const initialAddress: Address = {
-  nanny_id: props.nanny?.id ?? 0,
+  nanny_id: props.nanny?.user.id,
   postal_code: "",
   street: "",
   neighborhood: "",
@@ -27,19 +48,17 @@ const initialAddress: Address = {
   internal_number: "",
 }
 
-// Inicializar servicio con valores reactivos
+// Inicializar servicio
 const formService = new AddressFormService(props.address || initialAddress)
+const { values, errors, loading, saved } = formService
 
-const { errors, loading, saved, values } = formService
-
-// Emitir saved
+// Emitir evento saved al padre para actualizar la lista
 watch(() => saved.value, (value) => {
   if (value) emit("saved")
 })
 
-// Función de submit para crear o actualizar
+// Función de submit
 const submit = async () => {
-  console.log("Enviando formulario", values)
   if (props.address?.id) {
     await formService.updateAddress()
   } else {
@@ -50,7 +69,6 @@ const submit = async () => {
 
 <template>
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8 mt-6">
-
     <!-- Código Postal -->
     <FormField v-slot="{ componentField }" name="postal_code">
       <FormItem>
@@ -58,7 +76,7 @@ const submit = async () => {
         <FormControl>
           <Input placeholder="Ej. 44100" v-bind="componentField" />
         </FormControl>
-        <FormMessage>{{ errors['postal_code'] ? errors['postal_code'][0] : '' }}</FormMessage>
+        <FormMessage>{{ errors['postal_code']?.[0] }}</FormMessage>
       </FormItem>
     </FormField>
 
@@ -69,7 +87,7 @@ const submit = async () => {
         <FormControl>
           <Input placeholder="Ej. Av. Vallarta" v-bind="componentField" />
         </FormControl>
-        <FormMessage>{{ errors['street'] ? errors['street'][0] : '' }}</FormMessage>
+        <FormMessage>{{ errors['street']?.[0] }}</FormMessage>
       </FormItem>
     </FormField>
 
@@ -80,7 +98,7 @@ const submit = async () => {
         <FormControl>
           <Input placeholder="Ej. Americana" v-bind="componentField" />
         </FormControl>
-        <FormMessage>{{ errors['neighborhood'] ? errors['neighborhood'][0] : '' }}</FormMessage>
+        <FormMessage>{{ errors['neighborhood']?.[0] }}</FormMessage>
       </FormItem>
     </FormField>
 
@@ -100,7 +118,7 @@ const submit = async () => {
             </SelectContent>
           </Select>
         </FormControl>
-        <FormMessage>{{ errors['type'] ? errors['type'][0] : '' }}</FormMessage>
+        <FormMessage>{{ errors['type']?.[0] }}</FormMessage>
       </FormItem>
     </FormField>
 
@@ -111,7 +129,7 @@ const submit = async () => {
         <FormControl>
           <Input placeholder="Especifica otro tipo" v-bind="componentField" />
         </FormControl>
-        <FormMessage>{{ errors['other_type'] ? errors['other_type'][0] : '' }}</FormMessage>
+        <FormMessage>{{ errors['other_type']?.[0] }}</FormMessage>
       </FormItem>
     </FormField>
 
@@ -122,16 +140,17 @@ const submit = async () => {
         <FormControl>
           <Input placeholder="Ej. 2A" v-bind="componentField" />
         </FormControl>
-        <FormMessage>{{ errors['internal_number'] ? errors['internal_number'][0] : '' }}</FormMessage>
+        <FormMessage>{{ errors['internal_number']?.[0] }}</FormMessage>
       </FormItem>
     </FormField>
   </div>
 
   <!-- Botones -->
   <div class="mt-6 flex justify-end gap-2">
-    <Button @click="submit" class="w-auto" :disabled="loading">
+    <Button @click="submit" :disabled="loading">
       <span v-if="loading">Guardando...</span>
       <span v-else>{{ props.address ? "Actualizar" : "Guardar" }}</span>
     </Button>
   </div>
 </template>
+

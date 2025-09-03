@@ -14,16 +14,14 @@ class AddressController extends Controller
      */
     public function store(AddressService $addressService, CreateAddressRequest $request): RedirectResponse
     {
-        // Gate::authorize('create', Address::class);
-        dd($request);
+    // Crear la dirección
+    $addressService->createAddress($request);
 
-        $addressService->createAddress($request);
-
-        return redirect()->back()->with('message', [
-            'title' => 'Dirección creada',
-            'description' => 'La dirección ha sido creada correctamente.',
-        ]);
-    }
+    return redirect()->back()->with('message', [
+        'title' => 'Dirección creada',
+        'description' => 'La dirección ha sido creada correctamente.',
+    ]);
+}
 
     /**
      * Actualiza una dirección existente

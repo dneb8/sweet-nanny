@@ -14,6 +14,7 @@ const props = defineProps<{
   isOwner: boolean
 }>()
 
+
 // Estado para crear/editar dirección
 const showModal = ref(false)
 const selectedAddress = ref<any>(null)
@@ -55,8 +56,10 @@ const deleteAddress = () => {
         <div class="flex items-center gap-2">
           <Icon icon="lucide:map-pin" /> Dirección
         </div>
-        <!-- Botón para agregar nueva dirección -->
+
+        <!-- Mostrar botón "Nuevo" SOLO si no hay dirección -->
         <Button
+          v-if="!props.nanny.user.address"
           size="sm"
           variant="outline"
           @click="openModal()"
@@ -67,20 +70,20 @@ const deleteAddress = () => {
     </CardHeader>
 
     <CardContent>
-      <div v-if="props.nanny.address" class="p-2 rounded shadow-sm border flex justify-between items-center">
+      <div v-if="props.nanny.user.address" class="p-2 rounded shadow-sm border flex justify-between items-center">
         <!-- Información de la dirección -->
         <div>
-          <p class="font-medium">{{ props.nanny.address.street }}</p>
-          <p class="text-sm text-muted-foreground">{{ props.nanny.address.neighborhood }}</p>
-          <p class="text-sm text-muted-foreground">{{ props.nanny.address.postal_code }}</p>
+          <p class="font-medium">{{ props.nanny.user.address.street }}</p>
+          <p class="text-sm text-muted-foreground">{{ props.nanny.user.address.neighborhood }}</p>
+          <p class="text-sm text-muted-foreground">{{ props.nanny.user.address.postal_code }}</p>
         </div>
 
         <!-- Botones para editar/eliminar -->
-        <div class="flex gap-2" v-if="isOwner">
-          <Button size="sm" variant="ghost" @click="openModal(props.nanny.address)">
+        <div class="flex gap-2">
+          <Button size="sm" variant="ghost" @click="openModal(props.nanny.user.address)">
             <Icon icon="lucide:edit" />
           </Button>
-          <Button size="sm" variant="destructive" @click="openDelete(props.nanny.address)">
+          <Button size="sm" variant="destructive" @click="openDelete(props.nanny.user.address)">
             <Icon icon="lucide:trash" />
           </Button>
         </div>
@@ -93,18 +96,17 @@ const deleteAddress = () => {
     </CardContent>
   </Card>
 
-  <!-- Modal de formulario para crear o editar -->
+  <!-- Modales -->
   <FormModal
     v-model="showModal"
     :title="selectedAddress ? 'Editar Dirección' : 'Agregar Dirección'"
     :form-component="AddressForm"
     :form-props="{
-      nanny: props.nanny,
+      nanny: nanny,
       address: selectedAddress
     }"
   />
 
-  <!-- Modal de confirmación de eliminación -->
   <DeleteModal
     v-model:show="showDeleteModal"
     title="dirección"

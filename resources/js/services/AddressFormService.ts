@@ -62,8 +62,9 @@ export class AddressFormService {
 
       const form = useInertiaForm(values);
       console.log(form)
-
+      
       form.post(route("addresses.store"), {
+        preserveState: true,
         onSuccess: () => {
           this.saved.value = true;
         },
