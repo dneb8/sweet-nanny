@@ -35,14 +35,9 @@ class Address extends Model
         'type' => TypeEnum::class
     ];
 
-    public function tutors()
+    public function users()
     {
-        return $this->hasOne(Tutor::class);
-    }
-
-    public function nannies()
-    {
-        return $this->hasOne(Tutor::class);
+        return $this->hasMany(User::class);
     }
 
     public function bookingServices()
