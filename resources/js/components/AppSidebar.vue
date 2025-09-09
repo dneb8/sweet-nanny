@@ -32,6 +32,20 @@ const adminNavItems: NavItem[] = [
     },
 ];
 
+const bookingsNavItems: NavItem[] = [
+  {
+    title: 'Servicios',
+    href: '/bookings',
+    icon: 'ph:baby-carriage',
+  },
+  {
+    title: 'Crear servicio',
+    href: '/bookings/create',
+    icon: 'fluent:calendar-add-24-regular',
+  },
+];
+
+
 const footerNavItems: NavItem[] = [
     {
         title: 'Ayuda',
@@ -56,7 +70,8 @@ const footerNavItems: NavItem[] = [
         <SidebarContent>
             <NavMain 
                 :items="mainNavItems" 
-                :adminItems="adminNavItems" 
+                :adminItems="adminNavItems"
+                :bookingsItems="bookingsNavItems"
             />
         </SidebarContent>
 
