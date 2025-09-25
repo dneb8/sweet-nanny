@@ -71,22 +71,18 @@ class NannyController extends Controller
         //
     }
 
-    public function asyncQualities(AsyncQualitiesRequest $request, Nanny $nanny): JsonResponse
-    {
-        // Validamos el request
-        $validated = $request->validated();
+public function asyncQualities(AsyncQualitiesRequest $request, Nanny $nanny): JsonResponse
+{
+    $validated = $request->validated();
 
-        // Sincronizamos cualidades con la niñera
-        $nanny->qualities()->sync($validated['qualities']);
+    // Sync asegura que se agregan nuevas y se eliminan las que no están en el array
+    $nanny->qualities()->sync($validated['qualities']);
 
-        return response()->json([
-            'message' => 'Cualidades actualizadas correctamente',
-            'qualities' => $nanny->qualities, // devuelve las nuevas cualidades asignadas
-        ]);
+    // Devolver las cualidades actualizadas
+    return response()->json([
+        'message' => 'Cualidades actualizadas correctamente',
+        'qualities' => $nanny->qualities()->pluck('name'), // solo los nombres
+    ]);
+}
 
-        //return redirect()->back()->with('message', [
-        //'title' => 'Cualidades actualizadas',
-        //'description' => 'Las cualidades de la niñera se han actualizado correctamente.',
-        //   ]);
-    }
 }
