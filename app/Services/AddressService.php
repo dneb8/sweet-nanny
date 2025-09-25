@@ -52,8 +52,8 @@ class AddressService
             'street' => $validated->street,
             'neighborhood' => $validated->neighborhood,
             'type' => $validated->type,
-            'other_type' => $validated->other_type ?? null,
-            'internal_number' => $validated->internal_number ?? null,
+            'other_type' => $validated->other_type ?? $address->other_type,
+            'internal_number' => $validated->internal_number ?? $address->internal_number,
         ]);
     }
 
