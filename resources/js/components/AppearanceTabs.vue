@@ -4,9 +4,9 @@ import { useAppearance } from '@/composables/useAppearance';
 const { appearance, updateAppearance } = useAppearance();
 
 const tabs = [
-    { value: 'light', Icon: "line-md:moon-to-sunny-outline-loop-transition", label: 'Light' },
-    { value: 'dark', Icon: "line-md:sunny-outline-to-moon-loop-transition", label: 'Dark' },
-    { value: 'system', Icon: "line-md:monitor", label: 'System' },
+    { value: 'light', Icon: "line-md:moon-to-sunny-outline-loop-transition", label: 'Claro' },
+    { value: 'dark', Icon: "line-md:sunny-outline-to-moon-loop-transition", label: 'Oscuro' },
+    { value: 'system', Icon: "line-md:monitor", label: 'Sistema' },
 ] as const;
 </script>
 
