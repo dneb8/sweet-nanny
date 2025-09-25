@@ -1,4 +1,3 @@
-// AddressFormService.ts
 import { ref, Ref } from "vue";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useForm } from "vee-validate";
@@ -33,8 +32,8 @@ export class AddressFormService {
         street: z.string().nonempty("La calle es obligatoria").max(255, "Calle demasiado larga"),
         neighborhood: z.string().nonempty("La colonia es obligatoria").max(255, "Colonia demasiado larga"),
         type: z.string().nonempty("El tipo de dirección es obligatorio"),
-        other_type: z.string().max(255, "Otro tipo demasiado largo").optional(),
-        internal_number: z.string().max(50, "Número interno demasiado largo").optional(),
+        other_type: z.string().max(255, "Otro tipo demasiado largo").nullable().optional(),
+        internal_number: z.string().max(50, "Número interno demasiado largo").nullable().optional(),
         nanny_id: z.number().optional(),
       })
     );

@@ -50,7 +50,7 @@ const initialAddress: Address = {
 
 // Inicializar servicio
 const formService = new AddressFormService(props.address || initialAddress)
-const { values, errors, loading, saved } = formService
+const { errors, loading, saved } = formService
 
 // Emitir evento saved al padre para actualizar la lista
 watch(() => saved.value, (value) => {
