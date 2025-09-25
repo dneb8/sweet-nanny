@@ -11,4 +11,5 @@ Route::middleware(['auth', 'verified'])->prefix('nannies')->name('nannies.')->gr
     Route::get('/{nanny}', [NannyController::class, 'show'])->name('show');
     Route::post('/', [NannyController::class, 'store'])->name('store');
     Route::delete('/{nanny}', [NannyController::class, 'destroy'])->name('destroy');
+    Route::post('/nannies/{nanny}/qualities', [NannyController::class, 'asyncQualities'])->name('nannies.asyncQualities');
 });

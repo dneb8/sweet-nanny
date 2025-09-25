@@ -17,3 +17,8 @@ export interface Nanny {
   reviews?: Review[];
   booking_services?: BookingService[];
 }
+
+export interface Quality {
+  id: number
+  name: string
+}
