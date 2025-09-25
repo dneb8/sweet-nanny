@@ -47,6 +47,6 @@ class Address extends Model
 
     public function bookingServices()
     {
-        return $this->belongsToMany(BookingService::class);
+        return $this->belongsToMany(BookingAppointment::class);
     }
 }

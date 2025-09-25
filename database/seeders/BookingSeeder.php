@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\{Address, Booking, BookingService, Price, Nanny};
+use App\Models\{Address, Booking, BookingAppointment, Price, Nanny};
 use Illuminate\Database\Seeder;
 use Faker\Factory as Faker;
 
@@ -28,7 +28,7 @@ class BookingSeeder extends Seeder
                 $start = $faker->dateTimeBetween('+1 days', '+3 days');
                 $end = (clone $start)->modify('+6 hours');
 
-                BookingService::factory()->create([
+                BookingAppointment::factory()->create([
                     'booking_id' => $booking->id,
                     'price_id' => Price::factory(),
                     'nanny_id' => $nannyId,

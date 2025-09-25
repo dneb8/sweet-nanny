@@ -1,4 +1,4 @@
-export interface BookingService {
+export interface BookingAppointment {
   id: number
   booking_id: number
   nanny_id?: number | null

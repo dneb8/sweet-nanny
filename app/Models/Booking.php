@@ -16,10 +16,10 @@ class Booking extends Model
         'recurrent',
     ];
 
-    // Relación uno a muchos con BookingService
+    // Relación uno a muchos con BookingAppointment
     public function bookingServices()
     {
-        return $this->hasMany(BookingService::class);
+        return $this->hasMany(BookingAppointment::class);
     }
 
     // Relación con Tutor (cada booking pertenece a un tutor)

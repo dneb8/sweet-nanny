@@ -15,5 +15,5 @@ export interface Nanny {
   careers?: Career[];
   qualities?: Quality[];
   reviews?: Review[];
-  booking_services?: BookingService[];
+  booking_appointments?: BookingAppointment[];
 }
