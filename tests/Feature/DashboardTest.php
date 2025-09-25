@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\User\RoleEnum;
 use App\Models\User;
 
 test('guests are redirected to the login page', function () {
@@ -8,7 +9,9 @@ test('guests are redirected to the login page', function () {
 });
 
 test('authenticated users can visit the dashboard', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create([
+        'role' => RoleEnum::TUTOR->value,
+    ]);
     $this->actingAs($user);
 
     $response = $this->get('/dashboard');
