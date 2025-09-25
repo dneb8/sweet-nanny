@@ -27,7 +27,6 @@ class DashboardController extends Controller
             return $this->adminDashboard();
         }
 
-        //Redirigirá al registro
         return redirect()->route('register');
     }
 
