@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import { toTypedSchema } from "@vee-validate/zod"
 import { Check, Circle, Dot } from "lucide-vue-next"
-import { h, ref } from "vue"
-import * as z from "zod"
-import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 import {
   Select,
   SelectContent,
@@ -15,50 +12,25 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Stepper, StepperDescription, StepperItem, StepperSeparator, StepperTitle, StepperTrigger } from "@/components/ui/stepper"
-import { toast } from "@/components/ui/toast"
 
-// 🔹 Schemas por step
-const formSchema = [
-  z.object({
-    title: z.string().min(3, "El título es requerido"),
-    description: z.string().min(5, "Agrega una breve descripción"),
-  }),
-  z.object({
-    date: z.string().nonempty("Selecciona una fecha"),
-    time: z.string().nonempty("Selecciona la hora"),
-    duration: z.string().nonempty("Duración requerida"),
-    address: z.string().min(5, "La dirección es requerida"),
-  }),
-  z.object({
-    serviceType: z.union([z.literal("por_horas"), z.literal("tiempo_completo"), z.literal("tutoria")]),
-    requirements: z.string().optional(),
-  }),
-]
+// 🔹 Importa la lógica desde el service
+import { useBookingForm } from "@/services/bookingFormService"
 
-const stepIndex = ref(1)
-const steps = [
-  { step: 1, title: "Datos del servicio", description: "Título y descripción" },
-  { step: 2, title: "Información logística", description: "Fecha, hora y ubicación" },
-  { step: 3, title: "Preferencias", description: "Tipo de servicio y requerimientos" },
-]
-
-function onSubmit(values: any) {
-  toast({
-    title: "Servicio creado correctamente 🎉",
-    description: h("pre", { class: "mt-2 w-[340px] rounded-md bg-slate-950 p-4" }, 
-      h("code", { class: "text-white" }, JSON.stringify(values, null, 2))
-    ),
-  })
-  // Aquí puedes hacer el fetch/axios.post a tu backend Laravel
-}
+const { formSchema, stepIndex, steps, onSubmit, toTypedSchema } = useBookingForm()
 </script>
 
 <template>
   <Form
     v-slot="{ meta, values, validate }"
-    as="" keep-values :validation-schema="toTypedSchema(formSchema[stepIndex - 1])"
+    as=""
+    keep-values
+    :validation-schema="toTypedSchema(formSchema[stepIndex - 1])"
   >
-    <Stepper v-slot="{ isNextDisabled, isPrevDisabled, nextStep, prevStep }" v-model="stepIndex" class="block w-full">
+    <Stepper
+      v-slot="{ isNextDisabled, isPrevDisabled, nextStep, prevStep }"
+      v-model="stepIndex"
+      class="block w-full"
+    >
       <form
         @submit="(e) => {
           e.preventDefault()
@@ -95,10 +67,16 @@ function onSubmit(values: any) {
               </Button>
             </StepperTrigger>
             <div class="mt-5 flex flex-col items-center text-center">
-              <StepperTitle :class="[state === 'active' && 'text-primary']" class="text-sm font-semibold transition lg:text-base">
+              <StepperTitle
+                :class="[state === 'active' && 'text-primary']"
+                class="text-sm font-semibold transition lg:text-base"
+              >
                 {{ step.title }}
               </StepperTitle>
-              <StepperDescription :class="[state === 'active' && 'text-primary']" class="sr-only text-xs text-muted-foreground transition md:not-sr-only lg:text-sm">
+              <StepperDescription
+                :class="[state === 'active' && 'text-primary']"
+                class="sr-only text-xs text-muted-foreground transition md:not-sr-only lg:text-sm"
+              >
                 {{ step.description }}
               </StepperDescription>
             </div>
@@ -195,7 +173,11 @@ function onSubmit(values: any) {
               <FormItem>
                 <FormLabel>Requerimientos especiales</FormLabel>
                 <FormControl>
-                  <Input type="text" placeholder="Opcional (ej. inglés, experiencia...)" v-bind="componentField" />
+                  <Input
+                    type="text"
+                    placeholder="Opcional (ej. inglés, experiencia...)"
+                    v-bind="componentField"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -209,7 +191,13 @@ function onSubmit(values: any) {
             Atrás
           </Button>
           <div class="flex items-center gap-3">
-            <Button v-if="stepIndex !== steps.length" :type="meta.valid ? 'button' : 'submit'" :disabled="isNextDisabled" size="sm" @click="meta.valid && nextStep()">
+            <Button
+              v-if="stepIndex !== steps.length"
+              :type="meta.valid ? 'button' : 'submit'"
+              :disabled="isNextDisabled"
+              size="sm"
+              @click="meta.valid && nextStep()"
+            >
               Siguiente
             </Button>
             <Button v-if="stepIndex === steps.length" size="sm" type="submit">
