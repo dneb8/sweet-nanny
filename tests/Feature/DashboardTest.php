@@ -9,9 +9,9 @@ test('guests are redirected to the login page', function () {
 });
 
 test('authenticated users can visit the dashboard', function () {
-    $user = User::factory()->create([
-        'role' => RoleEnum::TUTOR->value,
-    ]);
+    $user = User::factory()->create();
+    $user->assignRole(RoleEnum::TUTOR->value); // Asignar rol con Spatie
+
     $this->actingAs($user);
 
     $response = $this->get('/dashboard');
