@@ -16,7 +16,6 @@ class NannyFactory extends Factory
             'bio' => $this->faker->paragraph(),
             'availability' => $this->faker->boolean(),
             'start_date' => $this->faker->date(),
-            'address_id' => Address::factory(), 
         ];
     }
 

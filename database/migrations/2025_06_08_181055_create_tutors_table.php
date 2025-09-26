@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->ulid('ulid')->unique();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('address_id')->nullable()->constrained()->nullOnDelete();
             $table->string('emergency_contact')->nullable();
             $table->string('emergency_number')->nullable();
             $table->softDeletes();
