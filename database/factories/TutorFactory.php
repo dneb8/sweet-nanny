@@ -23,7 +23,6 @@ class TutorFactory extends Factory
     {
         return [
             'user_id' => User::factory(), 
-            'address_id' => Address::factory(),
             'emergency_contact' => $this->faker->optional()->name(),
             'emergency_number' => $this->faker->optional()->phoneNumber(),
         ];

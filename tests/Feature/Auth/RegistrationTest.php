@@ -1,5 +1,9 @@
 <?php
 
+use App\Enums\User\RoleEnum;
+use App\Models\User;
+use Database\Seeders\RoleSeeder;
+
 test('registration screen can be rendered', function () {
     $response = $this->get('/register');
 
@@ -7,12 +11,21 @@ test('registration screen can be rendered', function () {
 });
 
 test('new users can register', function () {
+    // sembramos los roles de Spatie primero
+    $this->seed(RoleSeeder::class);
+
     $response = $this->post('/register', [
         'name' => 'Test User',
-        'email' => 'test@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
+        'email' => 'testuser@example.com',
+        'password' => 'password123!',
+        'password_confirmation' => 'password123!',
     ]);
+
+    // obtenemos al usuario recién creado
+    $user = User::where('email', 'testuser@example.com')->first();
+
+    // le asignamos el rol de tutor con Spatie
+    $user->assignRole(RoleEnum::TUTOR->value);
 
     $this->assertAuthenticated();
     $response->assertRedirect(route('dashboard', absolute: false));

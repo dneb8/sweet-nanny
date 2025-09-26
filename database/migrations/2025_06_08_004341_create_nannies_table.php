@@ -21,10 +21,7 @@ public function up(): void
         $table->text('bio')->nullable();
         $table->boolean('availability')->nullable();
         $table->date('start_date')->nullable();
-
-        // address_id con relación a addresses
-        $table->foreignId('address_id')->nullable()->constrained()->onDelete('cascade');
-
+        
         $table->softDeletes();
         $table->timestamps();
     });

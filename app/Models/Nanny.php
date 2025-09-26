@@ -50,12 +50,6 @@ class Nanny extends Model
     {
         return $this->hasMany(BookingAppointment::class);
     }
-
-    public function address()
-    {
-        return $this->belongsTo(Address::class);
-    }
-
     public function reviews()
     {
     return $this->morphMany(Review::class, 'reviewable');}
