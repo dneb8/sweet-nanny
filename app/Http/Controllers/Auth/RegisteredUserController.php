@@ -43,7 +43,8 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $user->assignRole(RoleEnum::TUTOR->value);  
+        $user->assignRole(RoleEnum::TUTOR->value); 
+        $user->save(); 
 
         Auth::login($user);
 
