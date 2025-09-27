@@ -9,7 +9,6 @@ import {
   StepperTrigger,
 } from "@/components/ui/stepper"
 
-import { Check, Circle, Dot } from "lucide-vue-next"
 
 import StepBooking from "../components/StepBooking.vue"
 import StepAppointments from "../components/StepAppointments.vue"
@@ -27,7 +26,6 @@ const {
   <div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
     <Stepper v-model="stepIndex" class="flex flex-col">
       <form @submit.prevent="onSubmit" class="flex flex-col gap-8">
-        <!-- HEADER: centrado y ancho (flex-wrap como tu ejemplo) -->
         <div class="w-full max-w-6xl mx-auto">
           <div class="flex flex-wrap justify-center gap-4">
             <StepperItem
@@ -76,7 +74,7 @@ const {
 
         <!-- CONTENT: centrado y un poco más angosto -->
         <div class="w-full">
-          <div class="max-w-3xl mx-auto bg-muted/30 rounded-xl p-4 sm:p-6 shadow-inner">
+          <div class="max-w-4xl mx-auto bg-muted/30 rounded-xl p-4 sm:p-6 shadow-inner">
             <StepBooking v-if="stepIndex === 1" />
             <StepAppointments v-if="stepIndex === 2" />
             <StepAddress v-if="stepIndex === 3" />

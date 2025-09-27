@@ -8,7 +8,7 @@ export function useBookingForm() {
   // 🧭 Stepper
   const stepIndex = ref(1)
   const steps = [
-  { step: 1, title: "Servicio",  description: "Describe tu servicio y si será recurrente", icon: "solar:clipboard-text-broken" },
+  { step: 1, title: "Servicio",  description: "Describe tu servicio",                      icon: "solar:clipboard-text-broken" },
   { step: 2, title: "Citas",     description: "Selecciona fecha, hora y duración",         icon: "solar:calendar-linear" },
   { step: 3, title: "Dirección", description: "Indica el lugar del servicio",              icon: "solar:map-point-linear" },
 ]
