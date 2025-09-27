@@ -1,7 +1,4 @@
 <script setup lang="ts">
-// import AppLogoIcon from '@/components/AppLogoIcon.vue';
-// import { Link } from '@inertiajs/vue3';
-
 defineProps<{
     title?: string;
     description?: string;
@@ -9,7 +6,8 @@ defineProps<{
 </script>
 
 <template>
-    <div class="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
+
+     <div class="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
         <div class="w-full max-w-sm">
             <div class="flex flex-col gap-8">
                 <div class="flex flex-col items-center gap-4">
@@ -28,4 +26,24 @@ defineProps<{
             </div>
         </div>
     </div>
+
+  <!-- Layout principal: pantalla completa -->
+  <div class="flex flex-col min-h-screen w-full bg-background">
+    
+    <!-- HEADER: siempre 100% ancho -->
+    <header class="w-full bg-[#f4c0b9] shadow-md h-16 flex items-center px-6">
+      <h1 class="text-lg font-semibold text-white">{{ title }}</h1>
+    </header>
+
+    <!-- CONTENIDO -->
+    <main class="flex-1 flex flex-col md:flex-row w-full">
+      <!-- SLOT: aquí entra login o register -->
+      <section class="flex-1 flex items-center justify-center p-8 md:p-12 lg:p-16">
+        <slot />
+      </section>
+    </main>
+
+ 
+
+  </div>
 </template>
