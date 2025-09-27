@@ -7,7 +7,7 @@ import Heading from '@/components/Heading.vue';
 <template>
      <Head title="Nuevo Servicio" />
 
-     <Heading icon='ri:user-add-line' title="Crear Usuario"/>
+     <Heading icon='fluent:calendar-add-24-regular' title="Crear Servicio"/>
 
      <BookingForm/>
 </template>

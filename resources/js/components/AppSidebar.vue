@@ -39,7 +39,7 @@ const bookingsNavItems: NavItem[] = [
     icon: 'ph:baby-carriage',
   },
   {
-    title: 'Crear servicio',
+    title: 'Crear Servicio',
     href: '/bookings/create',
     icon: 'fluent:calendar-add-24-regular',
   },

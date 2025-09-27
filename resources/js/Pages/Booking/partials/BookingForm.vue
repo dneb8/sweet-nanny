@@ -1,213 +1,119 @@
 <script setup lang="ts">
-import { ref } from "vue"
-import { Check, Circle, Dot } from "lucide-vue-next"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Stepper, StepperDescription, StepperItem, StepperSeparator, StepperTitle, StepperTrigger } from "@/components/ui/stepper"
+import {
+  Stepper,
+  StepperDescription,
+  StepperItem,
+  StepperSeparator,
+  StepperTitle,
+  StepperTrigger,
+} from "@/components/ui/stepper"
 
-// tipos correctos
-import type { Booking } from '@/types/Booking'
-import type { BookingAppointment } from '@/types/BookingAppointment'
+import { Check, Circle, Dot } from "lucide-vue-next"
 
-// estado booking
-const booking = ref<Booking>({
-  id: 0,
-  description: "",
-  recurrent: false,
-  created_at: "",
-  tutor_id: 0,
-  address_id: 0,
-})
+import StepBooking from "../components/StepBooking.vue"
+import StepAppointments from "../components/StepAppointments.vue"
+import StepAddress from "../components/StepAddress.vue"
 
-// estado appointments
-const appointments = ref<BookingAppointment[]>([
-  {
-    id: 0,
-    booking_id: 0,
-    nanny_id: null,
-    price_id: 0,
-    start_date: "",
-    end_date: "",
-    status: "pending",
-    payment_status: "unpaid",
-    extra_hours: 0,
-    total_cost: 0,
-    created_at: "",
-    updated_at: "",
-  },
-])
+import { useBookingForm } from "@/services/bookingFormService"
 
-// stepper
-const stepIndex = ref(1)
-const steps = [
-  { step: 1, title: "Datos del Booking", description: "Información básica" },
-  { step: 2, title: "Citas", description: "Agendar appointments" },
-]
-
-const addAppointment = () => {
-  appointments.value.push({
-    id: 0,
-    booking_id: 0,
-    nanny_id: null,
-    price_id: 0,
-    start_date: "",
-    end_date: "",
-    status: "pending",
-    payment_status: "unpaid",
-    extra_hours: 0,
-    total_cost: 0,
-    created_at: "",
-    updated_at: "",
-  })
-}
-
-const onSubmit = () => {
-  if (!booking.value.recurrent && appointments.value.length < 10) {
-    alert("Debes registrar al menos 10 citas cuando no es recurrente.")
-    return
-  }
-
-  console.log("Payload a enviar:", {
-    booking: booking.value,
-    appointments: appointments.value,
-  })
-}
+const {
+  stepIndex, steps, nextStep, prevStep,
+  onSubmit, isSubmitting,
+} = useBookingForm()
 </script>
 
 <template>
-  <Stepper v-slot="{ isNextDisabled, isPrevDisabled, nextStep, prevStep }" v-model="stepIndex" class="block w-full">
-    <form
-      @submit.prevent="() => {
-        if (stepIndex === steps.length) {
-          onSubmit()
-        }
-      }"
-    >
-      <!-- 🔹 Stepper Header -->
-      <div class="flex w-full flex-start gap-2">
-        <StepperItem
-          v-for="step in steps"
-          :key="step.step"
-          v-slot="{ state }"
-          class="relative flex w-full flex-col items-center justify-center"
-          :step="step.step"
-        >
-          <StepperSeparator
-            v-if="step.step !== steps[steps.length - 1].step"
-            class="absolute left-[calc(50%+20px)] right-[calc(-50%+10px)] top-5 block h-0.5 shrink-0 rounded-full bg-muted group-data-[state=completed]:bg-primary"
-          />
-          <StepperTrigger as-child>
-            <Button
-              :variant="state === 'completed' || state === 'active' ? 'default' : 'outline'"
-              size="icon"
-              class="z-10 rounded-full shrink-0"
-              :class="[state === 'active' && 'ring-2 ring-ring ring-offset-2 ring-offset-background']"
+  <div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
+    <Stepper v-model="stepIndex" class="flex flex-col">
+      <form @submit.prevent="onSubmit" class="flex flex-col gap-8">
+        <!-- HEADER: centrado y ancho (flex-wrap como tu ejemplo) -->
+        <div class="w-full max-w-6xl mx-auto">
+          <div class="flex flex-wrap justify-center gap-4">
+            <StepperItem
+              v-for="step in steps"
+              :key="step.step"
+              v-slot="{ state }"
+              class="relative flex flex-col items-center text-center flex-1 min-w-[80px]"
+              :step="step.step"
             >
-              <Check v-if="state === 'completed'" class="size-5" />
-              <Circle v-if="state === 'active'" />
-              <Dot v-if="state === 'inactive'" />
-            </Button>
-          </StepperTrigger>
-          <div class="mt-5 flex flex-col items-center text-center">
-            <StepperTitle :class="[state === 'active' && 'text-primary']" class="text-sm font-semibold transition lg:text-base">
-              {{ step.title }}
-            </StepperTitle>
-            <StepperDescription :class="[state === 'active' && 'text-primary']" class="sr-only text-xs text-muted-foreground transition md:not-sr-only lg:text-sm">
-              {{ step.description }}
-            </StepperDescription>
-          </div>
-        </StepperItem>
-      </div>
+              <StepperSeparator
+                v-if="step.step !== steps[steps.length - 1].step"
+                class="absolute left-1/2 right-[-50%] top-5 h-0.5 shrink-0 rounded-full bg-muted
+                      group-data-[state=completed]:bg-primary hidden sm:block"
+              />
+              <StepperTrigger as-child>
+                <Button
+                  :variant="state === 'completed' || state === 'active' ? 'default' : 'outline'"
+                  size="icon"
+                  class="z-10 rounded-full shrink-0 transition"
+                  :class="[state === 'active' && 'ring-2 ring-primary ring-offset-2']"
+                > 
+                  <Icon
+                    :icon="step.icon"
+                    class="w-5 h-5 transition"
+                    :class="[
+                      state === 'inactive' && 'opacity-60',
+                      state === 'active' && 'opacity-100',
+                      state === 'completed' && 'opacity-100',
+                    ]"
+                  />
+                </Button>
+              </StepperTrigger>
 
-      <!-- 🔹 Step Content -->
-      <div class="flex flex-col gap-4 mt-4">
-        <!-- Step 1 Booking -->
-        <template v-if="stepIndex === 1">
-          <div>
-            <label>Descripción</label>
-            <Input v-model="booking.description" type="text" placeholder="Detalle del booking" />
+              <StepperTitle
+                :class="[state === 'active' && 'text-primary']"
+                class="mt-3 text-sm font-medium"
+              >
+                {{ step.title }}
+              </StepperTitle>
+              <StepperDescription class="text-xs text-muted-foreground hidden sm:block">
+                {{ step.description }}
+              </StepperDescription>
+            </StepperItem>
           </div>
-          <div>
-            <label>Tutor ID</label>
-            <Input v-model="booking.tutor_id" type="number" min="1" />
-          </div>
-          <div>
-            <label>Address ID</label>
-            <Input v-model="booking.address_id" type="number" min="1" />
-          </div>
-          <div class="flex items-center gap-2">
-            <input type="checkbox" v-model="booking.recurrent" id="recurrent" />
-            <label for="recurrent">¿Es recurrente?</label>
-          </div>
-        </template>
-
-        <!-- Step 2 BookingAppointments -->
-        <template v-if="stepIndex === 2">
-          <div v-if="booking.recurrent">
-            <h3 class="font-semibold">Cita única</h3>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label>Fecha inicio</label>
-                <Input v-model="appointments[0].start_date" type="datetime-local" />
-              </div>
-              <div>
-                <label>Fecha fin</label>
-                <Input v-model="appointments[0].end_date" type="datetime-local" />
-              </div>
-            </div>
-          </div>
-
-          <div v-else>
-            <h3 class="font-semibold">Múltiples citas (mínimo 10)</h3>
-            <div
-              v-for="(appt, i) in appointments"
-              :key="i"
-              class="grid grid-cols-2 gap-4 mb-3 border p-2 rounded"
-            >
-              <div>
-                <label>Fecha inicio</label>
-                <Input v-model="appt.start_date" type="datetime-local" />
-              </div>
-              <div>
-                <label>Fecha fin</label>
-                <Input v-model="appt.end_date" type="datetime-local" />
-              </div>
-            </div>
-            <Button size="sm" variant="outline" @click.prevent="addAppointment">
-              + Agregar cita
-            </Button>
-            <p v-if="appointments.length < 10" class="text-red-500 text-sm mt-1">
-              Debes registrar al menos 10 citas.
-            </p>
-          </div>
-        </template>
-      </div>
-
-      <!-- 🔹 Buttons -->
-      <div class="flex items-center justify-between mt-4">
-        <Button :disabled="stepIndex === 1" variant="outline" size="sm" @click="prevStep()">
-          Atrás
-        </Button>
-        <div class="flex items-center gap-3">
-          <Button
-            v-if="stepIndex !== steps.length"
-            type="button"
-            size="sm"
-            @click="nextStep()"
-          >
-            Siguiente
-          </Button>
-          <Button
-            v-if="stepIndex === steps.length"
-            size="sm"
-            type="submit"
-            :disabled="!booking.recurrent && appointments.length < 10"
-          >
-            Crear booking
-          </Button>
         </div>
-      </div>
-    </form>
-  </Stepper>
+
+        <!-- CONTENT: centrado y un poco más angosto -->
+        <div class="w-full">
+          <div class="max-w-3xl mx-auto bg-muted/30 rounded-xl p-4 sm:p-6 shadow-inner">
+            <StepBooking v-if="stepIndex === 1" />
+            <StepAppointments v-if="stepIndex === 2" />
+            <StepAddress v-if="stepIndex === 3" />
+          </div>
+        </div>
+
+        <!-- BUTTONS -->
+        <div class="max-w-4xl mx-auto w-full flex justify-between items-center">
+          <Button
+            variant="outline"
+            size="sm"
+            @click.prevent="prevStep()"
+            :disabled="stepIndex === 1"
+          >
+            Atrás
+          </Button>
+          <div class="flex gap-2">
+            <Button
+              v-if="stepIndex !== steps.length"
+              type="button"
+              size="sm"
+              @click="nextStep()"
+            >
+              Siguiente
+            </Button>
+            <Button
+              v-else
+              size="sm"
+              type="submit"
+              :disabled="isSubmitting"
+              class="bg-primary text-primary-foreground"
+            >
+              Crear servicio
+            </Button>
+          </div>
+        </div>
+      </form>
+    </Stepper>
+  </div>
 </template>
