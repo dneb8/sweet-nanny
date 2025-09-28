@@ -15,7 +15,7 @@ class Child extends Model
 
     protected $casts = [
         'kinkship' => KinkshipEnum::class,
-        'birthdate' => 'date',
+        'birthdate' => 'date:Y-m-d',
     ];
 
     protected $fillable = [
