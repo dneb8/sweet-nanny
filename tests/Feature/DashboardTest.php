@@ -18,4 +18,4 @@ test('authenticated users can visit the dashboard', function () {
 
     $response = $this->get('/dashboard');
     $response->assertStatus(200);
-})->skip('Se omite temporalmente porque el dashboard no está listo.');;
+});
