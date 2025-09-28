@@ -38,7 +38,7 @@ class NannyController extends Controller
                 'careers',         
                 'qualities',
                 'reviews',
-                'bookingServices.booking', 
+                'bookingAppointments.booking', 
             ]),
         ]);
     }
