@@ -24,20 +24,20 @@ const fmtDateTime = (value?: string | Date | null) => {
 </script>
 
 <template>
-  <Head title="Reservas" />
+  <Head title="Servicios" />
 
   <div class="mb-4 flex items-center justify-between">
-    <Heading icon="ri:calendar-schedule-line" title="Listado de Reservas" />
+    <Heading icon="ri:calendar-schedule-line" title="Listado de Servicios" />
     <Link :href="route('bookings.create')">
       <Button class="gap-2">
         <Icon icon="ri:calendar-event-line" width="18" height="18" />
-        Crear Reserva
+        Crear Servicio
       </Button>
     </Link>
   </div>
 
   <div v-if="(bookings?.data ?? []).length === 0" class="rounded-lg border p-6 text-center text-sm text-muted-foreground">
-    No hay reservas todavía.
+    No hay servicios todavía.
   </div>
 
   <div v-else class="overflow-x-auto rounded-lg border">
@@ -79,7 +79,7 @@ const fmtDateTime = (value?: string | Date | null) => {
           <td class="px-4 py-3 text-right">
           <Button
             size="sm"
-            class="gap-2"
+            class="gap-2 bg-background/50 text-foreground hover:bg-background/70"
             @click="router.get(route('bookings.show', booking.id))"
           >
             <Icon icon="ri:eye-line" />

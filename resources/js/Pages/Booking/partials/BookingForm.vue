@@ -14,45 +14,54 @@ import type { Tutor } from "@/types/Tutor"
 
 import { useBookingForm, useBoundField } from "@/services/bookingFormService"
 
-// ---- Tipos locales para inicialización desde el servidor ----
+// Tipos de props
 type AppointmentDTO = { start_date: string; end_date: string; duration: number }
-type InitialBooking = {
-  booking: {
-    tutor_id: number
-    address_id: number | null
-    description: string
-    recurrent: boolean
-    child_ids: number[]
+type InitialBookingFromServer = {
+  booking?: {
+    tutor_id?: number
+    address_id?: number | null
+    description?: string
+    recurrent?: boolean
+    child_ids?: Array<number | string>
   }
-  bookingAppointments: AppointmentDTO[]
-  address: {
-    postal_code: string
-    street: string
-    neighborhood: string
-    type: string
-    other_type: string
-    internal_number: string
+  appointments?: AppointmentDTO[]
+  bookingAppointments?: AppointmentDTO[]
+  address?: {
+    postal_code?: string
+    street?: string
+    neighborhood?: string
+    type?: string
+    other_type?: string
+    internal_number?: string
   }
+  // Cuando mandas el modelo plano $booking:
+  tutor_id?: number
+  description?: string
+  recurrent?: boolean | number
+  address_id?: number | null
+  children?: Array<{ id: number }>
 }
 
 const props = defineProps<{
   tutor: Tutor & { addresses?: Address[]; children?: Child[] }
   kinkships: string[]
-  initialBooking?: InitialBooking | null
-  // opcionales para modo edición (no estrictos, pero útiles)
+  initialBooking?: InitialBookingFromServer | null
   mode?: "edit" | "create"
   bookingId?: number
 }>()
 
-const { stepIndex, steps, nextStep, prevStep, onSubmit, isSubmitting, hydrateWithServerValues } = useBookingForm()
+const {
+  stepIndex, steps, nextStep, prevStep, onSubmit, isSubmitting, hydrateWithServerValues,
+} = useBookingForm({
+  mode: props.mode ?? "create",
+  bookingId: props.bookingId,
+})
 
-// ⚠️ IMPORTANTE: limpiar reactividad ANTES de hidratar para que no falle structuredClone
 if (props.initialBooking) {
-  const safeInitial = JSON.parse(JSON.stringify(props.initialBooking)) as InitialBooking
-  hydrateWithServerValues(safeInitial)
+  const safe = JSON.parse(JSON.stringify(props.initialBooking)) as InitialBookingFromServer
+  hydrateWithServerValues(safe)
 }
 
-// setear tutor_id por default al montar
 const tutorIdField = useBoundField<number>("booking.tutor_id")
 onMounted(() => {
   tutorIdField.value.value = Number(props.tutor.id)

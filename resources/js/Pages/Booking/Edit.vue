@@ -10,43 +10,22 @@ import type { Tutor } from '@/types/Tutor'
 import type { Booking } from '@/types/Booking'
 import type { BookingAppointment } from '@/types/BookingAppointment'
 
-// Tipos compartidos con el formulario
-type AppointmentDTO = { start_date: string; end_date: string; duration: number }
-type InitialBooking = {
-  booking: {
-    tutor_id: number
-    address_id: number | null
-    description: string
-    recurrent: boolean
-    child_ids: number[]
-  }
-  bookingAppointments: AppointmentDTO[]
-  address: {
-    postal_code: string
-    street: string
-    neighborhood: string
-    type: string
-    other_type: string
-    internal_number: string
-  }
-}
-
 const props = defineProps<{
   booking: Booking & {
     tutor: Tutor & { addresses?: Address[]; children?: Child[] }
-    children: Child[]                     // niños asociados al booking
-    address?: Address | null              // dirección seleccionada en el booking
+    children: Child[]
+    address?: Address | null
     bookingAppointments: BookingAppointment[]
   }
   kinkships: string[]
-  initialBooking: InitialBooking
+  initialBooking: any
 }>()
 
-// Asegurar que el tutor que pasamos al form tenga arrays definidos para addresses/children
+// Tutor con fallback de children/address desde el booking
 const tutorForForm = computed(() => {
   const t = props.booking.tutor as Tutor & { addresses?: Address[]; children?: Child[] }
   const addresses = t.addresses ?? (props.booking.address ? [props.booking.address as Address] : [])
-  const children = t.children ?? props.booking.children ?? []
+  const children  = t.children  ?? props.booking.children ?? []
   return { ...t, addresses, children }
 })
 </script>
@@ -57,9 +36,9 @@ const tutorForForm = computed(() => {
 
   <BookingForm
     mode="edit"
+    :booking-id="props.booking.id"
     :tutor="tutorForForm"
     :kinkships="props.kinkships"
     :initial-booking="props.initialBooking"
-    :booking-id="props.booking.id"
   />
 </template>

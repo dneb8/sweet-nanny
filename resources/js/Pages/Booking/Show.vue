@@ -20,34 +20,34 @@ const fmtDateTime = (value?: string | Date | null) => {
 </script>
 
 <template>
-  <Head :title="`Reserva #${booking.id}`" />
+  <Head :title="`Servicio #${booking.id}`" />
 
   <!-- Breadcrumb -->
   <nav class="mb-3 text-sm text-muted-foreground">
-    <Link :href="route('bookings.index')" class="hover:underline">Reservas</Link>
+    <Link :href="route('bookings.index')" class="hover:underline">Servicios</Link>
     <span class="mx-2">/</span>
     <span class="text-foreground font-medium">#{{ booking.id }}</span>
   </nav>
 
   <!-- Header -->
   <div class="mb-6 flex items-center justify-between">
-    <Heading icon="ri:file-list-3-line" :title="`Reserva #${booking.id}`" />
+    <Heading icon="ri:file-list-3-line" :title="`Servicio #${booking.id}`" />
     <div class="flex gap-2">
-      <Link :href="route('bookings.edit', booking.id)">
+      <!-- <Link :href="route('bookings.edit', booking.id)">
         <Button variant="secondary" class="gap-2">
           <Icon icon="ri:edit-2-line" />
           Editar
         </Button>
-      </Link>
+      </Link> -->
       <!-- Ajusta acción de eliminar si tienes form -->
       <!-- <Button variant="destructive" class="gap-2"><Icon icon="ri:delete-bin-6-line" />Eliminar</Button> -->
     </div>
   </div>
 
   <!-- Grid principal -->
-  <div class="grid gap-6 md:grid-cols-3">
+  <div class="grid gap-6 md:grid-cols-3 ">
     <!-- Columna izquierda: resumen -->
-    <section class="rounded-lg border p-4 md:col-span-2">
+    <section class="rounded-lg border p-4 md:col-span-2 bg-background/50">
       <h2 class="mb-3 text-base font-semibold">Resumen</h2>
       <div class="grid gap-4 sm:grid-cols-2">
         <div>
@@ -103,17 +103,17 @@ const fmtDateTime = (value?: string | Date | null) => {
             Volver al listado
           </Button>
         </Link>
-        <Link :href="route('bookings.edit', booking.id)">
+        <!-- <Link :href="route('bookings.edit', booking.id)">
           <Button class="w-full gap-2">
             <Icon icon="ri:edit-2-line" />
-            Editar reserva
+            Editar servicio
           </Button>
-        </Link>
+        </Link> -->
       </div>
     </aside>
 
     <!-- Lista de citas -->
-    <section class="md:col-span-3 rounded-lg border p-4">
+    <section class="md:col-span-3 rounded-lg border p-4 bg-background/50">
       <div class="mb-3 flex items-center justify-between">
         <h2 class="text-base font-semibold">Citas del servicio</h2>
         <span class="text-xs text-muted-foreground">
@@ -122,7 +122,7 @@ const fmtDateTime = (value?: string | Date | null) => {
       </div>
 
       <div v-if="(booking.booking_appointments ?? []).length === 0" class="rounded-md border p-4 text-sm text-muted-foreground">
-        No hay citas registradas para esta reserva.
+        No hay citas registradas para esta servicio.
       </div>
 
       <div v-else class="grid gap-3">

@@ -123,7 +123,7 @@ watch(desc, (v) => console.log("[ChildPicker] booking.description ->", v), { imm
             <Icon icon="lucide:users" /> Niños
           </div>
           <p class="text-xs text-muted-foreground max-w-md font-light italic">
-            Selecciona entre 1 y 4 niños para la reserva. Si no aparece en la lista, agrégalo.
+            Selecciona entre 1 y 4 niños para la servicio. Si no aparece en la lista, agrégalo.
           </p>
         </div>
         <Button size="sm" variant="outline" @click="openCreate">
@@ -147,7 +147,7 @@ watch(desc, (v) => console.log("[ChildPicker] booking.description ->", v), { imm
                 (!isSelected(c.id) && reachedLimit) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
               ]"
               role="button"
-              
+
               tabindex="0"
               @click="toggleSelect(c.id)"
               @keydown.enter.prevent="toggleSelect(c.id)"
