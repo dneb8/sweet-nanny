@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Nanny;
 use App\Http\Requests\Nanny\{CreateNannyRequest, UpdateNannyRequest};
 use App\Services\NannyService;
+use App\Models\Quality; 
 use Inertia\{Inertia, Response};
 use App\Http\Requests\Nanny\AsyncQualitiesRequest;
 use Illuminate\Http\JsonResponse;
@@ -75,14 +76,23 @@ public function asyncQualities(AsyncQualitiesRequest $request, Nanny $nanny): Js
 {
     $validated = $request->validated();
 
-    // Sync asegura que se agregan nuevas y se eliminan las que no están en el array
-    $nanny->qualities()->sync($validated['qualities']);
+    // Normalizar nombres: quitar espacios extra y mayúsculas consistentes
+    $qualitiesFromRequest = array_map('trim', $validated['qualities']);
 
-    // Devolver las cualidades actualizadas
+    // Obtener IDs de las qualities existentes en DB que coincidan con los nombres
+    $qualityIds = Quality::whereIn('name', $qualitiesFromRequest)->pluck('id')->toArray();
+
+    // Sync con la relación belongsToMany
+    $nanny->qualities()->sync($qualityIds);
+
+    // Recargar la relación para devolver los datos actualizados
+    $nanny->load('qualities');
+
     return response()->json([
         'message' => 'Cualidades actualizadas correctamente',
-        'qualities' => $nanny->qualities()->pluck('name'), // solo los nombres
+        'qualities' => $nanny->qualities->pluck('name'), // Array de strings, igual que tu frontend espera
     ]);
 }
+
 
 }
