@@ -18,7 +18,7 @@ class Price extends Model
     ];
 
     // Relación uno a muchos con BookingAppointment
-    public function bookingServices()
+    public function bookingAppointments()
     {
         return $this->hasMany(BookingAppointment::class);
     }

@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use phpDocumentor\Reflection\Types\Nullable;
 
 return new class extends Migration
 {
@@ -14,12 +15,12 @@ return new class extends Migration
     Schema::create('bookings', function (Blueprint $table) {
         $table->id();
 
-        $table->text('description');
+        $table->text('description')->nullable();
         $table->boolean('recurrent')->default(false);
         $table->timestamps();
 
-        $table->foreignId('tutor_id')->constrained()->onDelete('cascade');
-        $table->foreignId('address_id')->constrained()->onDelete('cascade');
+        $table->foreignId('tutor_id')->constrained()->onDelete('cascade')->nullable();
+        $table->foreignId('address_id')->constrained()->onDelete('cascade')->nullable();
     });
 }
 

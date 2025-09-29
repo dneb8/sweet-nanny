@@ -13,7 +13,7 @@ return new class extends Migration
 
             $table->foreignId('booking_id')->constrained('bookings')->cascadeOnDelete();
             $table->foreignId('nanny_id')->nullable()->constrained('nannies')->cascadeOnDelete();
-            $table->foreignId('price_id')->constrained('prices')->cascadeOnDelete();
+            // $table->foreignId('price_id')->constrained('prices')->cascadeOnDelete();
 
             $table->dateTime('start_date');
             $table->dateTime('end_date');

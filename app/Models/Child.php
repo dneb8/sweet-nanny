@@ -37,4 +37,11 @@ class Child extends Model
     {
         return $this->belongsTo(Tutor::class); 
     }
+
+    // Child ↔ Booking (N:N)
+    public function bookings()
+    {
+        return $this->belongsToMany(Booking::class, 'booking_child', 'child_id', 'booking_id')
+                    ->withTimestamps();
+    }
 }

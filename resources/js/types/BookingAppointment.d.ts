@@ -2,7 +2,7 @@ export interface BookingAppointment {
   id: number
   booking_id: number
   nanny_id?: number | null
-  price_id: number
+  // price_id: number
 
   start_date: string 
   end_date: string   

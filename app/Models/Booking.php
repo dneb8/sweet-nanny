@@ -17,7 +17,7 @@ class Booking extends Model
     ];
 
     // Relación uno a muchos con BookingAppointment
-    public function bookingServices()
+    public function bookingAppointments()
     {
         return $this->hasMany(BookingAppointment::class);
     }
@@ -32,5 +32,12 @@ class Booking extends Model
     public function address()
     {
         return $this->belongsTo(Address::class);
+    }
+
+    // Relación con Child (cada booking puede tener varios niños)
+    public function children()
+    {
+        return $this->belongsToMany(Child::class, 'booking_child', 'booking_id', 'child_id')
+                    ->withTimestamps();
     }
 }

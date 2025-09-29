@@ -7,8 +7,6 @@ use App\Http\Requests\User\{CreateUserRequest, UpdateUserRequest};
 use App\Models\{User};
 use App\Services\UserService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 use Inertia\{Inertia, Response};
 
 class UserController extends Controller
