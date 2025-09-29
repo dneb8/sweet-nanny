@@ -56,9 +56,14 @@ class User extends Authenticatable
         return $this->hasOne(Tutor::class);
     }
 
-        public function nanny()
+    public function nanny()
     {
         return $this->hasOne(Nanny::class);
+    }
+
+    public function address()
+    {
+        return $this->belongsTo(Address::class);
     }
 
     public function uniqueIds()

@@ -8,11 +8,11 @@ import SettingsLayout from '@/layouts/settings/Layout.vue';
 </script>
 
 <template>
-    <Head title="Appearance settings" />
+    <Head title="Configuración de apariencia" />
 
     <SettingsLayout>
         <div class="space-y-6">
-            <HeadingSmall title="Appearance settings" description="Update your account's appearance settings" />
+            <HeadingSmall title="Configuración de apariencia" description="Actualiza la configuración de apariencia de tu cuenta" />
             <AppearanceTabs />
         </div>
     </SettingsLayout>
