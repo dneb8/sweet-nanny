@@ -19,8 +19,8 @@ return new class extends Migration
              $table->unsignedBigInteger('nanny_id');
              $table->unsignedBigInteger('quality_id');
 
-             // $table->foreign('nanny_id')->references('id')->on('nannies')->onDelete('cascade');
-             // $table->foreign('quality_id')->references('id')->on('qualities')->onDelete('cascade');
+             $table->foreign('nanny_id')->references('id')->on('nannies')->onDelete('cascade'); //DESCOMENTADO
+             $table->foreign('quality_id')->references('id')->on('qualities')->onDelete('cascade'); //DESCOMENTADO
 
              $table->timestamps();
         });

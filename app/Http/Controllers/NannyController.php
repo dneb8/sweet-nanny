@@ -9,6 +9,7 @@ use App\Models\Quality;
 use Inertia\{Inertia, Response};
 use App\Http\Requests\Nanny\AsyncQualitiesRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 
 class NannyController extends Controller

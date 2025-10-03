@@ -39,6 +39,7 @@ class Nanny extends Model
     {
          return $this->belongsToMany(Quality::class, 'nanny_qualities')->withTimestamps();
     }
+    
 
     public function user()
     {
