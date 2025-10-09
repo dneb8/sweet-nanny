@@ -71,10 +71,17 @@ const deleteCareer = () => {
         >
           <!-- Info -->
           <div>
-            <p class="font-medium">{{ career.name }}</p>
-            <p class="text-sm text-muted-foreground">{{ career.degree }} - {{ career.area }}</p>
-            <p class="text-sm text-muted-foreground">{{ career.institution }}</p>
-            <p class="text-sm text-muted-foreground">Estatus: {{ career.status }}</p>
+            <p class="font-medium"><strong>Nombre carrera:</strong> {{ career.name }}</p>
+            <p v-if="career.pivot?.degree" class="text-sm text-muted-foreground">
+              <strong>Grado académico:</strong> {{ career.pivot.degree }}
+            </p>
+            <p class="text-sm text-muted-foreground"><strong>Área:</strong> {{ career.area }}</p>
+            <p v-if="career.pivot?.institution" class="text-sm text-muted-foreground">
+              <strong>Institución:</strong> {{ career.pivot.institution }}
+            </p>
+            <p v-if="career.pivot?.status" class="text-sm text-muted-foreground">
+              <strong>Estatus:</strong> {{ career.pivot.status }}
+            </p>
           </div>
 
           <!-- Botones -->
@@ -105,7 +112,7 @@ const deleteCareer = () => {
     :title="selectedCareer ? 'Editar Carrera' : 'Agregar Carrera'"
     :form-component="CareerForm"
     :form-props="{
-      nanny: nanny,
+      nanny: props.nanny,
       career: selectedCareer
     }"
   />
