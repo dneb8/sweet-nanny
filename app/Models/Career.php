@@ -9,7 +9,7 @@ class Career extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name, area'];
+    protected $fillable = ['name', 'area'];
 
     // Relación N:N con careers
     public function nannies()
