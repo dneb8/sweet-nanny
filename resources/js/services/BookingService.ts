@@ -2,7 +2,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { router } from "@inertiajs/vue3"
 import type { Booking } from '@/types/Booking'
 
-export function useBookingAppointment(booking: Booking) {
+export function useBookingService(booking: Booking) {
   const showDeleteModal = ref(false)
 
   // 🔹 Navegación
