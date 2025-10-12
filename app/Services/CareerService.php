@@ -48,13 +48,16 @@ class CareerService
 
         // Actualizar relación con Nanny si se envía
         if (isset($validated->nanny_id)) {
-            $career->nannies()->sync([
-                $validated->nanny_id => [
+
+            $nanny = \App\Models\Nanny::findOrFail($validated->nanny_id);
+            $nanny->careers()->updateExistingPivot(
+                $career->id, 
+                [
                     'degree' => $validated->degree ?? null,
                     'status' => $validated->status ?? null,
                     'institution' => $validated->institution ?? null,
                 ]
-            ]);
+            );
         }
     }
 

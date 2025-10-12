@@ -10,20 +10,13 @@ import { Career } from "@/types/Career"
 
 const props = defineProps<{
   career?: Career;
-  nanny?: Nanny;
+  nanny: Nanny;
 }>()
 
 const emit = defineEmits(["saved"])
 
 const formService = new CareerFormService(
-  props.career || {
-    nanny_id: props.nanny?.id,
-    name: "",
-    area: "",
-    degree: "",
-    status: "",
-    institution: "",
-  }
+  props.nanny, props.career
 );
 
 // Valores reactivos desde el servicio
@@ -32,20 +25,20 @@ const { errors, loading, saved } = formService;
 // Emitir saved a formservice
 watch(() => saved.value, (value) => {
   if (value) {
-    console.log("Guardado/actualizado correctamente");
+   
     emit("saved"); 
   }
 });
 
 // Función de submit
 const submit = async () => {
-  console.log("Enviando formulario Career:", formService.model);
+
 
   if (props.career?.id) {
-    console.log("Actualizando Career con ID:", props.career.id);
+   
     await formService.updateCareer();
   } else {
-    console.log("Creando nuevo Career");
+   
     await formService.saveCareer();
   }
 };

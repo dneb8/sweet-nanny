@@ -5,9 +5,11 @@ import { useForm } from "vee-validate";
 import { useForm as useInertiaForm } from "@inertiajs/vue3";
 import * as z from "zod";
 import { Career } from "@/types/Career";
+import { Nanny } from "@/types/Nanny";
 
 export class CareerFormService {
   public career?: Ref<Career>;
+  public nanny?: Ref<Nanny>;
 
   public formSchema;
   public values;
@@ -21,7 +23,7 @@ export class CareerFormService {
   public saveCareer: (e?: Event) => void;
   public updateCareer: (e?: Event) => void;
 
-  constructor(career?: Career) {
+  constructor(nanny: Nanny, career?: Career) {
     if (career) {
       this.career = ref<Career>(JSON.parse(JSON.stringify(career)));
     }
@@ -50,10 +52,10 @@ export class CareerFormService {
       initialValues: {
         name: career ? career.name : "",
         area: career ? career.area : "",
-        nanny_id: career ? career?.nanny_id : undefined,
-        degree: career ? career?.degree : "",
-        status: career ? career?.status : "",
-        institution: career ? career?.institution : "",
+        nanny_id: career?.pivot?.nanny_id || nanny?.id || undefined, 
+        degree: career?.pivot?.degree ?? "",
+        status: career?.pivot?.status ?? "",
+        institution: career?.pivot?.institution ?? "",
       },
     });
 
