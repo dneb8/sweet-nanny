@@ -23,7 +23,6 @@ class UpdateCareerRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'area' => ['required', 'string', 'max:255'],
             'nanny_id' => ['nullable', 'integer', 'exists:nannies,id'],
             'degree' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', 'string', 'max:255'],
@@ -40,7 +39,6 @@ class UpdateCareerRequest extends FormRequest
     {
         return [
             'name' => 'nombre de la carrera',
-            'area' => 'área de la carrera',
             'nanny_id' => 'niñera asignada',
             'degree' => 'grado',
             'status' => 'estado',

@@ -75,7 +75,6 @@ const deleteCareer = () => {
             <p v-if="career.pivot?.degree" class="text-sm text-muted-foreground">
               <strong>Grado académico:</strong> {{ career.pivot.degree }}
             </p>
-            <p class="text-sm text-muted-foreground"><strong>Área:</strong> {{ career.area }}</p>
             <p v-if="career.pivot?.institution" class="text-sm text-muted-foreground">
               <strong>Institución:</strong> {{ career.pivot.institution }}
             </p>

@@ -3,7 +3,6 @@ import { Nanny } from "./Nanny";
 export interface Career {
   id?: number;
   name: string;
-  area: string;
   nanny_id?: number; // opcional, porque la relación es N:N
 
   // Relación

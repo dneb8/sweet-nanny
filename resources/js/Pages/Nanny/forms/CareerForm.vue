@@ -57,17 +57,6 @@ const submit = async () => {
       </FormItem>
     </FormField>
 
-    <!-- Área -->
-    <FormField v-slot="{ componentField }" name="area">
-      <FormItem>
-        <Label>Área</Label>
-        <FormControl>
-          <Input placeholder="Ej. Ciencias de la Computación" v-bind="componentField" />
-        </FormControl>
-        <FormMessage>{{ errors['area'] ? errors['area'][0] : '' }}</FormMessage>
-      </FormItem>
-    </FormField>
-
     <!-- Grado académico -->
     <FormField v-slot="{ componentField }" name="degree">
       <FormItem>

@@ -36,10 +36,6 @@ export class CareerFormService {
           .nonempty("El nombre es obligatorio")
           .min(2, "Nombre muy corto")
           .max(255, "Nombre demasiado largo"),
-        area: z
-          .string()
-          .nonempty("El área es obligatoria")
-          .max(255, "El área no puede exceder 255 caracteres"),
         nanny_id: z.number().optional(),
         degree: z.string().max(255, "El grado no puede exceder 255 caracteres").optional(),
         status: z.string().max(255, "El estado no puede exceder 255 caracteres").optional(),
@@ -51,7 +47,6 @@ export class CareerFormService {
       validationSchema: this.formSchema,
       initialValues: {
         name: career ? career.name : "",
-        area: career ? career.area : "",
         nanny_id: career?.pivot?.nanny_id || nanny?.id || undefined, 
         degree: career?.pivot?.degree ?? "",
         status: career?.pivot?.status ?? "",
