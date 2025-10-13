@@ -10,10 +10,15 @@ import CareerForm from '../forms/CareerForm.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import { StatusEnum } from '@/enums/careers/status.enum'
+import { DegreeEnum } from '@/enums/careers/degree.enum'
 
 
 const getStatusLabel = (status: string) => {
   return StatusEnum.labels()[status] || status
+}
+
+const getDegreeLabel = (degree: string) => {
+  return DegreeEnum.labels()[degree] || degree
 }
 
 const props = defineProps<{ 
@@ -79,7 +84,7 @@ const deleteCareer = () => {
           <div>
             <p class="font-medium"><strong>Nombre carrera:</strong> {{ career.name }}</p>
             <p v-if="career.pivot?.degree" class="text-sm text-muted-foreground">
-              <strong>Grado académico:</strong> {{ career.pivot.degree }}
+              <strong>Grado académico:</strong> {{ getDegreeLabel(career.pivot.degree) }}
             </p>
             <p v-if="career.pivot?.institution" class="text-sm text-muted-foreground">
               <strong>Institución:</strong> {{ career.pivot.institution }}

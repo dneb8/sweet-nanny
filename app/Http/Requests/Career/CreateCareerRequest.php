@@ -5,6 +5,7 @@ namespace App\Http\Requests\Career;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 use App\Enums\Career\StatusEnum;
+use App\Enums\Career\DegreeEnum;
 
 class CreateCareerRequest extends FormRequest
 {
@@ -26,7 +27,7 @@ class CreateCareerRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'nanny_id' => ['nullable', 'integer', 'exists:nannies,id'],
-            'degree' => ['nullable', 'string', 'max:255'],
+            'degree' => ['nullable', 'string', new Enum(DegreeEnum::class)],
             'status' => ['nullable', 'string', new Enum(StatusEnum::class)],
             'institution' => ['nullable', 'string', 'max:255'],
         ];
