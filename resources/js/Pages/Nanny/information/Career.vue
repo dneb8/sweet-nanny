@@ -9,6 +9,12 @@ import { router } from '@inertiajs/vue3'
 import CareerForm from '../forms/CareerForm.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
+import { StatusEnum } from '@/enums/careers/status.enum'
+
+
+const getStatusLabel = (status: string) => {
+  return StatusEnum.labels()[status] || status
+}
 
 const props = defineProps<{ 
   nanny: Nanny 
@@ -79,7 +85,7 @@ const deleteCareer = () => {
               <strong>Institución:</strong> {{ career.pivot.institution }}
             </p>
             <p v-if="career.pivot?.status" class="text-sm text-muted-foreground">
-              <strong>Estatus:</strong> {{ career.pivot.status }}
+              <strong>Estatus:</strong> {{ getStatusLabel(career.pivot.status) }}
             </p>
           </div>
 

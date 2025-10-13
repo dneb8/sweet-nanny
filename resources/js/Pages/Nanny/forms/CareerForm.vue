@@ -1,4 +1,12 @@
 <script setup lang="ts">
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem
+} from "@/components/ui/select";
+
 import { FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -7,6 +15,7 @@ import { watch } from 'vue'
 import { CareerFormService } from "@/services/careerFormService"; 
 import { Nanny } from "@/types/Nanny"
 import { Career } from "@/types/Career"
+import { StatusEnum } from "@/enums/careers/status.enum"; 
 
 const props = defineProps<{
   career?: Career;
@@ -73,7 +82,20 @@ const submit = async () => {
       <FormItem>
         <Label>Estatus</Label>
         <FormControl>
-          <Input placeholder="Ej. En curso, Finalizado" v-bind="componentField" />
+          <Select v-bind="componentField">
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona un estatus" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem 
+                v-for="(label, value) in StatusEnum.labels()" 
+                :key="value" 
+                :value="value"
+              >
+                {{ label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </FormControl>
         <FormMessage>{{ errors['status'] ? errors['status'][0] : '' }}</FormMessage>
       </FormItem>

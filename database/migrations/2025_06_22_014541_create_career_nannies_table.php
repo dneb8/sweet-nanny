@@ -1,5 +1,5 @@
 <?php
-
+use App\Enums\Career\StatusEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('nanny_id')->constrained('nannies')->onDelete('cascade');
 
             $table->string('degree')->nullable();                 // Ej. ingenierpia, Licenciatura, Carrera técnica
-            $table->string('status')->nullable();     // Ej. En curso, Egresada, Titulada
+            $table->enum('status', array_column(StatusEnum::cases(), 'value'))->nullable();    
             $table->string('institution')->nullable();         // Ej. UDG, ITESO
 
             $table->timestamps();

@@ -3,6 +3,9 @@
 namespace App\Http\Requests\Career;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
+use App\Enums\Career\StatusEnum;
+use App\Enums\Career\DegreeEnum;
 
 class UpdateCareerRequest extends FormRequest
 {
@@ -25,11 +28,10 @@ class UpdateCareerRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'nanny_id' => ['nullable', 'integer', 'exists:nannies,id'],
             'degree' => ['nullable', 'string', 'max:255'],
-            'status' => ['nullable', 'string', 'max:255'],
+            'status' => ['nullable', 'string', new Enum(StatusEnum::class)],
             'institution' => ['nullable', 'string', 'max:255'],
         ];
     }
-
     /**
      * Nombres personalizados para mensajes de error
      *
