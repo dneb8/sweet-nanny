@@ -67,30 +67,29 @@ const submit = async () => {
       </FormItem>
     </FormField>
 
-<!-- Grado académico (CORREGIDO) -->
-<FormField v-slot="{ componentField }" name="degree">
-  <FormItem>
-    <Label>Grado académico</Label>
-    <FormControl>
-      <!-- 🌟 Usa el shorthand v-bind="componentField" 🌟 -->
-      <Select v-bind="componentField">
-        <SelectTrigger>
-          <SelectValue placeholder="Selecciona un grado" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem 
-            v-for="(label, value) in DegreeEnum.labels()" 
-            :key="value" 
-            :value="value"
-          >
-            {{ label }}
-          </SelectItem>
-        </SelectContent>
-      </Select>
-    </FormControl>
-    <FormMessage>{{ errors['degree'] ? errors['degree'][0] : '' }}</FormMessage>
-  </FormItem>
-</FormField>
+    <!-- Grado académico -->
+    <FormField v-slot="{ componentField }" name="degree">
+      <FormItem>
+        <Label>Grado académico</Label>
+        <FormControl>
+          <Select v-bind="componentField">
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona un grado" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem 
+                v-for="(label, value) in DegreeEnum.labels()" 
+                :key="value" 
+                :value="value"
+              >
+                {{ label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormControl>
+        <FormMessage>{{ errors['degree'] ? errors['degree'][0] : '' }}</FormMessage>
+      </FormItem>
+    </FormField>
 
 
 
