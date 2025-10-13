@@ -11,6 +11,7 @@ import FormModal from '@/components/common/FormModal.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import { StatusEnum } from '@/enums/careers/status.enum'
 import { DegreeEnum } from '@/enums/careers/degree.enum'
+import { NameCareerEnum} from '@/enums/careers/name_career.enum'
 
 
 const getStatusLabel = (status: string) => {
@@ -19,6 +20,11 @@ const getStatusLabel = (status: string) => {
 
 const getDegreeLabel = (degree: string) => {
   return DegreeEnum.labels()[degree] || degree
+}
+
+const getNameCareerLabel = (name_career: string) => {
+    const key = name_career.toUpperCase(); 
+    return NameCareerEnum.labels()[key] || name_career
 }
 
 const props = defineProps<{ 
@@ -82,7 +88,9 @@ const deleteCareer = () => {
         >
           <!-- Info -->
           <div>
-            <p class="font-medium"><strong>Nombre carrera:</strong> {{ career.name }}</p>
+            <p class="font-medium">
+              <strong>Nombre carrera:</strong> {{ getNameCareerLabel(career.name) }}
+            </p>
             <p v-if="career.pivot?.degree" class="text-sm text-muted-foreground">
               <strong>Grado académico:</strong> {{ getDegreeLabel(career.pivot.degree) }}
             </p>

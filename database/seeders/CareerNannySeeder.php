@@ -32,7 +32,6 @@ class CareerNannySeeder extends Seeder
 
             foreach ($selectedCareers as $career) {
                 $nanny->careers()->attach($career->id, [
-                    'degree' => fake()->randomElement(['Bachelor', 'Master', 'PhD']),
                     'status' => $randomStatus->value,
                     'degree' => $randomDegree->value,  
                     'institution' => fake()->company(),
