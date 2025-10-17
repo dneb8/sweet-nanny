@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, nextTick } from 'vue';
+import { router } from '@inertiajs/vue3';
 import type { User } from '@/types/User';
 import type { FetcherResponse } from '@/types/FetcherResponse';
 import { Button } from '@/components/ui/button';
@@ -25,16 +26,23 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Icon } from '@iconify/vue';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import UserCard from '@/Pages/User/partials/UserCard.vue';
 import { useDataTable } from '@/composables/useDataTable';
 import { getRoleLabelByString, RoleEnum } from '@/enums/role.enum';
 import { ChevronUp, ChevronDown } from 'lucide-vue-next';
+import EmptyState from '@/components/EmptyState.vue';
 
 const props = defineProps<{
     users: FetcherResponse<User>;
 }>();
 
-const { state, loading, setSearch, setFilter, clearFilters, setSort, setPage, setView } = useDataTable('users.index', {
+const { state, loading, setSearch, setFilter, clearFilters, setSort, setPage, setView, searchInputRef } = useDataTable('users.index', {
     view: 'table',
     per_page: 15,
 });
@@ -98,6 +106,13 @@ function formatDate(date: string | null): string {
         day: 'numeric',
     });
 }
+
+// Handle delete
+function handleDelete(user: User) {
+    if (confirm(`¿Estás seguro de que deseas eliminar a ${user.name} ${user.surnames}? Esta acción no se puede deshacer.`)) {
+        router.delete(route('users.destroy', user.ulid));
+    }
+}
 </script>
 
 <template>
@@ -107,6 +122,7 @@ function formatDate(date: string | null): string {
             <!-- Search input -->
             <div class="relative flex-1">
                 <Input
+                    ref="searchInputRef"
                     :model-value="state.search"
                     @update:model-value="setSearch"
                     placeholder="Buscar por nombre, apellidos o email..."
@@ -182,90 +198,120 @@ function formatDate(date: string | null): string {
         </div>
 
         <!-- Table view -->
-        <div v-if="state.view === 'table'" class="border rounded-md">
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>
-                            <button @click="handleSort('name')" class="flex items-center gap-1 hover:text-foreground transition-colors">
-                                Nombre
-                                <ChevronUp v-if="isSorted('name') === 'asc'" class="h-4 w-4" />
-                                <ChevronDown v-else-if="isSorted('name') === 'desc'" class="h-4 w-4" />
-                            </button>
-                        </TableHead>
-                        <TableHead>
-                            <button @click="handleSort('email')" class="flex items-center gap-1 hover:text-foreground transition-colors">
-                                Email
-                                <ChevronUp v-if="isSorted('email') === 'asc'" class="h-4 w-4" />
-                                <ChevronDown v-else-if="isSorted('email') === 'desc'" class="h-4 w-4" />
-                            </button>
-                        </TableHead>
-                        <TableHead>
-                            <button @click="handleSort('role')" class="flex items-center gap-1 hover:text-foreground transition-colors">
-                                Rol
-                                <ChevronUp v-if="isSorted('role') === 'asc'" class="h-4 w-4" />
-                                <ChevronDown v-else-if="isSorted('role') === 'desc'" class="h-4 w-4" />
-                            </button>
-                        </TableHead>
-                        <TableHead>
-                            <button @click="handleSort('email_verified_at')" class="flex items-center gap-1 hover:text-foreground transition-colors">
-                                Verificado
-                                <ChevronUp v-if="isSorted('email_verified_at') === 'asc'" class="h-4 w-4" />
-                                <ChevronDown v-else-if="isSorted('email_verified_at') === 'desc'" class="h-4 w-4" />
-                            </button>
-                        </TableHead>
-                        <TableHead>
-                            <button @click="handleSort('created_at')" class="flex items-center gap-1 hover:text-foreground transition-colors">
-                                Fecha de creación
-                                <ChevronUp v-if="isSorted('created_at') === 'asc'" class="h-4 w-4" />
-                                <ChevronDown v-else-if="isSorted('created_at') === 'desc'" class="h-4 w-4" />
-                            </button>
-                        </TableHead>
-                        <TableHead>Acciones</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    <template v-if="users.data.length > 0">
-                        <TableRow v-for="user in users.data" :key="user.ulid">
-                            <TableCell>
-                                {{ user.name }} {{ user.surnames }}
-                                <Icon v-if="user.email_verified_at" icon="mdi:check-circle" class="inline-block w-4 h-4 ml-1 text-emerald-500" />
-                            </TableCell>
-                            <TableCell>{{ user.email }}</TableCell>
-                            <TableCell>
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 dark:bg-slate-800">
-                                    {{ getRoleLabelByString(user.roles?.[0]?.name) ?? 'Sin rol' }}
-                                </span>
-                            </TableCell>
-                            <TableCell>
-                                <span v-if="user.email_verified_at" class="text-emerald-600 dark:text-emerald-400">Sí</span>
-                                <span v-else class="text-gray-400">No</span>
-                            </TableCell>
-                            <TableCell>{{ formatDate(user.created_at) }}</TableCell>
-                            <TableCell>
-                                <div class="flex gap-2">
-                                    <Button
-                                        v-if="user.roles?.[0]?.name !== RoleEnum.ADMIN"
-                                        variant="ghost"
-                                        size="icon"
-                                        @click="$inertia.visit(route('users.show', user.ulid))"
-                                    >
-                                        <Icon icon="mdi:account-eye-outline" class="w-4 h-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="icon" @click="$inertia.visit(route('users.edit', user.ulid))">
-                                        <Icon icon="mdi:pencil-outline" class="w-4 h-4 text-sky-600" />
-                                    </Button>
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                    </template>
-                    <template v-else>
+        <div v-if="state.view === 'table'" class="border rounded-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <Table>
+                    <TableHeader class="sticky top-0 bg-muted/50 backdrop-blur supports-[backdrop-filter]:bg-muted/50">
                         <TableRow>
-                            <TableCell colspan="6" class="h-24 text-center"> No se encontraron usuarios. </TableCell>
+                            <TableHead>
+                                <button @click="handleSort('name')" class="flex items-center gap-1 hover:text-foreground transition-colors">
+                                    Nombre
+                                    <ChevronUp v-if="isSorted('name') === 'asc'" class="h-4 w-4" />
+                                    <ChevronDown v-else-if="isSorted('name') === 'desc'" class="h-4 w-4" />
+                                </button>
+                            </TableHead>
+                            <TableHead>
+                                <button @click="handleSort('email')" class="flex items-center gap-1 hover:text-foreground transition-colors">
+                                    Email
+                                    <ChevronUp v-if="isSorted('email') === 'asc'" class="h-4 w-4" />
+                                    <ChevronDown v-else-if="isSorted('email') === 'desc'" class="h-4 w-4" />
+                                </button>
+                            </TableHead>
+                            <TableHead>
+                                <button @click="handleSort('role')" class="flex items-center gap-1 hover:text-foreground transition-colors">
+                                    Rol
+                                    <ChevronUp v-if="isSorted('role') === 'asc'" class="h-4 w-4" />
+                                    <ChevronDown v-else-if="isSorted('role') === 'desc'" class="h-4 w-4" />
+                                </button>
+                            </TableHead>
+                            <TableHead>
+                                <button @click="handleSort('created_at')" class="flex items-center gap-1 hover:text-foreground transition-colors">
+                                    Fecha de creación
+                                    <ChevronUp v-if="isSorted('created_at') === 'asc'" class="h-4 w-4" />
+                                    <ChevronDown v-else-if="isSorted('created_at') === 'desc'" class="h-4 w-4" />
+                                </button>
+                            </TableHead>
+                            <TableHead class="text-right">Acciones</TableHead>
                         </TableRow>
-                    </template>
-                </TableBody>
-            </Table>
+                    </TableHeader>
+                    <TableBody>
+                        <template v-if="users.data.length > 0">
+                            <TableRow v-for="(user, index) in users.data" :key="user.ulid" :class="{ 'bg-muted/30': index % 2 === 1 }">
+                                <TableCell>
+                                    <div class="flex items-center gap-2">
+                                        <span>{{ user.name }} {{ user.surnames }}</span>
+                                        <Icon v-if="user.email_verified_at" icon="mdi:check-decagram" class="w-4 h-4 text-emerald-500" />
+                                    </div>
+                                </TableCell>
+                                <TableCell>{{ user.email }}</TableCell>
+                                <TableCell>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                                        {{ getRoleLabelByString(user.roles?.[0]?.name) ?? 'Sin rol' }}
+                                    </span>
+                                </TableCell>
+                                <TableCell>{{ formatDate(user.created_at) }}</TableCell>
+                                <TableCell>
+                                    <div class="flex justify-end gap-1">
+                                        <TooltipProvider>
+                                            <Tooltip v-if="user.roles?.[0]?.name !== RoleEnum.ADMIN">
+                                                <TooltipTrigger as-child>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        class="h-8 w-8"
+                                                        @click="$inertia.visit(route('users.show', user.ulid))"
+                                                    >
+                                                        <Icon icon="mdi:eye-outline" class="w-4 h-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Ver detalles</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                            <Tooltip>
+                                                <TooltipTrigger as-child>
+                                                    <Button variant="ghost" size="icon" class="h-8 w-8" @click="$inertia.visit(route('users.edit', user.ulid))">
+                                                        <Icon icon="mdi:pencil-outline" class="w-4 h-4 text-blue-600" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Editar usuario</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                            <Tooltip>
+                                                <TooltipTrigger as-child>
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        class="h-8 w-8 hover:text-destructive"
+                                                        @click="handleDelete(user)"
+                                                    >
+                                                        <Icon icon="mdi:trash-can-outline" class="w-4 h-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Eliminar usuario</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        </template>
+                        <template v-else>
+                            <TableRow>
+                                <TableCell colspan="5">
+                                    <EmptyState
+                                        icon="mdi:account-search-outline"
+                                        title="No se encontraron usuarios"
+                                        description="Intenta ajustar los filtros o la búsqueda para encontrar lo que buscas."
+                                    />
+                                </TableCell>
+                            </TableRow>
+                        </template>
+                    </TableBody>
+                </Table>
+            </div>
         </div>
 
         <!-- Cards view -->

@@ -1,4 +1,4 @@
-import { ref, watch } from 'vue';
+import { ref, watch, nextTick } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 
@@ -23,6 +23,9 @@ export function useDataTable(
 ) {
     // Current request abort controller
     let abortController: AbortController | null = null;
+
+    // Search input ref for focus management
+    const searchInputRef = ref<HTMLInputElement | null>(null);
 
     // Initialize state from URL params or defaults
     const urlParams = new URLSearchParams(window.location.search);
@@ -102,6 +105,14 @@ export function useDataTable(
                 onStart: () => {
                     loading.value = true;
                 },
+                onSuccess: () => {
+                    // Restore focus to search input after successful request
+                    nextTick(() => {
+                        if (searchInputRef.value) {
+                            searchInputRef.value.focus();
+                        }
+                    });
+                },
                 onFinish: () => {
                     loading.value = false;
                 },
@@ -174,6 +185,7 @@ export function useDataTable(
     return {
         state,
         loading,
+        searchInputRef,
         setSearch,
         setFilter,
         clearFilters,
