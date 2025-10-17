@@ -1,44 +1,30 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3'
-import type { FetcherResponse } from '@/types/FetcherResponse'
-import type { User } from '@/types/User'
+import { Head, Link } from '@inertiajs/vue3';
+import type { FetcherResponse } from '@/types/FetcherResponse';
+import type { User } from '@/types/User';
 import Heading from '@/components/Heading.vue';
-import UserFilters from './partials/UserFilters.vue'
-import CardList from '@/components/datatable/CardList.vue'
-import UserCard from './partials/UserCard.vue'
-import { Button } from '@/components/ui/button'
+import UserDataTable from '@/components/data/UserDataTable.vue';
+import { Button } from '@/components/ui/button';
+import { Icon } from '@iconify/vue';
 
 const props = defineProps<{
-    users: FetcherResponse<User>
-    roles: Array<string>
-    searchables: string[]
-    sortables: string[]
-}>()
-
-console.log(props.users)
-
-</script>                                                                                                                                                                                                                                               
+    users: FetcherResponse<User>;
+    roles: Array<string>;
+    searchables: string[];
+    sortables: string[];
+}>();
+</script>
 
 <template>
-  <Head title="Usuarios" />
+    <Head title="Usuarios" />
     <div class="flex flex-row justify-between mb-4">
-      <Heading icon='proicons:person-multiple' title="Listado de Usuarios"/>
-      <Link :href="route('users.create')">
-        <Button> 
-          <Icon icon="ri:user-add-line" width="48" height="48" />
-          Crear Usuario
-        </Button>
-      </Link>
+        <Heading icon="proicons:person-multiple" title="Listado de Usuarios" />
+        <Link :href="route('users.create')">
+            <Button>
+                <Icon icon="ri:user-add-line" width="24" height="24" />
+                Crear Usuario
+            </Button>
+        </Link>
     </div>
-      <CardList
-      :items="users.data"
-      :per-page="9"
-      :sortables="sortables"
-      :searchables="searchables"
-      :FilterPanel="UserFilters"
-    >
-      <template #default="{ item }">
-        <UserCard :user="item" :columns="['name', 'email']"/>
-      </template>
-    </CardList>
+    <UserDataTable :users="users" />
 </template>

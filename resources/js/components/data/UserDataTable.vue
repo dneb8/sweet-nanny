@@ -1,0 +1,308 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue';
+import type { User } from '@/types/User';
+import type { FetcherResponse } from '@/types/FetcherResponse';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationNext,
+    PaginationPrevious,
+} from '@/components/ui/pagination';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Icon } from '@iconify/vue';
+import UserCard from '@/Pages/User/partials/UserCard.vue';
+import { useDataTable } from '@/composables/useDataTable';
+import { getRoleLabelByString, RoleEnum } from '@/enums/role.enum';
+import { ChevronUp, ChevronDown } from 'lucide-vue-next';
+
+const props = defineProps<{
+    users: FetcherResponse<User>;
+}>();
+
+const { state, loading, setSearch, setFilter, clearFilters, setSort, setPage, setView } = useDataTable('users.index', {
+    view: 'table',
+    per_page: 15,
+});
+
+// Popover state
+const popoverOpen = ref(false);
+
+// Compute pagination pages to show
+const pagesToShow = computed(() => {
+    const total = props.users.last_page;
+    const current = props.users.current_page;
+    const range: (number | string)[] = [];
+
+    if (total <= 7) {
+        for (let i = 1; i <= total; i++) range.push(i);
+    } else {
+        range.push(1);
+        if (current > 3) range.push('...');
+        const start = Math.max(2, current - 1);
+        const end = Math.min(total - 1, current + 1);
+        for (let i = start; i <= end; i++) range.push(i);
+        if (current < total - 2) range.push('...');
+        range.push(total);
+    }
+    return range;
+});
+
+// Check if a column is sorted
+function isSorted(field: string): 'asc' | 'desc' | false {
+    if (state.value.sort === field) {
+        return state.value.dir;
+    }
+    return false;
+}
+
+// Handle column sort
+function handleSort(field: string) {
+    setSort(field);
+}
+
+// Handle filter changes
+function handleRoleFilter(role: string) {
+    setFilter('role', state.value.filters.role === role ? null : role);
+}
+
+function handleVerifiedFilter(value: string) {
+    setFilter('verified', value);
+}
+
+function handleResetFilters() {
+    clearFilters();
+    popoverOpen.value = false;
+}
+
+// Format date
+function formatDate(date: string | null): string {
+    if (!date) return 'N/A';
+    return new Date(date).toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    });
+}
+</script>
+
+<template>
+    <div class="space-y-4">
+        <!-- Search and filters bar -->
+        <div class="flex items-center gap-2">
+            <!-- Search input -->
+            <div class="relative flex-1">
+                <Input
+                    :model-value="state.search"
+                    @update:model-value="setSearch"
+                    placeholder="Buscar por nombre, apellidos o email..."
+                    class="pl-10"
+                />
+                <span class="absolute left-2 inset-y-0 flex items-center text-gray-400">
+                    <Icon icon="mdi:magnify" class="h-5 w-5" />
+                </span>
+            </div>
+
+            <!-- Filter button -->
+            <Popover v-model:open="popoverOpen">
+                <PopoverTrigger as-child>
+                    <Button variant="outline" size="icon">
+                        <Icon icon="mdi:filter-variant" class="h-5 w-5" />
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent class="w-[300px]">
+                    <div class="space-y-4">
+                        <h4 class="text-sm font-semibold">Filtrar por:</h4>
+
+                        <!-- Role filter -->
+                        <div>
+                            <Label>Rol</Label>
+                            <div class="flex flex-col gap-2 mt-2">
+                                <div v-for="roleKey in Object.values(RoleEnum)" :key="roleKey" class="flex items-center space-x-2">
+                                    <Checkbox
+                                        :checked="state.filters.role === roleKey"
+                                        @click="handleRoleFilter(roleKey)"
+                                        :id="`role-${roleKey}`"
+                                    />
+                                    <label :for="`role-${roleKey}`" class="text-sm cursor-pointer">
+                                        {{ getRoleLabelByString(roleKey) }}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Email verified filter -->
+                        <div>
+                            <Label>Verificación de correo</Label>
+                            <ToggleGroup type="single" :model-value="state.filters.verified || null" @update:model-value="handleVerifiedFilter" class="flex gap-2 mt-2">
+                                <ToggleGroupItem value="verified" aria-label="Verificados"> Verificados </ToggleGroupItem>
+                                <ToggleGroupItem value="unverified" aria-label="No verificados"> No verificados </ToggleGroupItem>
+                            </ToggleGroup>
+                        </div>
+
+                        <!-- Reset button -->
+                        <div class="flex justify-end">
+                            <Button @click="handleResetFilters" variant="outline" size="sm">
+                                <Icon icon="solar:restart-circle-linear" class="size-4 mr-2" />
+                                Limpiar filtros
+                            </Button>
+                        </div>
+                    </div>
+                </PopoverContent>
+            </Popover>
+
+            <!-- View toggle -->
+            <ToggleGroup type="single" :model-value="state.view" @update:model-value="setView">
+                <ToggleGroupItem value="table" aria-label="Vista tabla">
+                    <Icon icon="mdi:table" class="h-5 w-5" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="cards" aria-label="Vista tarjetas">
+                    <Icon icon="mdi:view-grid" class="h-5 w-5" />
+                </ToggleGroupItem>
+            </ToggleGroup>
+
+            <!-- Loading indicator -->
+            <div v-if="loading" class="text-sm text-muted-foreground">
+                <Icon icon="mdi:loading" class="h-5 w-5 animate-spin" />
+            </div>
+        </div>
+
+        <!-- Table view -->
+        <div v-if="state.view === 'table'" class="border rounded-md">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>
+                            <button @click="handleSort('name')" class="flex items-center gap-1 hover:text-foreground transition-colors">
+                                Nombre
+                                <ChevronUp v-if="isSorted('name') === 'asc'" class="h-4 w-4" />
+                                <ChevronDown v-else-if="isSorted('name') === 'desc'" class="h-4 w-4" />
+                            </button>
+                        </TableHead>
+                        <TableHead>
+                            <button @click="handleSort('email')" class="flex items-center gap-1 hover:text-foreground transition-colors">
+                                Email
+                                <ChevronUp v-if="isSorted('email') === 'asc'" class="h-4 w-4" />
+                                <ChevronDown v-else-if="isSorted('email') === 'desc'" class="h-4 w-4" />
+                            </button>
+                        </TableHead>
+                        <TableHead>
+                            <button @click="handleSort('role')" class="flex items-center gap-1 hover:text-foreground transition-colors">
+                                Rol
+                                <ChevronUp v-if="isSorted('role') === 'asc'" class="h-4 w-4" />
+                                <ChevronDown v-else-if="isSorted('role') === 'desc'" class="h-4 w-4" />
+                            </button>
+                        </TableHead>
+                        <TableHead>
+                            <button @click="handleSort('email_verified_at')" class="flex items-center gap-1 hover:text-foreground transition-colors">
+                                Verificado
+                                <ChevronUp v-if="isSorted('email_verified_at') === 'asc'" class="h-4 w-4" />
+                                <ChevronDown v-else-if="isSorted('email_verified_at') === 'desc'" class="h-4 w-4" />
+                            </button>
+                        </TableHead>
+                        <TableHead>
+                            <button @click="handleSort('created_at')" class="flex items-center gap-1 hover:text-foreground transition-colors">
+                                Fecha de creación
+                                <ChevronUp v-if="isSorted('created_at') === 'asc'" class="h-4 w-4" />
+                                <ChevronDown v-else-if="isSorted('created_at') === 'desc'" class="h-4 w-4" />
+                            </button>
+                        </TableHead>
+                        <TableHead>Acciones</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    <template v-if="users.data.length > 0">
+                        <TableRow v-for="user in users.data" :key="user.ulid">
+                            <TableCell>
+                                {{ user.name }} {{ user.surnames }}
+                                <Icon v-if="user.email_verified_at" icon="mdi:check-circle" class="inline-block w-4 h-4 ml-1 text-emerald-500" />
+                            </TableCell>
+                            <TableCell>{{ user.email }}</TableCell>
+                            <TableCell>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 dark:bg-slate-800">
+                                    {{ getRoleLabelByString(user.roles?.[0]?.name) ?? 'Sin rol' }}
+                                </span>
+                            </TableCell>
+                            <TableCell>
+                                <span v-if="user.email_verified_at" class="text-emerald-600 dark:text-emerald-400">Sí</span>
+                                <span v-else class="text-gray-400">No</span>
+                            </TableCell>
+                            <TableCell>{{ formatDate(user.created_at) }}</TableCell>
+                            <TableCell>
+                                <div class="flex gap-2">
+                                    <Button
+                                        v-if="user.roles?.[0]?.name !== RoleEnum.ADMIN"
+                                        variant="ghost"
+                                        size="icon"
+                                        @click="$inertia.visit(route('users.show', user.ulid))"
+                                    >
+                                        <Icon icon="mdi:account-eye-outline" class="w-4 h-4" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" @click="$inertia.visit(route('users.edit', user.ulid))">
+                                        <Icon icon="mdi:pencil-outline" class="w-4 h-4 text-sky-600" />
+                                    </Button>
+                                </div>
+                            </TableCell>
+                        </TableRow>
+                    </template>
+                    <template v-else>
+                        <TableRow>
+                            <TableCell colspan="6" class="h-24 text-center"> No se encontraron usuarios. </TableCell>
+                        </TableRow>
+                    </template>
+                </TableBody>
+            </Table>
+        </div>
+
+        <!-- Cards view -->
+        <div v-else-if="state.view === 'cards'" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+            <UserCard v-for="user in users.data" :key="user.ulid" :user="user" />
+        </div>
+
+        <!-- Pagination -->
+        <div v-if="users.last_page > 1" class="mt-4">
+            <Pagination class="justify-center" :items-per-page="users.per_page" :total-items="users.total">
+                <PaginationContent class="flex items-center space-x-5">
+                    <PaginationItem :value="users.current_page">
+                        <PaginationPrevious :disabled="users.current_page <= 1" @click="users.current_page > 1 && setPage(users.current_page - 1)" />
+                    </PaginationItem>
+
+                    <template v-for="(p, index) in pagesToShow" :key="index">
+                        <PaginationItem v-if="typeof p === 'number'" :value="p" :is-active="p === users.current_page" @click="setPage(p)">
+                            {{ p }}
+                        </PaginationItem>
+                        <PaginationItem v-else :value="0" disabled>
+                            <PaginationEllipsis />
+                        </PaginationItem>
+                    </template>
+
+                    <PaginationItem :value="users.current_page">
+                        <PaginationNext
+                            :disabled="users.current_page >= users.last_page"
+                            @click="users.current_page < users.last_page && setPage(users.current_page + 1)"
+                        />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
+        </div>
+
+        <!-- Results info -->
+        <div class="text-sm text-muted-foreground text-center">
+            Mostrando {{ users.from ?? 0 }} a {{ users.to ?? 0 }} de {{ users.total }} usuarios
+        </div>
+    </div>
+</template>
