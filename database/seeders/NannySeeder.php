@@ -10,7 +10,7 @@ class NannySeeder extends Seeder
     public function run(): void
     {
         Nanny::factory()
-        ->count(25)
+        ->count(5)
         ->create() 
         ->each(fn($nanny) => $nanny->user->assignRole('nanny'));
     }

@@ -40,4 +40,17 @@ class Booking extends Model
         return $this->belongsToMany(Child::class, 'booking_child', 'booking_id', 'child_id')
                     ->withTimestamps();
     }
+
+    // Incluye soft-deleted para vistas históricas
+    public function childrenWithTrashed()
+    {
+        return $this->belongsToMany(Child::class, 'booking_child', 'booking_id', 'child_id')
+            ->withTimestamps()
+            ->withTrashed();
+    }
+
+    // public function getRouteKeyName()
+    // {
+    //     return 'ulid';
+    // }
 }

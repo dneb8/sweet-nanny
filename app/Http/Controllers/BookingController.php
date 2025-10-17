@@ -42,19 +42,22 @@ class BookingController extends Controller
 
     public function show(Booking $booking): Response
     {
-        $booking->load(['tutor.user','children','address','bookingAppointments.nanny']);
+        $booking = Booking::useWritePdo()
+            ->with(['tutor.user','address','bookingAppointments.nanny','childrenWithTrashed', 'children'])
+            ->findOrFail($booking->id);
 
         return Inertia::render('Booking/Show', ['booking' => $booking]);
     }
 
     public function store(CreateBookingRequest $request, BookingService $service)
     {
+        $request->merge(['booking' => ['tutor_id' => (int) $request->user()->tutor_id] + (array) $request->input('booking', [])]);
+
         $booking = $service->create($request->validated());
 
-        return redirect()
-            ->route('bookings.show', $booking->id)
-            ->with('notification', 'Servicio creado correctamente.');
+        return to_route('bookings.show', $booking)->with('notification', 'Servicio creado correctamente.');
     }
+
 
     public function edit(Booking $booking): Response
     {
@@ -65,9 +68,13 @@ class BookingController extends Controller
             'address',
         ]);
 
+        $kinkships = array_map(fn($c) => $c->value, KinkshipEnum::cases());
+
+
         return Inertia::render('Booking/Edit', [
             'booking'        => $booking,
             'initialBooking' => $booking,
+            'kinkships'      => $kinkships,
         ]);
     }
 

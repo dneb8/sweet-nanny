@@ -39,7 +39,6 @@ const cls = (err?: string) =>
         autocomplete="postal-code"
         placeholder="Ej. 44100"
         @input="onPostalCodeInput"
-        :aria-invalid="!!postal_code.errorMessage"
         :aria-describedby="postal_code.errorMessage ? 'postal_code_error' : undefined"
       />
       <p v-if="postal_code.errorMessage" id="postal_code_error" class="text-xs text-red-500 mt-1">
@@ -56,7 +55,6 @@ const cls = (err?: string) =>
         v-model="street.value.value"
         autocomplete="address-line1"
         placeholder="Ej. Av. Hidalgo 123"
-        :aria-invalid="!!street.errorMessage"
         :aria-describedby="street.errorMessage ? 'street_error' : undefined"
       />
       <p v-if="street.errorMessage" id="street_error" class="text-xs text-red-500 mt-1">
@@ -73,7 +71,6 @@ const cls = (err?: string) =>
         v-model="neighborhood.value.value"
         autocomplete="address-line2"
         placeholder="Ej. Americana"
-        :aria-invalid="!!neighborhood.errorMessage"
         :aria-describedby="neighborhood.errorMessage ? 'neighborhood_error' : undefined"
       />
       <p v-if="neighborhood.errorMessage" id="neighborhood_error" class="text-xs text-red-500 mt-1">
@@ -85,7 +82,7 @@ const cls = (err?: string) =>
     <div>
       <Label class="text-sm">Tipo</Label>
       <Select v-model="type.value.value">
-        <SelectTrigger class="mt-1">
+        <SelectTrigger class="mt-1 w-full">
           <SelectValue placeholder="Selecciona un tipo" />
         </SelectTrigger>
         <SelectContent>

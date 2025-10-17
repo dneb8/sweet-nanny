@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button'
 import Heading from '@/components/Heading.vue'
 import type { Booking } from '@/types/Booking'
 
-defineProps<{
+const props = defineProps<{
   booking: Booking
 }>()
+
+console.log('Booking props:', props.booking)
 
 const fmtDateTime = (value?: string | Date | null) => {
   if (!value) return '—'
@@ -33,14 +35,13 @@ const fmtDateTime = (value?: string | Date | null) => {
   <div class="mb-6 flex items-center justify-between">
     <Heading icon="ri:file-list-3-line" :title="`Servicio #${booking.id}`" />
     <div class="flex gap-2">
-      <!-- <Link :href="route('bookings.edit', booking.id)">
+      <Link :href="route('bookings.edit', booking.id)">
         <Button variant="secondary" class="gap-2">
           <Icon icon="ri:edit-2-line" />
           Editar
         </Button>
-      </Link> -->
-      <!-- Ajusta acción de eliminar si tienes form -->
-      <!-- <Button variant="destructive" class="gap-2"><Icon icon="ri:delete-bin-6-line" />Eliminar</Button> -->
+      </Link>
+      <Button variant="destructive" class="gap-2"><Icon icon="ri:delete-bin-6-line" />Eliminar</Button>
     </div>
   </div>
 

@@ -14,7 +14,7 @@ class TutorSeeder extends Seeder
     public function run(): void
     {
         Tutor::factory()
-        ->count(25)
+        ->count(5)
         ->create() 
         ->each(fn($nanny) => $nanny->user->assignRole('tutor'));
     }

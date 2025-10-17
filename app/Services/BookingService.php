@@ -13,46 +13,65 @@ class BookingService
     public function create(array $payload): Booking
     {
         return DB::transaction(function () use ($payload) {
-            $bookingData = $payload['booking'];
-            $appointments = $payload['appointments'] ?? [];
-            $addressData  = $payload['address'] ?? null;
+            $bookingData = data_get($payload, 'booking', []);
+            $appointments = data_get($payload, 'appointments', []);
+            $addressData  = data_get($payload, 'address');
 
-            $addressId = $bookingData['address_id'] ?? null;
+            // Dirección opcional: crea si no se mandó address_id
+            $addressId = data_get($bookingData, 'address_id');
             if (!$addressId && $addressData) {
                 $address = Address::create([
-                    'tutor_id'       => $bookingData['tutor_id'],
-                    'postal_code'    => $addressData['postal_code'] ?? '',
-                    'street'         => $addressData['street'] ?? '',
-                    'neighborhood'   => $addressData['neighborhood'] ?? '',
-                    'type'           => $addressData['type'] ?? null,
-                    'other_type'     => $addressData['other_type'] ?? null,
-                    'internal_number'=> $addressData['internal_number'] ?? null,
+                    'tutor_id'        => (int) data_get($bookingData, 'tutor_id'),
+                    'postal_code'     => (string) data_get($addressData, 'postal_code', ''),
+                    'street'          => (string) data_get($addressData, 'street', ''),
+                    'neighborhood'    => (string) data_get($addressData, 'neighborhood', ''),
+                    'type'            => data_get($addressData, 'type'),
+                    'other_type'      => data_get($addressData, 'other_type'),
+                    'internal_number' => data_get($addressData, 'internal_number'),
                 ]);
                 $addressId = $address->id;
             }
 
+            // Crea booking
             $booking = Booking::create([
-                'tutor_id'   => $bookingData['tutor_id'],
+                'tutor_id'   => (int) data_get($bookingData, 'tutor_id'),
                 'address_id' => $addressId,
-                'description'=> $bookingData['description'],
-                'recurrent'  => (bool) $bookingData['recurrent'],
+                'description'=> (string) data_get($bookingData, 'description', ''),
+                'recurrent'  => (bool) data_get($bookingData, 'recurrent', false),
             ]);
 
-            $childIds = array_map('strval', $bookingData['child_ids'] ?? []);
+            // Children: acepta booking.children (preferido) o booking.child_ids
+            $rawChildren = data_get($bookingData, 'children', data_get($bookingData, 'child_ids', []));
+            $childIds = collect($rawChildren)
+                ->map(function ($c) {
+                    if (is_array($c)) {
+                        return (int) data_get($c, 'id', 0);
+                    }
+                    if (is_object($c)) {
+                        return (int) data_get($c, 'id', 0);
+                    }
+                    return (int) $c;
+                })
+                ->filter()   // quita 0 / null
+                ->unique()
+                ->values()
+                ->all();
+
             if (!empty($childIds)) {
                 $booking->children()->sync($childIds);
             }
 
+            // Appointments
             $rows = [];
             foreach ($appointments as $a) {
                 $rows[] = [
-                    'start_date'     => Carbon::parse($a['start_date']),
-                    'end_date'       => Carbon::parse($a['end_date']),
-                    'duration'       => (int) $a['duration'],
-                    'status'         => Arr::get($a, 'status', 'pending'),
-                    'payment_status' => Arr::get($a, 'payment_status', 'unpaid'),
-                    'extra_hours'    => (int) Arr::get($a, 'extra_hours', 0),
-                    'total_cost'     => (float) Arr::get($a, 'total_cost', 0),
+                    'start_date'     => Carbon::parse(data_get($a, 'start_date')),
+                    'end_date'       => Carbon::parse(data_get($a, 'end_date')),
+                    'duration'       => (int) data_get($a, 'duration', 0),
+                    'status'         => (string) data_get($a, 'status', 'pending'),
+                    'payment_status' => (string) data_get($a, 'payment_status', 'unpaid'),
+                    'extra_hours'    => (int) data_get($a, 'extra_hours', 0),
+                    'total_cost'     => (float) data_get($a, 'total_cost', 0),
                     'created_at'     => now(),
                     'updated_at'     => now(),
                 ];
@@ -72,9 +91,8 @@ class BookingService
             $appointments = $payload['appointments'] ?? [];
             $addressData  = $payload['address'] ?? null;
 
-            // 1) Resolver address_id:
-            //    - Si viene explícito en el payload, se respeta (permitiendo null para limpiar).
-            //    - Si NO viene, conservamos el address_id actual.
+            // - Si viene explícito en el payload, se respeta (permitiendo null para limpiar).
+            //  - Si NO viene, conservamos el address_id actual.
             if (array_key_exists('address_id', $bookingData)) {
                 $addressId = $bookingData['address_id'] ? (int) $bookingData['address_id'] : null;
             } else {
