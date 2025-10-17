@@ -7,7 +7,7 @@ import UserDataTable from '@/components/data/UserDataTable.vue';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@iconify/vue';
 
-const props = defineProps<{
+defineProps<{
     users: FetcherResponse<User>;
     roles: Array<string>;
     searchables: string[];

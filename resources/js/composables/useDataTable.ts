@@ -1,4 +1,4 @@
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 
@@ -73,7 +73,7 @@ export function useDataTable(
 
         // Remove undefined values
         return Object.fromEntries(
-            Object.entries(params).filter(([_, v]) => v !== undefined)
+            Object.entries(params).filter(([, v]) => v !== undefined)
         );
     }
 
