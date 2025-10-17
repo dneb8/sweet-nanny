@@ -7,14 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
 
 class Child extends Model
 {
     use HasUlids, HasFactory, SoftDeletes;
 
     protected $casts = [
-        'kinkship' => KinkshipEnum::class,
+        'kinkship'  => KinkshipEnum::class,
         'birthdate' => 'date:Y-m-d',
     ];
 
@@ -25,23 +24,25 @@ class Child extends Model
         'kinkship',
     ];
 
-    protected static function booted()
+    // Genera ULID en la columna 'ulid' (no toca 'id')
+    public function uniqueIds()
     {
-        static::creating(function ($child) {
-            $child->id = (string) Str::ulid();
-        });
+        return ['ulid'];
     }
 
-    // Relación con Tutor 
     public function tutor()
     {
-        return $this->belongsTo(Tutor::class); 
+        return $this->belongsTo(Tutor::class);
     }
 
-    // Child ↔ Booking (N:N)
     public function bookings()
     {
         return $this->belongsToMany(Booking::class, 'booking_child', 'child_id', 'booking_id')
                     ->withTimestamps();
+    }
+
+    public function getRouteKeyName()
+    {
+        return 'ulid';
     }
 }

@@ -22,12 +22,10 @@ const props = defineProps<{
   initialChildren?: Child[] | null
 }>()
 
-// Campos del form (vee-validate)
 const childIdsBF = useBoundField<string[]>("booking.child_ids")
 const descBF     = useBoundField<string>("booking.description")
-// Refs planos para v-model
-const childIds = childIdsBF.value       // Ref<string[]>
-const desc     = descBF.value           // Ref<string>
+const childIds = childIdsBF.value
+const desc     = descBF.value
 
 const children = ref<Child[]>(props.initialChildren ?? [])
 const tutorId  = computed<string>(() => String(props.tutor?.id ?? ""))
@@ -44,14 +42,13 @@ function ageFrom(birthdate?: string | null): string {
   return `${age} años`
 }
 
-// Selección (1–4)
+// Selección (1–4) por ID numérico (para backend)
 const selectedIds = computed<string[]>({
   get: () => Array.isArray(childIds.value) ? childIds.value.map(String) : [],
   set: (v) => { childIds.value = v },
 })
 const reachedLimit = computed(() => selectedIds.value.length >= 4)
 const isSelected = (id?: string | number | null) => id != null && selectedIds.value.includes(String(id))
-
 function toggleSelect(id?: string | number | null) {
   if (id == null) return
   const sid = String(id)
@@ -68,17 +65,34 @@ const formTitle = ref("Agregar niño")
 const formChild = ref<ChildInput | null>(null)
 
 function asChildInput(c?: Child | null): ChildInput {
-  if (!c) return { tutor_id: tutorId.value, name: "", birthdate: "", kinkship: (props.kinkships[0] ?? "") as any }
+  if (!c) {
+    return {
+      tutor_id: tutorId.value,
+      name: "",
+      birthdate: "",
+      kinkship: (props.kinkships[0] ?? "") as any,
+    }
+  }
   return {
     id: c.id ? String(c.id) : undefined,
+    ulid: c.ulid ? String(c.ulid) : undefined,           
     tutor_id: String((c as any).tutor_id ?? tutorId.value),
     name: c.name ?? "",
     birthdate: c.birthdate ?? "",
     kinkship: (c as any).kinkship ?? (props.kinkships[0] ?? ""),
   }
 }
-function openCreate() { formTitle.value = "Agregar niño"; formChild.value = asChildInput(null); showFormModal.value = true }
-function openEdit(c: Child) { formTitle.value = "Editar niño"; formChild.value = asChildInput(c); showFormModal.value = true }
+
+function openCreate() {
+  formTitle.value = "Agregar niño"
+  formChild.value = asChildInput(null)
+  showFormModal.value = true
+}
+function openEdit(c: Child) {
+  formTitle.value = "Editar niño"
+  formChild.value = asChildInput(c)
+  showFormModal.value = true
+}
 
 function onChildSaved(child: Child) {
   const i = children.value.findIndex(x => String(x.id) === String(child.id))
@@ -91,16 +105,18 @@ function onChildSaved(child: Child) {
   showFormModal.value = false
 }
 
-// Eliminar
+// Eliminar usando ULID en la ruta
 const showDeleteModal = ref(false)
 const toDelete = ref<Child | null>(null)
 function openDelete(c: Child) { toDelete.value = c; showDeleteModal.value = true }
 async function confirmDelete() {
-  if (!toDelete.value?.id) return
+  const key = toDelete.value?.ulid ?? toDelete.value?.id
+  if (!key) return
   try {
-    await axios.delete(route("children.destroy", String(toDelete.value.id)), {
+    await axios.delete(route("children.destroy", { child: String(key) }), {
       headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
     })
+    // Limpia listas por id numérico (selección) y por objeto en memoria
     children.value = children.value.filter(x => String(x.id) !== String(toDelete.value?.id))
     selectedIds.value = selectedIds.value.filter(x => x !== String(toDelete.value?.id))
   } finally {
@@ -109,9 +125,6 @@ async function confirmDelete() {
   }
 }
 
-// Logs
-watch(selectedIds, (v) => console.log("[ChildPicker] booking.child_ids ->", toRaw(v)), { immediate: true })
-watch(desc, (v) => console.log("[ChildPicker] booking.description ->", v), { immediate: true })
 </script>
 
 <template>
@@ -126,7 +139,7 @@ watch(desc, (v) => console.log("[ChildPicker] booking.description ->", v), { imm
             Selecciona entre 1 y 4 niños para la servicio. Si no aparece en la lista, agrégalo.
           </p>
         </div>
-        <Button size="sm" variant="outline" @click="openCreate">
+        <Button size="sm" variant="outline" @click="openCreate" type="button">
           <Icon icon="lucide:plus" /> Nuevo
         </Button>
       </CardTitle>
@@ -137,17 +150,16 @@ watch(desc, (v) => console.log("[ChildPicker] booking.description ->", v), { imm
         <div class="max-h-64 rounded border p-6">
           <div v-if="!children.length" class="text-xs text-muted-foreground">No hay niños registrados.</div>
 
-          <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
             <div
               v-for="c in children"
-              :key="c.id"
+              :key="c.ulid ?? c.id"
               class="relative rounded-md border p-3 transition select-none bg-background/50"
               :class="[
                 isSelected(c.id) ? 'ring-2 ring-primary border-primary bg-primary/5' : 'hover:border-primary/50',
                 (!isSelected(c.id) && reachedLimit) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
               ]"
               role="button"
-
               tabindex="0"
               @click="toggleSelect(c.id)"
               @keydown.enter.prevent="toggleSelect(c.id)"
@@ -170,10 +182,10 @@ watch(desc, (v) => console.log("[ChildPicker] booking.description ->", v), { imm
               </div>
 
               <div class="absolute right-2 bottom-2 flex items-center gap-2">
-                <Button size="icon" variant="ghost" class="h-8 w-8" @click.stop="openEdit(c)" :aria-label="`Editar a ${c.name}`">
+                <Button size="icon" variant="ghost" class="h-8 w-8" @click.stop="openEdit(c)" type="button" :aria-label="`Editar a ${c.name}`">
                   <Icon icon="lucide:edit" class="h-4 w-4" />
                 </Button>
-                <Button size="icon" variant="destructive" class="h-8 w-8" @click.stop="openDelete(c)" :aria-label="`Eliminar a ${c.name}`">
+                <Button size="icon" variant="destructive" class="h-8 w-8" @click.stop="openDelete(c)" type="button" :aria-label="`Eliminar a ${c.name}`">
                   <Icon icon="lucide:trash" class="h-4 w-4" />
                 </Button>
               </div>
@@ -195,6 +207,17 @@ watch(desc, (v) => console.log("[ChildPicker] booking.description ->", v), { imm
     </CardContent>
   </Card>
 
-  <FormModal v-model="showFormModal" :title="formTitle" :form-component="ChildForm" :form-props="{ kinkships, child: formChild }" @saved="onChildSaved" />
-  <DeleteModal v-model:show="showDeleteModal" title="niño" :message="`¿Seguro que deseas eliminar a ${toDelete?.name}?`" @confirm="confirmDelete" />
+  <FormModal
+    v-model="showFormModal"
+    :title="formTitle"
+    :form-component="ChildForm"
+    :form-props="{ kinkships, child: formChild }"
+    @saved="onChildSaved"
+  />
+  <DeleteModal
+    v-model:show="showDeleteModal"
+    title="niño"
+    :message="`¿Seguro que deseas eliminar a ${toDelete?.name}?`"
+    @confirm="confirmDelete"
+  />
 </template>

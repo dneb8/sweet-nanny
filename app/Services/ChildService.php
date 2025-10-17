@@ -64,4 +64,8 @@ class ChildService
     {
         $child->delete();
     }
+    //no eliminar si: 
+    // - tiene bookings futuras
+    // - tiene bookings pasadas
+    // - tiene citas asociadas
 }

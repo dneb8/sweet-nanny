@@ -17,10 +17,8 @@ export class ChildFormService {
   public saved   = ref(false)
   public errores = ref<Record<string, string[]>>({})
 
-  // nuestra API: sin evento, siempre Promise<boolean>
   public guardar: () => Promise<boolean>
 
-  // ✅ headers por-request para forzar JSON en errores también
   private cfg = {
     headers: {
       Accept: "application/json",
@@ -29,14 +27,13 @@ export class ChildFormService {
   }
 
   constructor(child: Child) {
-    // clone plano para no mutar props (y evitar proxies/relaciones)
     this.child = ref<Child>(JSON.parse(JSON.stringify(child)))
 
     this.formSchema = toTypedSchema(
       z.object({
         tutor_id: z.string(),
         name: z.string().min(2, "Nombre requerido").max(100),
-        birthdate: z.string().min(10, "Fecha requerida"), // YYYY-MM-DD
+        birthdate: z.string().min(10, "Fecha requerida"),
         kinkship: z.string().min(2, "Parentesco requerido"),
       })
     )
@@ -54,58 +51,28 @@ export class ChildFormService {
     this.values = values
     this.isFieldDirty = isFieldDirty
 
-    // 1) armamos la función de envío Vee-Validate
     const submit = handleSubmit(async (payload) => {
       this.loading.value = true
       this.errores.value = {}
 
-      const isUpdate = !!this.child.value.id
-      const url = isUpdate
-        ? route("children.update", this.child.value.id as any)
-        : route("children.store")
+      // Usa ULID para rutas (fallback a id numérico si no hay ulid)
+      const routeKey = (this.child.value as Child).ulid ?? this.child.value.id
+      const isUpdate = !!routeKey
 
-      console.groupCollapsed(
-        `%c[ChildFormService] ${isUpdate ? "PATCH" : "POST"} ${url}`,
-        "color:#6b7280;font-weight:bold;"
-      )
-      console.log("payload ⇒", payload)
-      console.log("child   ⇒", this.child.value)
-      console.groupEnd()
+      const url = isUpdate
+        ? route("children.update", { child: routeKey as any })
+        : route("children.store")
 
       try {
         const res = isUpdate
-          ? await axios.patch(url, payload, this.cfg)   
-          : await axios.post(url, payload, this.cfg)  
-
-        console.groupCollapsed(
-          `%c[ChildFormService] ✓ ${isUpdate ? "PATCH" : "POST"} ${url} (status ${res.status})`,
-          "color:#16a34a;font-weight:bold;"
-        )
-        console.log("response.data ⇒", res.data)
-        console.groupEnd()
+          ? await axios.patch(url, payload, this.cfg)
+          : await axios.post(url, payload, this.cfg)
 
         this.child.value = res.data
         this.saved.value = true
         setTimeout(() => (this.saved.value = false), 3500)
-
         return true
       } catch (err: any) {
-        console.groupCollapsed(
-          `%c[ChildFormService] ✗ ${isUpdate ? "PATCH" : "POST"} ${url}`,
-          "color:#dc2626;font-weight:bold;"
-        )
-        if (err?.response) {
-          console.error("status ⇒", err.response.status)
-          console.error("data   ⇒", err.response.data)
-          console.error("errors ⇒", err.response.data?.errors)
-        } else if (err?.request) {
-          console.error("No hubo respuesta del servidor")
-          console.error("request ⇒", err.request)
-        } else {
-          console.error("Error al preparar la petición ⇒", err?.message)
-        }
-        console.groupEnd()
-
         if (err?.response?.data?.errors) {
           this.errores.value = err.response.data.errors
         }
@@ -114,9 +81,10 @@ export class ChildFormService {
         setTimeout(() => (this.loading.value = false), 300)
       }
     })
+
     this.guardar = async (): Promise<boolean> => {
       try {
-        const res = await submit(undefined as any) // normalizamos retorno
+        const res = await submit(undefined as any)
         return res === true
       } catch {
         return false
@@ -125,11 +93,14 @@ export class ChildFormService {
   }
 
   async eliminar(): Promise<void> {
-    if (!this.child.value.id) return
+    // Usa ULID para delete (fallback a id)
+    const routeKey = (this.child.value as any).ulid ?? this.child.value.id
+    if (!routeKey) return
+
     this.loading.value = true
     this.errores.value = {}
     try {
-      await axios.delete(route("children.destroy", this.child.value.id as any), this.cfg) 
+      await axios.delete(route("children.destroy", { child: routeKey as any }), this.cfg)
     } catch (err: any) {
       if (err?.response?.data?.errors) {
         this.errores.value = err.response.data.errors

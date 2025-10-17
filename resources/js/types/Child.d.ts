@@ -1,6 +1,7 @@
 // types/Child.ts
 export interface Child {
-  id?: string
+  id?: string           
+  ulid?: string         
   tutor_id?: string
   name?: string
   birthdate: string
@@ -10,9 +11,10 @@ export interface Child {
   deleted_at?: string | null
 }
 
-// Modelo de formulario (crear/editar).
+// Modelo de formulario (crear/editar)
 export interface ChildInput {
-  id?: string
+  id?: string            
+  ulid?: string          
   tutor_id: string
   name: string
   birthdate: string
