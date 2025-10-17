@@ -5,6 +5,7 @@ Este documento describe la implementación de la verificación de correo electr�
 ## 📋 Tabla de Contenidos
 
 - [Descripción General](#descripción-general)
+- [Emails en Español con Logo y Tema Personalizado](#emails-en-español-con-logo-y-tema-personalizado)
 - [Verificación de Email](#verificación-de-email)
 - [Recuperación de Contraseña](#recuperación-de-contraseña)
 - [Configuración](#configuración)
@@ -19,12 +20,79 @@ Sweet Nanny implementa autenticación completa con:
 - **Recuperación de contraseña** con tokens seguros
 - **Throttling** (limitación de tasa) para prevenir abuso
 - **Middleware de verificación** para proteger rutas sensibles
+- **Emails en español** con logo embebido y tema personalizado
+
+## Emails en Español con Logo y Tema Personalizado
+
+### Logo Embebido con CID
+
+Los emails de autenticación incluyen el logo de Sweet Nanny embebido inline usando CID (Content-ID). Esto garantiza que el logo se muestre correctamente incluso si el cliente de correo bloquea imágenes externas.
+
+**Ubicación del logo:** `public/images/logo-email.png`
+- Tamaño recomendado: 512x512px
+- Formato: PNG con fondo transparente
+- Embebido automáticamente en todos los emails de autenticación
+
+**Implementación técnica:**
+
+En `AppServiceProvider`, se usa `withSymfonyMessage()` para embedder el logo:
+
+```php
+$mail->withSymfonyMessage(function (\Symfony\Component\Mime\Email $email) {
+    $logoPath = public_path('images/logo-email.png');
+    if (file_exists($logoPath)) {
+        $email->embedFromPath($logoPath, 'logo_cid');
+    }
+});
+```
+
+En las plantillas de email, se referencia usando CID:
+
+```blade
+<img src="cid:logo_cid" alt="Sweet Nanny" class="email-logo">
+```
+
+### Tema Personalizado
+
+Los emails usan un tema personalizado (`sweetnanny`) con una paleta de colores consistente con el sitio:
+
+**Colores principales:**
+- Primary: `#8B5CF6` (púrpura)
+- Primary Hover: `#7C3AED` (púrpura oscuro)
+- Accent: `#F472B6` (rosa)
+- Background: `#FDF7FF` (lavanda claro)
+- Text: `#374151` (gris oscuro)
+
+**Configuración:**
+
+El tema está configurado en `config/mail.php`:
+
+```php
+'markdown' => [
+    'theme' => 'sweetnanny',
+    'paths' => [
+        resource_path('views/vendor/mail'),
+    ],
+],
+```
+
+**Archivo de tema:** `resources/views/vendor/mail/html/themes/sweetnanny.css`
+
+### Plantillas en Español
+
+- **Verificación**: `resources/views/emails/auth/verify-es.blade.php`
+  - Asunto: "Verifica tu correo"
+  - Contenido completo en español
+  
+- **Reset de contraseña**: `resources/views/emails/auth/reset-es.blade.php`
+  - Asunto: "Restablece tu contraseña"
+  - Contenido completo en español
 
 ## Verificación de Email
 
 ### ¿Cómo Funciona?
 
-1. **Registro**: Al registrarse, el usuario recibe un email con un enlace de verificación
+1. **Registro**: Al registrarse, el usuario recibe un email en español con logo embebido
 2. **Enlace Firmado**: El enlace contiene un hash firmado que expira después de 60 minutos
 3. **Verificación**: Al hacer clic, el usuario es verificado y redirigido al dashboard
 4. **Protección**: Las rutas protegidas requieren email verificado para acceder

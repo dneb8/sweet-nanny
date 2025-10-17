@@ -1,6 +1,6 @@
 @component('mail::message')
 <div style="text-align: center; margin-bottom: 30px;">
-<img src="{{ asset('images/Logo-SweetNanny-Claro.svg') }}" alt="Sweet Nanny" style="max-width: 200px; height: auto;">
+<img src="cid:logo_cid" alt="Sweet Nanny" class="email-logo">
 </div>
 
 # ¡Hola, {{ $user->name }}!
