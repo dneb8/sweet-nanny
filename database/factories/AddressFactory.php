@@ -33,7 +33,7 @@ class AddressFactory extends Factory
     /**
      * Set the addressable owner for polymorphic relation
      */
-    public function for($owner)
+    public function forOwner($owner)
     {
         return $this->state(fn (array $attributes) => [
             'addressable_type' => get_class($owner),

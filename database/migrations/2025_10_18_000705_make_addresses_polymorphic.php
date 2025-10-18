@@ -43,6 +43,12 @@ return new class extends Migration
             $table->string('addressable_type')->nullable(false)->change();
             $table->unsignedBigInteger('addressable_id')->nullable(false)->change();
         });
+        
+        // Drop the old foreign key constraint on bookings.address_id (it's now polymorphic)
+        // Note: This keeps the column for backwards compatibility but removes the constraint
+        Schema::table('bookings', function (Blueprint $table) {
+            $table->dropForeign(['address_id']);
+        });
     }
 
     /**
