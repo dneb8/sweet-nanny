@@ -6,5 +6,5 @@ useFlashMessages();
 </script>
 
 <template>
-    <!-- This component has no visual output, it only handles flash messages -->
+    <div style="display: none;"></div>
 </template>
