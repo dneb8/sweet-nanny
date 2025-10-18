@@ -32,6 +32,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
 import UserCard from '@/Pages/User/partials/UserCard.vue';
 import { useDataTable } from '@/composables/useDataTable';
 import { getRoleLabelByString, RoleEnum } from '@/enums/role.enum';
@@ -111,6 +112,20 @@ function formatDate(date: string | null): string {
 function handleDelete(user: User) {
     if (confirm(`¿Estás seguro de que deseas eliminar a ${user.name} ${user.surnames}? Esta acción no se puede deshacer.`)) {
         router.delete(route('users.destroy', user.ulid));
+    }
+}
+
+// Get badge variant for role
+function getRoleBadgeVariant(role: string): 'default' | 'secondary' | 'destructive' | 'outline' {
+    switch (role) {
+        case RoleEnum.ADMIN:
+            return 'destructive';
+        case RoleEnum.TUTOR:
+            return 'default';
+        case RoleEnum.NANNY:
+            return 'secondary';
+        default:
+            return 'outline';
     }
 }
 </script>
@@ -198,7 +213,20 @@ function handleDelete(user: User) {
         </div>
 
         <!-- Table view -->
-        <div v-if="state.view === 'table'" class="border rounded-lg overflow-hidden">
+        <div v-if="state.view === 'table'" class="border rounded-lg overflow-hidden relative">
+            <!-- Loading overlay -->
+            <div
+                v-if="loading"
+                class="absolute inset-0 bg-background/60 backdrop-blur-sm z-10 flex items-center justify-center"
+                aria-busy="true"
+                role="status"
+            >
+                <div class="flex flex-col items-center gap-2">
+                    <Icon icon="mdi:loading" class="w-8 h-8 animate-spin text-primary" />
+                    <span class="text-sm text-muted-foreground">Cargando...</span>
+                </div>
+            </div>
+
             <div class="overflow-x-auto">
                 <Table>
                     <TableHeader class="sticky top-0 bg-muted/50 backdrop-blur supports-[backdrop-filter]:bg-muted/50">
@@ -245,9 +273,9 @@ function handleDelete(user: User) {
                                 </TableCell>
                                 <TableCell>{{ user.email }}</TableCell>
                                 <TableCell>
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                                    <Badge :variant="getRoleBadgeVariant(user.roles?.[0]?.name)">
                                         {{ getRoleLabelByString(user.roles?.[0]?.name) ?? 'Sin rol' }}
-                                    </span>
+                                    </Badge>
                                 </TableCell>
                                 <TableCell>{{ formatDate(user.created_at) }}</TableCell>
                                 <TableCell>

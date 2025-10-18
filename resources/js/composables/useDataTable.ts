@@ -26,6 +26,9 @@ export function useDataTable(
 
     // Search input ref for focus management
     const searchInputRef = ref<HTMLInputElement | null>(null);
+    
+    // Store cursor position for restoring after requests
+    let savedCursorPosition: { start: number; end: number } | null = null;
 
     // Initialize state from URL params or defaults
     const urlParams = new URLSearchParams(window.location.search);
@@ -80,6 +83,31 @@ export function useDataTable(
         );
     }
 
+    // Save cursor position before making request
+    function saveCursorPosition() {
+        if (searchInputRef.value) {
+            savedCursorPosition = {
+                start: searchInputRef.value.selectionStart || 0,
+                end: searchInputRef.value.selectionEnd || 0,
+            };
+        }
+    }
+
+    // Restore cursor position and focus after request
+    function restoreCursorPosition() {
+        nextTick(() => {
+            if (searchInputRef.value && savedCursorPosition) {
+                searchInputRef.value.focus();
+                searchInputRef.value.setSelectionRange(
+                    savedCursorPosition.start,
+                    savedCursorPosition.end
+                );
+            } else if (searchInputRef.value) {
+                searchInputRef.value.focus();
+            }
+        });
+    }
+
     // Fetch data from server
     const fetchData = useDebounceFn(() => {
         // Cancel previous request if it exists
@@ -90,7 +118,8 @@ export function useDataTable(
         // Create new abort controller
         abortController = new AbortController();
 
-        loading.value = true;
+        // Save cursor position before request
+        saveCursorPosition();
 
         const queryParams = buildQueryParams();
 
@@ -106,12 +135,8 @@ export function useDataTable(
                     loading.value = true;
                 },
                 onSuccess: () => {
-                    // Restore focus to search input after successful request
-                    nextTick(() => {
-                        if (searchInputRef.value) {
-                            searchInputRef.value.focus();
-                        }
-                    });
+                    // Restore focus and cursor position after successful request
+                    restoreCursorPosition();
                 },
                 onFinish: () => {
                     loading.value = false;
