@@ -38,25 +38,21 @@ Updated controllers to add success messages:
 #### app.ts
 **File**: `resources/js/app.ts`
 
-Enabled the Toaster component with configuration:
+Enabled the custom shadcn-style Toaster component:
 
 ```typescript
-import { Toaster } from '@/components/ui/sonner';
+import { Toaster } from '@/components/ui/toast';
 
 // In setup function:
-h(Toaster, {
-    position: 'top-right',
-    richColors: true,
-    closeButton: true,
-    duration: 5000,
-    pauseWhenPageIsHidden: true,
-})
+h(Toaster)
 ```
+
+The Toaster component is mounted at the root level without props, as all configuration is internal.
 
 #### useToast Composable
 **File**: `resources/js/composables/useToast.ts`
 
-Created a new composable for easy toast triggering from Vue components:
+Created a legacy-compatible composable for easy toast triggering from Vue components. This wraps the shadcn toast system:
 
 ```typescript
 export function useToast() {
@@ -69,35 +65,32 @@ export function useToast() {
 }
 ```
 
+The composable internally uses the shadcn `useToast()` from `@/components/ui/toast/use-toast`.
+
 #### useFlashMessages Composable
 **File**: `resources/js/composables/useFlashMessages.ts`
 
-Created a composable to automatically handle flash messages and display them as toasts. This eliminates code duplication across layouts:
+Created a composable to automatically handle flash messages and display them as toasts using the custom shadcn toast system. This eliminates code duplication across layouts:
 
 ```typescript
 export function useFlashMessages() {
-    // Watches page.props.flash for changes
+    const { toast } = useToast(); // from @/components/ui/toast/use-toast
+    // Watches page.props.flash for changes using watchEffect
     // Displays appropriate toasts based on message type
     // Implements deduplication logic
+    // Applies custom color schemes and icons per type
 }
 ```
 
 #### AppLayout.vue
 **File**: `resources/js/layouts/AppLayout.vue`
 
-Integrated automatic toast notifications by calling `useFlashMessages()`:
-
-```typescript
-import { useFlashMessages } from '@/composables/useFlashMessages';
-useFlashMessages();
-```
-
-This enables automatic display of flash messages as toasts.
+Flash message handling has been moved to the root level (app.ts) via the FlashMessagesHandler component. Individual layouts no longer need to call `useFlashMessages()`.
 
 #### AuthLayout.vue
 **File**: `resources/js/layouts/AuthLayout.vue`
 
-Same integration as AppLayout for authentication pages.
+Same as AppLayout - flash message handling is centralized at the root level.
 
 #### TypeScript Types
 **File**: `resources/js/types/index.d.ts`
@@ -174,12 +167,12 @@ This document, providing technical overview of all changes.
    - Shares flash messages via Inertia props
 
 3. **Inertia Props → Vue Watcher**
-   - Layout component watches `page.props.flash`
-   - Detects new messages
+   - FlashMessagesHandler component (mounted at root) watches flash
+   - Detects new messages using watchEffect
 
 4. **Vue Watcher → Toast Display**
-   - Watcher calls appropriate useToast method
-   - vue-sonner displays the toast
+   - Watcher calls shadcn useToast() from `@/components/ui/toast/use-toast`
+   - Custom shadcn toast component displays the toast
    - Toast auto-dismisses after configured duration
 
 ### Deduplication Strategy
@@ -285,10 +278,16 @@ If issues are encountered:
 ## Dependencies
 
 ### NPM Packages
-- `vue-sonner`: ^2.0.8 (already installed)
+- `@iconify/vue`: ^5.0.0 (for toast icons)
+- `lucide-vue-next`: ^0.468.0 (for UI icons like close button)
+- `reka-ui`: ^2.4.1 (UI primitives)
+- `@vueuse/core`: ^12.8.2 (Vue utilities)
 
-### No New Dependencies Required
-All other dependencies were already present in the project.
+### Custom Components
+All toast components are custom-built in the shadcn style:
+- `resources/js/components/ui/toast/Toast.vue`
+- `resources/js/components/ui/toast/Toaster.vue`
+- `resources/js/components/ui/toast/use-toast.ts`
 
 ## Browser Compatibility
 

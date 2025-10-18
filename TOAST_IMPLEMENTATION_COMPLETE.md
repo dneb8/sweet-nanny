@@ -2,7 +2,7 @@
 
 ## Overview
 
-A complete toast notification system has been successfully implemented for Sweet Nanny using **vue-sonner**. The system provides consistent, accessible, and user-friendly feedback for all user actions.
+A complete toast notification system has been successfully implemented for Sweet Nanny using **custom shadcn-style toast components**. The system provides consistent, accessible, and user-friendly feedback for all user actions.
 
 ## ✅ What Was Implemented
 
@@ -21,31 +21,48 @@ A complete toast notification system has been successfully implemented for Sweet
 ### 2. Frontend Implementation (Vue 3 + TypeScript)
 
 #### Global Toast Component
-- Enabled `Toaster` component in `app.ts` with optimal configuration:
+- Custom shadcn-style toast components in `resources/js/components/ui/toast/`
+- Enabled `Toaster` component in `app.ts` mounted at root level
+- Configuration:
   - Position: top-right
-  - Rich colors enabled
+  - Custom color schemes by type
+  - Icon support with @iconify/vue
   - Close button visible
-  - Duration: 5 seconds (6 for errors)
-  - Pauses when page is hidden
+  - Duration: 5.5 seconds
+  - Full dark mode support
 
 #### Composables
 Created two reusable composables:
 
 1. **`useToast()`** - Manual toast triggering
    ```typescript
+   import { useToast } from '@/composables/useToast';
    const { success, error, warning, info } = useToast();
    success('Message', 'Optional description');
+   ```
+   
+   Or use the shadcn toast directly:
+   ```typescript
+   import { useToast } from '@/components/ui/toast/use-toast';
+   const { toast } = useToast();
+   toast({
+       title: 'Operación correcta',
+       description: 'El usuario fue creado.',
+       class: 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-50 dark:border-emerald-500/30',
+       icon: 'mdi:check-circle'
+   });
    ```
 
 2. **`useFlashMessages()`** - Automatic flash message handling
    ```typescript
-   useFlashMessages(); // Automatically shows toasts from backend
+   // Called automatically via FlashMessagesHandler at root level
+   // No need to call in individual layouts
    ```
 
 #### Layout Integration
-- Integrated automatic toasts in `AppLayout.vue`
-- Integrated automatic toasts in `AuthLayout.vue`
+- FlashMessagesHandler mounted at root level in `app.ts`
 - Deduplication logic prevents showing same message multiple times
+- No need to call `useFlashMessages()` in individual layouts
 
 #### TypeScript Types
 - Added `FlashMessage` interface
@@ -164,18 +181,19 @@ const handleError = () => {
 
 ```vue
 <script setup lang="ts">
-import { useFlashMessages } from '@/composables/useFlashMessages';
-
-// Enable automatic toast notifications
-useFlashMessages();
+// No need to import or call useFlashMessages()
+// FlashMessagesHandler is mounted at root level in app.ts
 </script>
 
 <template>
     <div>
         <!-- Your layout content -->
+        <slot />
     </div>
 </template>
 ```
+
+The toast system is automatically available across all layouts because FlashMessagesHandler is mounted at the root level.
 
 ## 🔧 Technical Architecture
 
@@ -192,11 +210,11 @@ Backend Controller
        ↓
    Inertia Props (page.props.flash)
        ↓
-   useFlashMessages() Watcher
+   FlashMessagesHandler (watchEffect at root)
        ↓
-   useToast() Composable
+   useToast() from @/components/ui/toast/use-toast
        ↓
-   vue-sonner Display
+   Custom Shadcn Toast Display
        ↓
    Toast UI (top-right)
 ```
@@ -308,13 +326,16 @@ For questions or issues:
 
 All requirements from the original issue have been met:
 
-- ✅ vue-sonner installed and integrated
+- ✅ Custom shadcn-style toast components created and integrated
 - ✅ Toaster positioned at top-right
-- ✅ Flash messages exposed from backend
-- ✅ Global hook listens to page.props.flash
+- ✅ Flash messages exposed from backend via HandleInertiaRequests
+- ✅ Global hook (FlashMessagesHandler) listens to page.props.flash at root level
 - ✅ Controllers standardized to use flash messages
-- ✅ Frontend API (useToast composable) created
-- ✅ Styling aligned with project theme
+- ✅ Frontend API (useToast composable) created with both legacy and direct access
+- ✅ Styling aligned with project theme using custom Tailwind classes
+- ✅ Color-coded toasts by type (emerald, rose, amber, sky)
+- ✅ Icon support with @iconify/vue (mdi icons)
+- ✅ Full dark mode support
 - ✅ Tests created and passing
 - ✅ Documentation complete
 

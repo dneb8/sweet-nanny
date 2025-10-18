@@ -156,32 +156,30 @@ interface UseToast {
 
 ### Uso Avanzado
 
-Para opciones más avanzadas, usa directamente la función `toast`:
+Para opciones más avanzadas, usa directamente la función `toast` desde el composable de shadcn:
 
 ```typescript
-import { useToast } from '@/composables/useToast';
+import { useToast } from '@/components/ui/toast/use-toast';
 
 const { toast } = useToast();
 
-// Toast con acción
-toast.success('Cambios guardados', {
-    description: '¿Quieres ir a la lista?',
-    action: {
-        label: 'Ver lista',
-        onClick: () => router.visit('/resources')
-    },
-    duration: 10000
+// Toast personalizado con estilo y icono
+toast({
+    title: 'Operación correcta',
+    description: 'El usuario fue creado.',
+    class: 'bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-50 dark:border-emerald-500/30',
+    icon: 'mdi:check-circle',
+    duration: 5500
 });
 
-// Toast con promesa
-toast.promise(
-    fetch('/api/data'),
-    {
-        loading: 'Cargando...',
-        success: 'Datos cargados',
-        error: 'Error al cargar'
-    }
-);
+// Toast de error personalizado
+toast({
+    title: 'Error al guardar',
+    description: 'No se pudo completar la operación.',
+    class: 'bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-500/20 dark:text-rose-50 dark:border-rose-500/30',
+    icon: 'mdi:close-circle',
+    duration: 6000
+});
 ```
 
 ## Integración Automática
@@ -210,14 +208,18 @@ Cualquier mensaje flash enviado desde el backend se mostrará automáticamente c
 Configurado en `app.ts`:
 
 ```typescript
-h(Toaster, {
-    position: 'top-right',      // Posición en la esquina superior derecha
-    richColors: true,            // Colores ricos por tipo
-    closeButton: true,           // Botón de cerrar visible
-    duration: 5000,              // Duración por defecto: 5 segundos
-    pauseWhenPageIsHidden: true  // Pausa cuando la página está oculta
-})
+import { Toaster } from '@/components/ui/toast';
+
+// En el setup de la aplicación:
+h(Toaster)
 ```
+
+El Toaster está configurado internamente con:
+- Posición: top-right (esquina superior derecha)
+- Duración por defecto: 5.5 segundos
+- Botón de cerrar incluido
+- Animaciones de slide-in/slide-out
+- Soporte completo para dark mode
 
 ### Duración por Tipo
 
@@ -228,13 +230,12 @@ h(Toaster, {
 
 ## Estilos y Tema
 
-Los toasts usan las variables CSS del tema actual:
+Los toasts usan clases personalizadas de Tailwind CSS con soporte completo para modo oscuro:
 
-```css
---normal-bg: var(--popover)
---normal-text: var(--popover-foreground)
---normal-border: var(--border)
-```
+- **Success**: `bg-emerald-50 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-50`
+- **Error**: `bg-rose-50 text-rose-800 dark:bg-rose-500/20 dark:text-rose-50`
+- **Warning**: `bg-amber-50 text-amber-800 dark:bg-amber-500/20 dark:text-amber-50`
+- **Info**: `bg-sky-50 text-sky-800 dark:bg-sky-500/20 dark:text-sky-50`
 
 El tema oscuro/claro se aplica automáticamente según la configuración del usuario.
 
@@ -300,6 +301,7 @@ El sistema de deduplicación debería prevenir esto. Si ocurre:
 
 ## Recursos Adicionales
 
-- [vue-sonner Documentation](https://vue-sonner.vercel.app/)
+- [Shadcn Vue Documentation](https://www.shadcn-vue.com/)
+- [Reka UI Toast Documentation](https://reka-ui.com/docs/components/toast)
 - [Inertia.js Flash Messages](https://inertiajs.com/redirects#flash-messages)
 - [Laravel Session Flash](https://laravel.com/docs/session#flash-data)
