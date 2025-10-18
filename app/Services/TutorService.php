@@ -60,4 +60,18 @@ class TutorService
 
         $tutor->syncRoles(RoleEnum::from($validated->roles));   
     }
+
+    /**
+     * Get data for showing a tutor profile
+     * Eager loads relationships to avoid N+1 queries
+     */
+    public function getShowData(string $id): Tutor
+    {
+        return Tutor::where('ulid', $id)
+            ->with([
+                'user.address',   // user information with address
+                'children',       // children information
+            ])
+            ->firstOrFail();
+    }
 }
