@@ -122,7 +122,7 @@ const fmtDateTime = (value?: string | Date | null) => {
       </div>
 
       <div v-if="(booking.booking_appointments ?? []).length === 0" class="rounded-md border p-4 text-sm text-muted-foreground">
-        No hay citas registradas para esta servicio.
+        No hay citas registradas para este servicio.
       </div>
 
       <div v-else class="grid gap-3">
