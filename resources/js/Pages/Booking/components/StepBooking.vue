@@ -123,7 +123,7 @@ watch(desc, (v) => console.log("[ChildPicker] booking.description ->", v), { imm
             <Icon icon="lucide:users" /> Niños
           </div>
           <p class="text-xs text-muted-foreground max-w-md font-light italic">
-            Selecciona entre 1 y 4 niños para la servicio. Si no aparece en la lista, agrégalo.
+            Selecciona entre 1 y 4 niños para el servicio. Si no aparece en la lista, agrégalo.
           </p>
         </div>
         <Button size="sm" variant="outline" @click="openCreate">
