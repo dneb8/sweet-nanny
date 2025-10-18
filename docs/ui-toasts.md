@@ -4,7 +4,7 @@ Este documento describe el sistema de notificaciones toast implementado en la ap
 
 ## Descripción General
 
-El sistema de toasts utiliza **vue-sonner** para mostrar notificaciones temporales en la esquina superior derecha de la pantalla. Los toasts se disparan automáticamente desde mensajes flash del backend o manualmente desde el frontend.
+El sistema de toasts utiliza componentes personalizados de estilo **shadcn** para mostrar notificaciones temporales en la esquina superior derecha de la pantalla. Los toasts se disparan automáticamente desde mensajes flash del backend o manualmente desde el frontend.
 
 ## Características
 
