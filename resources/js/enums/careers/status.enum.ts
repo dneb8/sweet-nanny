@@ -1,3 +1,4 @@
+// status.enum.ts
 export enum StatusEnum {
   EN_CURSO = 'en_curso',
   FINALIZADO = 'finalizado',
@@ -5,13 +6,11 @@ export enum StatusEnum {
   TRUNCA = 'trunca',
 }
 
-export namespace StatusEnum {
-    export function labels(): Record<string, string> {
-        return {
-            [StatusEnum.EN_CURSO]: 'En Curso',
-            [StatusEnum.FINALIZADO]: 'Finalizado (Egresado)',
-            [StatusEnum.TITULADO]: 'Titulado(a)',
-            [StatusEnum.TRUNCA]: 'Trunca (Abandonada)',
-        };
-    }
+export function labels(): Record<StatusEnum, string> {
+  return {
+    [StatusEnum.EN_CURSO]: 'En Curso',
+    [StatusEnum.FINALIZADO]: 'Finalizado (Egresado)',
+    [StatusEnum.TITULADO]: 'Titulado(a)',
+    [StatusEnum.TRUNCA]: 'Trunca (Abandonada)',
+  };
 }

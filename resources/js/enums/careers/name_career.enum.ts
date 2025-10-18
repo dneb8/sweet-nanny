@@ -1,3 +1,4 @@
+// resources/js/enums/careers/name_career.enum.ts
 export enum NameCareerEnum {
   PEDAGOGIA = "PEDAGOGIA",
   PSICOLOGIA = "PSICOLOGIA",
@@ -10,18 +11,17 @@ export enum NameCareerEnum {
   NUTRICION = "NUTRICION"
 }
 
-export namespace NameCareerEnum {
-  export function labels(): Record<string, string> {
-    return {
-      [NameCareerEnum.PEDAGOGIA]: 'Pedagogía',
-      [NameCareerEnum.PSICOLOGIA]: 'Psicología',
-      [NameCareerEnum.ENFERMERIA]: 'Enfermería',
-      [NameCareerEnum.ARTES]: 'Artes',
-      [NameCareerEnum.EDUCACION_ESPECIAL]: 'Educación especial',
-      [NameCareerEnum.TRABAJO_SOCIAL]: 'Trabajo social',
-      [NameCareerEnum.PSICOPEDAGOGIA]: 'Psicopedagogía',
-      [NameCareerEnum.EDUCACION_INFANTIL]: 'Educación infantil',
-      [NameCareerEnum.NUTRICION]: 'Nutrición'
-    }
-  }
+/*  ----  la función labels fuera del namespace  ----  */
+export function labels(): Record<NameCareerEnum, string> {
+  return {
+    [NameCareerEnum.PEDAGOGIA]: 'Pedagogía',
+    [NameCareerEnum.PSICOLOGIA]: 'Psicología',
+    [NameCareerEnum.ENFERMERIA]: 'Enfermería',
+    [NameCareerEnum.ARTES]: 'Artes',
+    [NameCareerEnum.EDUCACION_ESPECIAL]: 'Educación especial',
+    [NameCareerEnum.TRABAJO_SOCIAL]: 'Trabajo social',
+    [NameCareerEnum.PSICOPEDAGOGIA]: 'Psicopedagogía',
+    [NameCareerEnum.EDUCACION_INFANTIL]: 'Educación infantil',
+    [NameCareerEnum.NUTRICION]: 'Nutrición'
+  };
 }

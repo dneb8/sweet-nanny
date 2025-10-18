@@ -6,8 +6,7 @@ import { useForm as useInertiaForm } from "@inertiajs/vue3";
 import * as z from "zod";
 import { Career } from "@/types/Career";
 import { Nanny } from "@/types/Nanny";
-import { NameCareerEnum } from "@/enums/careers/name_career.enum";
-
+import { NameCareerEnum, labels as nameCareerLabels } from "@/enums/careers/name_career.enum";
 
 export class CareerFormService {
   public career?: Ref<Career>;
@@ -29,15 +28,17 @@ export class CareerFormService {
       this.career = ref<Career>(JSON.parse(JSON.stringify(career)));
     }
 
-    // esquema de validación
+    // ---- aquí usamos la función importada ----
+    const validKeys = Object.keys(nameCareerLabels());
+
     this.formSchema = toTypedSchema(
       z.object({
         name: z
-  .string()
-  .nonempty("El nombre es obligatorio")
-  .refine(val => Object.keys(NameCareerEnum.labels()).includes(val), {
-    message: "El nombre de la carrera seleccionado no es válido"
-  }),
+          .string()
+          .nonempty("El nombre es obligatorio")
+          .refine(val => validKeys.includes(val), {
+            message: "El nombre de la carrera seleccionado no es válido"
+          }),
 
         nanny_id: z.number().optional(),
         degree: z.string().max(255, "El grado no puede exceder 255 caracteres").optional(),
@@ -49,12 +50,12 @@ export class CareerFormService {
     const { values, isFieldDirty, handleSubmit } = useForm({
       validationSchema: this.formSchema,
       initialValues: {
-          name: career ? career.name : "",
-          nanny_id: career?.pivot?.nanny_id || nanny?.id || undefined,
-          degree: career?.pivot?.degree ?? "",
-          status: career?.pivot?.status ?? "",
-          institution: career?.pivot?.institution ?? "",
-              }
+        name: career ? career.name : "",
+        nanny_id: career?.pivot?.nanny_id || nanny?.id || undefined,
+        degree: career?.pivot?.degree ?? "",
+        status: career?.pivot?.status ?? "",
+        institution: career?.pivot?.institution ?? "",
+      }
     });
 
     this.values = values;

@@ -9,22 +9,21 @@ import { router } from '@inertiajs/vue3'
 import CareerForm from '../forms/CareerForm.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
-import { StatusEnum } from '@/enums/careers/status.enum'
-import { DegreeEnum } from '@/enums/careers/degree.enum'
-import { NameCareerEnum} from '@/enums/careers/name_career.enum'
+
+import { StatusEnum, labels as statusLabels } from '@/enums/careers/status.enum'
+import { DegreeEnum, labels as degreeLabels } from '@/enums/careers/degree.enum'
+import { NameCareerEnum, labels as nameCareerLabels } from '@/enums/careers/name_career.enum'
 
 
-const getStatusLabel = (status: string) => {
-  return StatusEnum.labels()[status] || status
-}
+const getStatusLabel = (status: string) =>
+  statusLabels()[status as keyof typeof statusLabels] ?? status
 
-const getDegreeLabel = (degree: string) => {
-  return DegreeEnum.labels()[degree] || degree
-}
+const getDegreeLabel = (degree: string) =>
+  degreeLabels()[degree as keyof typeof degreeLabels] ?? degree
 
 const getNameCareerLabel = (name_career: string) => {
-    const key = name_career.toUpperCase(); 
-    return NameCareerEnum.labels()[key] || name_career
+  const key = name_career.toUpperCase()
+  return nameCareerLabels()[key as keyof typeof nameCareerLabels] ?? name_career
 }
 
 const props = defineProps<{ 
