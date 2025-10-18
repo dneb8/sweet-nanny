@@ -19,30 +19,14 @@ const props = defineProps<{
 const addressIdBF = useBoundField<number | null>("booking.address_id")
 const addressId = addressIdBF.value
 
-// Address fields for inline creation (fallback if modal doesn't work)
-const postal_code     = useBoundField<string>("address.postal_code")
-const street          = useBoundField<string>("address.street")
-const neighborhood    = useBoundField<string>("address.neighborhood")
-const type            = useBoundField<string>("address.type")
-const other_type      = useBoundField<string>("address.other_type")
-const internal_number = useBoundField<string>("address.internal_number")
-
 const addresses = ref<Address[]>(props.initialAddresses ?? [])
 const tutorId  = computed<number>(() => Number(props.tutor?.id ?? 0))
+const tutorType = "App\\Models\\Tutor"
 
 const selectedId = computed<number | null>({
   get: () => addressId.value,
   set: (v) => { 
     addressId.value = v
-    // Clear inline fields when selecting
-    if (v) {
-      postal_code.value.value = ""
-      street.value.value = ""
-      neighborhood.value.value = ""
-      type.value.value = ""
-      other_type.value.value = ""
-      internal_number.value.value = ""
-    }
   },
 })
 
@@ -59,46 +43,17 @@ function toggleSelect(id: number) {
 // Modal crear/editar
 const showFormModal = ref(false)
 const formTitle = ref("Agregar dirección")
-const formAddress = ref<Partial<Address> | null>(null)
-
-interface AddressInput extends Partial<Address> {
-  owner_id?: number
-  owner_type?: string
-}
-
-function asAddressInput(a?: Address | null): AddressInput {
-  if (!a) {
-    return {
-      owner_id: tutorId.value,
-      owner_type: 'App\\Models\\Tutor',
-      postal_code: "",
-      street: "",
-      neighborhood: "",
-      type: "",
-      other_type: "",
-      internal_number: "",
-    }
-  }
-  return {
-    id: a.id,
-    postal_code: a.postal_code ?? "",
-    street: a.street ?? "",
-    neighborhood: a.neighborhood ?? "",
-    type: a.type ?? "",
-    other_type: a.other_type ?? "",
-    internal_number: a.internal_number ?? "",
-  }
-}
+const formAddress = ref<Address | undefined>(undefined)
 
 function openCreate() {
   formTitle.value = "Agregar dirección"
-  formAddress.value = asAddressInput(null)
+  formAddress.value = undefined
   showFormModal.value = true
 }
 
 function openEdit(a: Address) {
   formTitle.value = "Editar dirección"
-  formAddress.value = asAddressInput(a)
+  formAddress.value = a
   showFormModal.value = true
 }
 
@@ -204,10 +159,9 @@ function onModalClose() {
       @close="onModalClose"
     >
       <AddressForm
-        v-if="formAddress"
         :address="formAddress"
         :owner-id="tutorId"
-        owner-type="App\Models\Tutor"
+        :owner-type="tutorType"
         @saved="onAddressSaved"
         @loading="() => {}"
       />

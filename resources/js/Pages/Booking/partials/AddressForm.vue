@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from "vue"
+import { ref } from "vue"
 import {
   FormField, FormItem, FormLabel, FormControl, FormMessage,
 } from "@/components/ui/form"
@@ -8,51 +8,91 @@ import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { AddressFormService } from "@/services/addressFormService"
+import { createAddress, updateAddress, type Owner } from "@/services/addressFormService"
 import type { Address } from "@/types/Address"
 import { TypeEnum } from "@/enums/addresses/type.enum"
-
-interface AddressInput extends Partial<Address> {
-  id?: number
-  owner_id?: number
-  owner_type?: string
-}
+import * as z from "zod"
+import { toTypedSchema } from "@vee-validate/zod"
+import { useForm } from "vee-validate"
 
 const props = defineProps<{ 
-  address: Address | AddressInput
-  ownerId?: number
-  ownerType?: string
+  address?: Address
+  ownerId: string | number
+  ownerType: string
 }>()
 
 const emit = defineEmits<{ 
   (e: "saved", value: Address): void
-  (e: "deleted", id: number): void
   (e: "loading", value: boolean): void
 }>()
 
-let service = new AddressFormService(props.address as Address, props.ownerId, props.ownerType)
-function wire() { watch(() => service.loading.value, v => emit("loading", v), { immediate: true }) }
-wire()
-watch(() => (props.address as any)?.id, () => { 
-  service = new AddressFormService(props.address as Address, props.ownerId, props.ownerType)
-  wire() 
+const loading = ref(false)
+const errores = ref<Record<string, string[]>>({})
+
+const formSchema = toTypedSchema(
+  z.object({
+    postal_code: z.string().min(4, "Código postal requerido"),
+    street: z.string().min(2, "Calle requerida"),
+    neighborhood: z.string().min(2, "Colonia requerida"),
+    type: z.string().min(2, "Tipo requerido"),
+    other_type: z.string().optional(),
+    internal_number: z.string().optional(),
+  })
+)
+
+const { values, isFieldDirty, handleSubmit } = useForm({
+  validationSchema: formSchema,
+  initialValues: {
+    postal_code: props.address?.postal_code ?? "",
+    street: props.address?.street ?? "",
+    neighborhood: props.address?.neighborhood ?? "",
+    type: props.address?.type ?? "",
+    other_type: props.address?.other_type ?? "",
+    internal_number: props.address?.internal_number ?? "",
+  },
 })
 
-const { isFieldDirty, loading, errores } = service
+const onSubmit = handleSubmit(async (formData) => {
+  loading.value = true
+  emit("loading", true)
+  errores.value = {}
 
-async function onSaveClick() {
-  const ok = await service.guardar()   
-  if (ok) emit("saved", service.address.value)
-}
+  const owner: Owner = {
+    ownerId: props.ownerId,
+    ownerType: props.ownerType,
+  }
+
+  try {
+    let savedAddress: Address
+    
+    if (props.address?.id) {
+      // Update existing address
+      savedAddress = await updateAddress(props.address.id, formData, owner)
+    } else {
+      // Create new address
+      savedAddress = await createAddress(formData, owner)
+    }
+
+    emit("saved", savedAddress)
+  } catch (err: any) {
+    if (err?.response?.data?.errors) {
+      errores.value = err.response.data.errors
+    }
+  } finally {
+    loading.value = false
+    emit("loading", false)
+  }
+})
 
 function onPostalCodeInput(e: Event) {
   const target = e.target as HTMLInputElement
   target.value = target.value.replace(/\D/g, "").slice(0, 6)
 }
 </script>
+</script>
 
 <template>
-  <form class="max-w-md mx-auto space-y-4" @submit.prevent="onSaveClick">
+  <form class="max-w-md mx-auto space-y-4" @submit.prevent="onSubmit">
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <!-- Postal Code -->
       <FormField v-slot="{ componentField }" name="postal_code" :validate-on-blur="!isFieldDirty">
@@ -144,7 +184,7 @@ function onPostalCodeInput(e: Event) {
 
     <div class="mt-2 flex items-center justify-center gap-2">
       <Button size="sm" variant="outline" :disabled="loading" type="submit">
-        {{ service.address.value.id ? 'Actualizar' : 'Guardar' }}
+        {{ props.address?.id ? 'Actualizar' : 'Guardar' }}
       </Button>
       <span v-if="loading" class="text-xs text-muted-foreground">Guardando…</span>
     </div>
