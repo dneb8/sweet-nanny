@@ -14,6 +14,15 @@ class Booking extends Model
         'address_id',
         'description',
         'recurrent',
+        'qualities',
+        'degree',
+        'courses',
+    ];
+
+    protected $casts = [
+        'qualities' => 'array',
+        'courses' => 'array',
+        'recurrent' => 'boolean',
     ];
 
     // Relación uno a muchos con BookingAppointment
@@ -28,8 +37,14 @@ class Booking extends Model
         return $this->belongsTo(Tutor::class);
     }
 
-    // Relación con Address (cada booking pertenece a una dirección)
+    // Relación con Address (morphOne - polymorphic)
     public function address()
+    {
+        return $this->morphOne(Address::class, 'addressable');
+    }
+    
+    // Keep old belongsTo for backwards compatibility during migration
+    public function addressOld()
     {
         return $this->belongsTo(Address::class);
     }

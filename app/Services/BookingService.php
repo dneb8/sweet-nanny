@@ -17,28 +17,41 @@ class BookingService
             $appointments = data_get($payload, 'appointments', []);
             $addressData  = data_get($payload, 'address');
 
-            // Dirección opcional: crea si no se mandó address_id
+            // Crea booking primero (sin address_id)
+            $booking = Booking::create([
+                'tutor_id'    => (int) data_get($bookingData, 'tutor_id'),
+                'description' => (string) data_get($bookingData, 'description', ''),
+                'recurrent'   => (bool) data_get($bookingData, 'recurrent', false),
+                'qualities'   => data_get($bookingData, 'qualities', []),
+                'degree'      => data_get($bookingData, 'degree'),
+                'courses'     => data_get($bookingData, 'courses', []),
+            ]);
+            
+            // Handle address - either select existing or create new (polymorphic)
             $addressId = data_get($bookingData, 'address_id');
-            if (!$addressId && $addressData) {
-                $address = Address::create([
-                    'tutor_id'        => (int) data_get($bookingData, 'tutor_id'),
+            if ($addressId) {
+                // Using existing address - associate it polymorphically
+                $existingAddress = Address::find($addressId);
+                if ($existingAddress) {
+                    // Update to be owned by this booking
+                    $existingAddress->update([
+                        'addressable_type' => 'App\\Models\\Booking',
+                        'addressable_id' => $booking->id,
+                    ]);
+                }
+            } elseif ($addressData) {
+                // Create new address owned by booking
+                Address::create([
                     'postal_code'     => (string) data_get($addressData, 'postal_code', ''),
                     'street'          => (string) data_get($addressData, 'street', ''),
                     'neighborhood'    => (string) data_get($addressData, 'neighborhood', ''),
                     'type'            => data_get($addressData, 'type'),
                     'other_type'      => data_get($addressData, 'other_type'),
                     'internal_number' => data_get($addressData, 'internal_number'),
+                    'addressable_type' => 'App\\Models\\Booking',
+                    'addressable_id'   => $booking->id,
                 ]);
-                $addressId = $address->id;
             }
-
-            // Crea booking
-            $booking = Booking::create([
-                'tutor_id'   => (int) data_get($bookingData, 'tutor_id'),
-                'address_id' => $addressId,
-                'description'=> (string) data_get($bookingData, 'description', ''),
-                'recurrent'  => (bool) data_get($bookingData, 'recurrent', false),
-            ]);
 
             // Children: acepta booking.children (preferido) o booking.child_ids
             $rawChildren = data_get($bookingData, 'children', data_get($bookingData, 'child_ids', []));
@@ -91,19 +104,26 @@ class BookingService
             $appointments = $payload['appointments'] ?? [];
             $addressData  = $payload['address'] ?? null;
 
-            // - Si viene explícito en el payload, se respeta (permitiendo null para limpiar).
-            //  - Si NO viene, conservamos el address_id actual.
-            if (array_key_exists('address_id', $bookingData)) {
-                $addressId = $bookingData['address_id'] ? (int) $bookingData['address_id'] : null;
-            } else {
-                $addressId = $booking->address_id;
-            }
-
-            // 2) Crear/actualizar dirección inline si NO hay address_id pero SÍ vienen datos de address.
-            if (!$addressId && $addressData) {
+            // Handle address polymorphically
+            $addressId = $bookingData['address_id'] ?? null;
+            
+            if ($addressId) {
+                // Using existing address - check if we need to reassociate
+                $existingAddress = Address::find($addressId);
+                if ($existingAddress) {
+                    // If this address isn't already owned by this booking, update it
+                    if ($existingAddress->addressable_type !== 'App\\Models\\Booking' || 
+                        $existingAddress->addressable_id !== $booking->id) {
+                        $existingAddress->update([
+                            'addressable_type' => 'App\\Models\\Booking',
+                            'addressable_id' => $booking->id,
+                        ]);
+                    }
+                }
+            } elseif ($addressData) {
+                // Create or update address inline
                 if ($booking->address) {
                     $booking->address->update([
-                        'tutor_id'        => $bookingData['tutor_id'] ?? $booking->tutor_id,
                         'postal_code'     => $addressData['postal_code']     ?? $booking->address->postal_code,
                         'street'          => $addressData['street']          ?? $booking->address->street,
                         'neighborhood'    => $addressData['neighborhood']    ?? $booking->address->neighborhood,
@@ -111,27 +131,28 @@ class BookingService
                         'other_type'      => $addressData['other_type']      ?? $booking->address->other_type,
                         'internal_number' => $addressData['internal_number'] ?? $booking->address->internal_number,
                     ]);
-                    $addressId = $booking->address->id;
                 } else {
-                    $address = Address::create([
-                        'tutor_id'        => $bookingData['tutor_id'] ?? $booking->tutor_id,
+                    Address::create([
                         'postal_code'     => $addressData['postal_code']     ?? '',
                         'street'          => $addressData['street']          ?? '',
                         'neighborhood'    => $addressData['neighborhood']    ?? '',
                         'type'            => $addressData['type']            ?? null,
                         'other_type'      => $addressData['other_type']      ?? null,
                         'internal_number' => $addressData['internal_number'] ?? null,
+                        'addressable_type' => 'App\\Models\\Booking',
+                        'addressable_id'   => $booking->id,
                     ]);
-                    $addressId = $address->id;
                 }
             }
 
-            // 3) Actualizar booking
+            // Update booking
             $booking->update([
-                'tutor_id'   => (int) ($bookingData['tutor_id'] ?? $booking->tutor_id),
-                'address_id' => $addressId,
-                'description'=> $bookingData['description'] ?? $booking->description,
-                'recurrent'  => (bool) ($bookingData['recurrent'] ?? $booking->recurrent),
+                'tutor_id'    => (int) ($bookingData['tutor_id'] ?? $booking->tutor_id),
+                'description' => $bookingData['description'] ?? $booking->description,
+                'recurrent'   => (bool) ($bookingData['recurrent'] ?? $booking->recurrent),
+                'qualities'   => $bookingData['qualities'] ?? $booking->qualities,
+                'degree'      => $bookingData['degree'] ?? $booking->degree,
+                'courses'     => $bookingData['courses'] ?? $booking->courses,
             ]);
 
             // 4) Sincronizar niños (admite strings o ints)

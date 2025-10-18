@@ -11,12 +11,16 @@ use Illuminate\Support\Str;
 class AddressService
 {
     /**
-     * Crea una dirección
+     * Crea una dirección con relación polimórfica
      */
     public function createAddress(CreateAddressRequest $request): Address
     {
         $validated = $request->safe();
 
+        // Get polymorphic owner info
+        $ownerType = $request->input('owner_type');
+        $ownerId = $request->input('owner_id');
+        
         $address = Address::create([
             'postal_code' => $validated->postal_code,
             'street' => $validated->street,
@@ -24,13 +28,14 @@ class AddressService
             'type' => $validated->type,
             'other_type' => $validated->other_type ?? null,
             'internal_number' => $validated->internal_number ?? null,
+            'addressable_type' => $ownerType,
+            'addressable_id' => $ownerId,
         ]);
 
+        // Backwards compatibility: handle old user association if needed
         $userId = $request->tutor_id ?? $request->nanny_id;
-
-        if ($userId) {
+        if ($userId && !$ownerType) {
             $user = User::find($userId);
-        
             if ($user) {
                 $user->address()->associate($address);
                 $user->save();

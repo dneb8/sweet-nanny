@@ -10,6 +10,24 @@ use Illuminate\Http\RedirectResponse;
 class AddressController extends Controller
 {
     /**
+     * Lista direcciones para un propietario polimórfico
+     */
+    public function index(string $ownerType, int $ownerId)
+    {
+        $modelClass = 'App\\Models\\' . $ownerType;
+        
+        if (!class_exists($modelClass)) {
+            return response()->json(['error' => 'Invalid owner type'], 400);
+        }
+        
+        $addresses = Address::where('addressable_type', $modelClass)
+            ->where('addressable_id', $ownerId)
+            ->get();
+            
+        return response()->json(['addresses' => $addresses]);
+    }
+
+    /**
      * Almacena una nueva dirección
      */
     public function store(AddressService $addressService, CreateAddressRequest $request): RedirectResponse

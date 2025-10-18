@@ -22,6 +22,8 @@ class Address extends Model
         'type',
         'other_type',
         'internal_number',
+        'addressable_type',
+        'addressable_id',
     ];
 
     public function uniqueIds()
@@ -35,6 +37,13 @@ class Address extends Model
         'type' => TypeEnum::class
     ];
 
+    // Polymorphic relation
+    public function addressable()
+    {
+        return $this->morphTo();
+    }
+
+    // Keep old relations for backwards compatibility during migration
     public function users()
     {
         return $this->hasMany(User::class);

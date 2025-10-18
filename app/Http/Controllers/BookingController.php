@@ -6,6 +6,9 @@ use App\Models\User;
 use App\Models\Booking;
 use App\Services\BookingService;
 use App\Enums\Children\KinkshipEnum;
+use App\Enums\Nanny\QualityEnum;
+use App\Enums\Career\DegreeEnum;
+use App\Enums\Course\NameEnum as CourseNameEnum;
 use App\Http\Requests\Bookings\CreateBookingRequest;
 use App\Http\Requests\Bookings\UpdateBookingRequest;
 use Illuminate\Support\Facades\Auth;
@@ -29,14 +32,18 @@ class BookingController extends Controller
             'tutor' => fn ($q) => $q->select('id','user_id')->with([
                 'children',
                 'user.address',
+                'addresses', // Include tutor's addresses
             ]),
         ])->findOrFail(Auth::id());
 
         $kinkships = array_map(fn($c) => $c->value, KinkshipEnum::cases());
 
         return Inertia::render('Booking/Create', [
-            'kinkships' => $kinkships,
-            'tutor'     => $user->tutor,
+            'kinkships'   => $kinkships,
+            'tutor'       => $user->tutor,
+            'qualities'   => QualityEnum::labels(),
+            'degrees'     => DegreeEnum::labels(),
+            'courseNames' => CourseNameEnum::labels(),
         ]);
     }
 
@@ -62,7 +69,7 @@ class BookingController extends Controller
     public function edit(Booking $booking): Response
     {
         $booking->load([
-            'tutor',
+            'tutor.addresses',
             'children',
             'bookingAppointments',
             'address',
@@ -70,11 +77,13 @@ class BookingController extends Controller
 
         $kinkships = array_map(fn($c) => $c->value, KinkshipEnum::cases());
 
-
         return Inertia::render('Booking/Edit', [
             'booking'        => $booking,
             'initialBooking' => $booking,
             'kinkships'      => $kinkships,
+            'qualities'      => QualityEnum::labels(),
+            'degrees'        => DegreeEnum::labels(),
+            'courseNames'    => CourseNameEnum::labels(),
         ]);
     }
 
