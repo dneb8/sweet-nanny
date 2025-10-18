@@ -26,9 +26,11 @@ class BookingService
             $addressData  = data_get($payload, 'address');
 
             // Crea booking primero
+            $addressId = data_get($bookingData, 'address_id');
+            
             $booking = Booking::create([
                 'tutor_id'   => (int) data_get($bookingData, 'tutor_id'),
-                'address_id' => data_get($bookingData, 'address_id'), // legacy support
+                'address_id' => $addressId ? (int) $addressId : null, // legacy support
                 'description'=> (string) data_get($bookingData, 'description', ''),
                 'recurrent'  => (bool) data_get($bookingData, 'recurrent', false),
                 'qualities'  => data_get($bookingData, 'qualities', []),
@@ -37,14 +39,9 @@ class BookingService
             ]);
 
             // Handle polymorphic address
-            $addressId = data_get($bookingData, 'address_id');
             if (!$addressId && $addressData) {
                 // Create new polymorphic address for this booking
                 $this->addressService->createForOwner($addressData, $booking);
-            } elseif ($addressId) {
-                // Legacy: address_id is set
-                $booking->address_id = $addressId;
-                $booking->save();
             }
 
             // Children: acepta booking.children (preferido) o booking.child_ids

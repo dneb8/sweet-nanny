@@ -28,7 +28,17 @@ class AddressService
             'internal_number' => $data['internal_number'] ?? null,
         ]);
 
-        $owner->addresses()->save($address);
+        // Check if the owner has morphOne (Booking) or morphMany (Tutor, Nanny)
+        if (method_exists($owner, 'addressPolymorphic')) {
+            $owner->addressPolymorphic()->save($address);
+        } elseif (method_exists($owner, 'addresses')) {
+            $owner->addresses()->save($address);
+        } else {
+            // Fallback: manually set the polymorphic relationship
+            $address->addressable_type = get_class($owner);
+            $address->addressable_id = $owner->id;
+            $address->save();
+        }
 
         return $address;
     }

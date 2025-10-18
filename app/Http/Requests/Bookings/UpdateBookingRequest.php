@@ -18,6 +18,9 @@ class UpdateBookingRequest extends FormRequest
                 'description'=> '',
                 'recurrent'  => false,
                 'child_ids'  => [],
+                'qualities'  => [],
+                'degree'     => null,
+                'courses'    => [],
             ], (array) $this->input('booking', [])),
             'appointments' => (array) $this->input('appointments', []),
             'address'      => (array) $this->input('address', []),
@@ -44,7 +47,7 @@ class UpdateBookingRequest extends FormRequest
 
             'appointments'                 => ['required','array',"min:$minAppts","max:$maxAppts"],
             'appointments.*.start_date'    => ['required','date'],
-            'appointments.*.end_date'      => ['required','date','after:appointments.*.start_date'],
+            'appointments.*.end_date'      => ['required','date'],
             'appointments.*.duration'      => ['required','integer','min:1','max:8'],
 
             'booking.address_id'           => ['nullable','integer','min:1','exists:addresses,id'],
@@ -54,6 +57,13 @@ class UpdateBookingRequest extends FormRequest
             'address.type'                 => ['nullable','string'],
             'address.other_type'           => ['nullable','string'],
             'address.internal_number'      => ['nullable','string'],
+
+            // New fields: qualities, degree, courses
+            'booking.qualities'            => ['nullable', 'array'],
+            'booking.qualities.*'          => ['string'],
+            'booking.degree'               => ['nullable', 'string'],
+            'booking.courses'              => ['nullable', 'array'],
+            'booking.courses.*'            => ['string'],
         ];
     }
 
@@ -61,6 +71,20 @@ class UpdateBookingRequest extends FormRequest
     {
         $validator->sometimes(['address.postal_code','address.street','address.neighborhood'], 'required', function ($input) {
             return empty(data_get($input, 'booking.address_id'));
+        });
+
+        $validator->after(function ($validator) {
+            $appointments = $this->input('appointments', []);
+            foreach ($appointments as $index => $appointment) {
+                $start = data_get($appointment, 'start_date');
+                $end = data_get($appointment, 'end_date');
+                if ($start && $end && strtotime($end) <= strtotime($start)) {
+                    $validator->errors()->add(
+                        "appointments.$index.end_date",
+                        'La fecha de término debe ser posterior a la de inicio.'
+                    );
+                }
+            }
         });
     }
 

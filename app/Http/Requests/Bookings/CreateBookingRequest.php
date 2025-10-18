@@ -31,6 +31,9 @@ class CreateBookingRequest extends FormRequest
             'description' => '',
             'recurrent'   => false,
             'children'    => [],
+            'qualities'   => [],
+            'degree'      => null,
+            'courses'     => [],
         ], $incomingBooking);
 
         // 3) Tipos fuertes y limpieza
@@ -67,6 +70,11 @@ class CreateBookingRequest extends FormRequest
         $appointments = array_values($incomingAppointments);
         $address      = (array) $incomingAddress;
 
+        // Normalize qualities, degree, and courses
+        $qualities = (array) data_get($booking, 'qualities', []);
+        $degree = data_get($booking, 'degree');
+        $courses = (array) data_get($booking, 'courses', []);
+
         // 6) Volcar normalización al request interno
         $this->merge([
             'booking' => [
@@ -76,6 +84,9 @@ class CreateBookingRequest extends FormRequest
                 'recurrent'   => $recurrent,
                 // IMPORTANTE: ya normalizado a IDs string
                 'children'    => $childrenIds,
+                'qualities'   => $qualities,
+                'degree'      => $degree,
+                'courses'     => $courses,
             ],
             'appointments' => $appointments,
             'address'      => $address,
@@ -106,7 +117,7 @@ class CreateBookingRequest extends FormRequest
             // citas según recurrent
             'appointments'                 => ['required', 'array', "min:$minAppts", "max:$maxAppts"],
             'appointments.*.start_date'    => ['required', 'date'],
-            'appointments.*.end_date'      => ['required', 'date', 'after:start_date'],
+            'appointments.*.end_date'      => ['required', 'date'],
             'appointments.*.duration'      => ['required', 'integer', 'min:1', 'max:8'],
 
             // dirección: o address_id válido o se piden campos mínimos (se fuerza con sometimes)
@@ -117,6 +128,13 @@ class CreateBookingRequest extends FormRequest
             'address.type'                 => ['nullable', 'string'],
             'address.other_type'           => ['nullable', 'string'],
             'address.internal_number'      => ['nullable', 'string'],
+
+            // New fields: qualities, degree, courses
+            'booking.qualities'            => ['nullable', 'array'],
+            'booking.qualities.*'          => ['string'],
+            'booking.degree'               => ['nullable', 'string'],
+            'booking.courses'              => ['nullable', 'array'],
+            'booking.courses.*'            => ['string'],
         ];
     }
 
