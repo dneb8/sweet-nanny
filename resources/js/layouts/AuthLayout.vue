@@ -1,14 +1,10 @@
 <script setup lang="ts">
 import BaseHeaderLoginRegister from '@/Pages/auth/BaseHeaderLogin-Register.vue';
 import { defineProps, withDefaults } from 'vue';
-import { useFlashMessages } from '@/composables/useFlashMessages';
 
 const props = withDefaults(defineProps<{ header?: boolean }>(), {
     header: true,
 });
-
-// Enable automatic toast notifications from flash messages
-useFlashMessages();
 </script>
 
 <template>

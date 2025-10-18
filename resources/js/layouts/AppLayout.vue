@@ -3,7 +3,6 @@ import AppLayout from '@/layouts/app/AppSidebarLayout.vue';
 import type { BreadcrumbItemType } from '@/types';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import { useFlashMessages } from '@/composables/useFlashMessages';
 
 interface Props {
     breadcrumbs?: BreadcrumbItemType[];
@@ -15,9 +14,6 @@ withDefaults(defineProps<Props>(), {
 
 const page = usePage();
 const routeKey = computed(() => page.url);
-
-// Enable automatic toast notifications from flash messages
-useFlashMessages();
 </script>
 
 <template>

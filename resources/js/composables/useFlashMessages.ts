@@ -6,7 +6,8 @@ import { useToast } from './useToast';
  * Composable to automatically handle flash messages from the backend
  * and display them as toasts.
  *
- * Call this in your layout components to enable automatic toast notifications.
+ * This should be called at the root level (in app.ts) to ensure it works
+ * with both full page loads and partial Inertia reloads.
  */
 export function useFlashMessages() {
     const page = usePage();

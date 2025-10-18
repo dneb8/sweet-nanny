@@ -11,6 +11,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { createPinia } from 'pinia';
 import { vueDebounce } from 'vue-debounce';
 import { Toaster } from '@/components/ui/sonner';
+import FlashMessagesHandler from '@/components/FlashMessagesHandler.vue';
 
 const appName = import.meta.env.VITE_APP_NAME || 'SweetNanny';
 
@@ -35,6 +36,7 @@ createInertiaApp({
                         duration: 5000,
                         pauseWhenPageIsHidden: true,
                     }),
+                    h(FlashMessagesHandler),
                 ]),
         });
 
