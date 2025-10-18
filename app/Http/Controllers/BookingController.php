@@ -6,6 +6,9 @@ use App\Models\User;
 use App\Models\Booking;
 use App\Services\BookingService;
 use App\Enums\Children\KinkshipEnum;
+use App\Enums\Nanny\QualityEnum;
+use App\Enums\Career\DegreeEnum;
+use App\Enums\Course\NameEnum as CourseNameEnum;
 use App\Http\Requests\Bookings\CreateBookingRequest;
 use App\Http\Requests\Bookings\UpdateBookingRequest;
 use Illuminate\Support\Facades\Auth;
@@ -29,13 +32,20 @@ class BookingController extends Controller
             'tutor' => fn ($q) => $q->select('id','user_id')->with([
                 'children',
                 'user.address',
+                'addresses', // polymorphic addresses
             ]),
         ])->findOrFail(Auth::id());
 
         $kinkships = array_map(fn($c) => $c->value, KinkshipEnum::cases());
+        $qualities = QualityEnum::labels();
+        $degrees = DegreeEnum::labels();
+        $courses = CourseNameEnum::labels();
 
         return Inertia::render('Booking/Create', [
             'kinkships' => $kinkships,
+            'qualities' => $qualities,
+            'degrees'   => $degrees,
+            'courses'   => $courses,
             'tutor'     => $user->tutor,
         ]);
     }
@@ -62,19 +72,25 @@ class BookingController extends Controller
     public function edit(Booking $booking): Response
     {
         $booking->load([
-            'tutor',
+            'tutor' => fn($q) => $q->with('addresses'),
             'children',
             'bookingAppointments',
             'address',
+            'addressPolymorphic',
         ]);
 
         $kinkships = array_map(fn($c) => $c->value, KinkshipEnum::cases());
-
+        $qualities = QualityEnum::labels();
+        $degrees = DegreeEnum::labels();
+        $courses = CourseNameEnum::labels();
 
         return Inertia::render('Booking/Edit', [
             'booking'        => $booking,
             'initialBooking' => $booking,
             'kinkships'      => $kinkships,
+            'qualities'      => $qualities,
+            'degrees'        => $degrees,
+            'courses'        => $courses,
         ]);
     }
 

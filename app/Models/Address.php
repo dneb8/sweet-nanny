@@ -22,6 +22,8 @@ class Address extends Model
         'type',
         'other_type',
         'internal_number',
+        'addressable_type',
+        'addressable_id',
     ];
 
     public function uniqueIds()
@@ -34,6 +36,14 @@ class Address extends Model
     protected $casts = [
         'type' => TypeEnum::class
     ];
+
+    /**
+     * Get the ownable model (Tutor, Nanny, or Booking).
+     */
+    public function addressable()
+    {
+        return $this->morphTo();
+    }
 
     public function users()
     {

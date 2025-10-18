@@ -7,9 +7,17 @@ use App\Models\Address;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
+use App\Services\AddressService;
 
 class BookingService
 {
+    protected $addressService;
+
+    public function __construct(AddressService $addressService)
+    {
+        $this->addressService = $addressService;
+    }
+
     public function create(array $payload): Booking
     {
         return DB::transaction(function () use ($payload) {
@@ -17,28 +25,27 @@ class BookingService
             $appointments = data_get($payload, 'appointments', []);
             $addressData  = data_get($payload, 'address');
 
-            // Dirección opcional: crea si no se mandó address_id
-            $addressId = data_get($bookingData, 'address_id');
-            if (!$addressId && $addressData) {
-                $address = Address::create([
-                    'tutor_id'        => (int) data_get($bookingData, 'tutor_id'),
-                    'postal_code'     => (string) data_get($addressData, 'postal_code', ''),
-                    'street'          => (string) data_get($addressData, 'street', ''),
-                    'neighborhood'    => (string) data_get($addressData, 'neighborhood', ''),
-                    'type'            => data_get($addressData, 'type'),
-                    'other_type'      => data_get($addressData, 'other_type'),
-                    'internal_number' => data_get($addressData, 'internal_number'),
-                ]);
-                $addressId = $address->id;
-            }
-
-            // Crea booking
+            // Crea booking primero
             $booking = Booking::create([
                 'tutor_id'   => (int) data_get($bookingData, 'tutor_id'),
-                'address_id' => $addressId,
+                'address_id' => data_get($bookingData, 'address_id'), // legacy support
                 'description'=> (string) data_get($bookingData, 'description', ''),
                 'recurrent'  => (bool) data_get($bookingData, 'recurrent', false),
+                'qualities'  => data_get($bookingData, 'qualities', []),
+                'degree'     => data_get($bookingData, 'degree'),
+                'courses'    => data_get($bookingData, 'courses', []),
             ]);
+
+            // Handle polymorphic address
+            $addressId = data_get($bookingData, 'address_id');
+            if (!$addressId && $addressData) {
+                // Create new polymorphic address for this booking
+                $this->addressService->createForOwner($addressData, $booking);
+            } elseif ($addressId) {
+                // Legacy: address_id is set
+                $booking->address_id = $addressId;
+                $booking->save();
+            }
 
             // Children: acepta booking.children (preferido) o booking.child_ids
             $rawChildren = data_get($bookingData, 'children', data_get($bookingData, 'child_ids', []));
@@ -80,7 +87,7 @@ class BookingService
                 $booking->bookingAppointments()->createMany($rows);
             }
 
-            return $booking->fresh(['children','bookingAppointments','address']);
+            return $booking->fresh(['children','bookingAppointments','address','addressPolymorphic']);
         });
     }
 
@@ -91,48 +98,33 @@ class BookingService
             $appointments = $payload['appointments'] ?? [];
             $addressData  = $payload['address'] ?? null;
 
-            // - Si viene explícito en el payload, se respeta (permitiendo null para limpiar).
-            //  - Si NO viene, conservamos el address_id actual.
-            if (array_key_exists('address_id', $bookingData)) {
-                $addressId = $bookingData['address_id'] ? (int) $bookingData['address_id'] : null;
-            } else {
-                $addressId = $booking->address_id;
-            }
-
-            // 2) Crear/actualizar dirección inline si NO hay address_id pero SÍ vienen datos de address.
-            if (!$addressId && $addressData) {
-                if ($booking->address) {
-                    $booking->address->update([
-                        'tutor_id'        => $bookingData['tutor_id'] ?? $booking->tutor_id,
-                        'postal_code'     => $addressData['postal_code']     ?? $booking->address->postal_code,
-                        'street'          => $addressData['street']          ?? $booking->address->street,
-                        'neighborhood'    => $addressData['neighborhood']    ?? $booking->address->neighborhood,
-                        'type'            => $addressData['type']            ?? $booking->address->type,
-                        'other_type'      => $addressData['other_type']      ?? $booking->address->other_type,
-                        'internal_number' => $addressData['internal_number'] ?? $booking->address->internal_number,
-                    ]);
-                    $addressId = $booking->address->id;
-                } else {
-                    $address = Address::create([
-                        'tutor_id'        => $bookingData['tutor_id'] ?? $booking->tutor_id,
-                        'postal_code'     => $addressData['postal_code']     ?? '',
-                        'street'          => $addressData['street']          ?? '',
-                        'neighborhood'    => $addressData['neighborhood']    ?? '',
-                        'type'            => $addressData['type']            ?? null,
-                        'other_type'      => $addressData['other_type']      ?? null,
-                        'internal_number' => $addressData['internal_number'] ?? null,
-                    ]);
-                    $addressId = $address->id;
-                }
-            }
-
-            // 3) Actualizar booking
+            // Update booking fields
             $booking->update([
                 'tutor_id'   => (int) ($bookingData['tutor_id'] ?? $booking->tutor_id),
-                'address_id' => $addressId,
+                'address_id' => $bookingData['address_id'] ?? $booking->address_id, // legacy
                 'description'=> $bookingData['description'] ?? $booking->description,
                 'recurrent'  => (bool) ($bookingData['recurrent'] ?? $booking->recurrent),
+                'qualities'  => $bookingData['qualities'] ?? $booking->qualities,
+                'degree'     => $bookingData['degree'] ?? $booking->degree,
+                'courses'    => $bookingData['courses'] ?? $booking->courses,
             ]);
+
+            // Handle polymorphic address
+            $addressId = $bookingData['address_id'] ?? null;
+            
+            if (!$addressId && $addressData) {
+                // Check if booking already has a polymorphic address
+                if ($booking->addressPolymorphic) {
+                    $this->addressService->updateWithData($booking->addressPolymorphic, $addressData);
+                } else {
+                    // Create new polymorphic address
+                    $this->addressService->createForOwner($addressData, $booking);
+                }
+            } elseif ($addressId) {
+                // Legacy: address_id is set
+                $booking->address_id = $addressId;
+                $booking->save();
+            }
 
             // 4) Sincronizar niños (admite strings o ints)
             $childIds = array_map('intval', $bookingData['child_ids'] ?? []);
@@ -160,7 +152,7 @@ class BookingService
                 $booking->bookingAppointments()->createMany($rows);
             }
 
-            return $booking->fresh(['children', 'bookingAppointments', 'address']);
+            return $booking->fresh(['children', 'bookingAppointments', 'address', 'addressPolymorphic']);
         });
     }
 

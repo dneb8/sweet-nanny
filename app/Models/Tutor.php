@@ -33,6 +33,11 @@ class Tutor extends Model
         return $this->hasMany(Child::class);
     }
 
+    public function addresses()
+    {
+        return $this->morphMany(Address::class, 'addressable');
+    }
+
     public function uniqueIds()
     {
         // Generación automática de ulid para la columna ulid.

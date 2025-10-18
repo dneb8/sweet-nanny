@@ -53,6 +53,11 @@ class Nanny extends Model
     public function reviews()
     {
     return $this->morphMany(Review::class, 'reviewable');}
+
+    public function addresses()
+    {
+        return $this->morphMany(Address::class, 'addressable');
+    }
     
     public function uniqueIds()
     {

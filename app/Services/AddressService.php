@@ -6,12 +6,43 @@ use App\Http\Requests\Address\CreateAddressRequest;
 use App\Http\Requests\Address\UpdateAddressRequest;
 use App\Models\Address;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class AddressService
 {
     /**
-     * Crea una dirección
+     * Create an address for a polymorphic owner
+     * 
+     * @param array $data Address data
+     * @param Model $owner The owner model (Tutor, Nanny, or Booking)
+     */
+    public function createForOwner(array $data, Model $owner): Address
+    {
+        $address = new Address([
+            'postal_code' => $data['postal_code'],
+            'street' => $data['street'],
+            'neighborhood' => $data['neighborhood'],
+            'type' => $data['type'],
+            'other_type' => $data['other_type'] ?? null,
+            'internal_number' => $data['internal_number'] ?? null,
+        ]);
+
+        $owner->addresses()->save($address);
+
+        return $address;
+    }
+
+    /**
+     * Get all addresses for a polymorphic owner
+     */
+    public function getForOwner(Model $owner)
+    {
+        return $owner->addresses ?? collect();
+    }
+
+    /**
+     * Crea una dirección (legacy support)
      */
     public function createAddress(CreateAddressRequest $request): Address
     {
@@ -55,6 +86,23 @@ class AddressService
             'other_type' => $validated->other_type ?? $address->other_type,
             'internal_number' => $validated->internal_number ?? $address->internal_number,
         ]);
+    }
+
+    /**
+     * Update an address with raw data
+     */
+    public function updateWithData(Address $address, array $data): Address
+    {
+        $address->update([
+            'postal_code' => $data['postal_code'] ?? $address->postal_code,
+            'street' => $data['street'] ?? $address->street,
+            'neighborhood' => $data['neighborhood'] ?? $address->neighborhood,
+            'type' => $data['type'] ?? $address->type,
+            'other_type' => $data['other_type'] ?? $address->other_type,
+            'internal_number' => $data['internal_number'] ?? $address->internal_number,
+        ]);
+
+        return $address;
     }
 
     /**
