@@ -6,7 +6,9 @@ export interface Booking {
   tutor_id: number
   address_id: number
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | string
-
+  qualities?: string[]
+  degree?: string | null
+  courses?: string[]
 
   booking_appointments?: BookingAppointment[]
   tutor?: Tutor

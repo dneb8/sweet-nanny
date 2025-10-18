@@ -67,6 +67,11 @@ class CreateBookingRequest extends FormRequest
         $appointments = array_values($incomingAppointments);
         $address      = (array) $incomingAddress;
 
+        // Get qualities, degree, and courses
+        $qualities = (array) data_get($incomingBooking, 'qualities', []);
+        $degree = data_get($incomingBooking, 'degree');
+        $courses = (array) data_get($incomingBooking, 'courses', []);
+
         // 6) Volcar normalización al request interno
         $this->merge([
             'booking' => [
@@ -76,6 +81,9 @@ class CreateBookingRequest extends FormRequest
                 'recurrent'   => $recurrent,
                 // IMPORTANTE: ya normalizado a IDs string
                 'children'    => $childrenIds,
+                'qualities'   => $qualities,
+                'degree'      => $degree,
+                'courses'     => $courses,
             ],
             'appointments' => $appointments,
             'address'      => $address,
@@ -117,6 +125,13 @@ class CreateBookingRequest extends FormRequest
             'address.type'                 => ['nullable', 'string'],
             'address.other_type'           => ['nullable', 'string'],
             'address.internal_number'      => ['nullable', 'string'],
+            
+            // New fields: qualities, degree, courses
+            'booking.qualities'            => ['nullable', 'array'],
+            'booking.qualities.*'          => ['string'],
+            'booking.degree'               => ['nullable', 'string'],
+            'booking.courses'              => ['nullable', 'array'],
+            'booking.courses.*'            => ['string'],
         ];
     }
 

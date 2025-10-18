@@ -19,6 +19,9 @@ type BookingFormValues = {
     description: string
     recurrent: boolean
     child_ids: string[]            // <-- UI usa IDs planos
+    qualities: string[]            // New: qualities array
+    degree: string | null          // New: degree
+    courses: string[]              // New: courses array
   }
   appointments: AppointmentForForm[]
   address: Pick<
@@ -64,6 +67,9 @@ export class BookingFormService {
           recurrent: z.boolean(),
           child_ids: z.array(z.string()).min(1, "Selecciona al menos 1 niño").max(4, "Máximo 4 niños"),
           address_id: z.number().nullable().optional(),
+          qualities: z.array(z.string()).optional(),
+          degree: z.string().nullable().optional(),
+          courses: z.array(z.string()).optional(),
         }),
         appointments: z.array(appointmentItem).min(1, "Agrega al menos 1 cita"),
         address: z.object({
@@ -92,6 +98,9 @@ export class BookingFormService {
         description: booking?.description ?? "",
         recurrent: !!booking?.recurrent,
         child_ids: initialChildIds,
+        qualities: Array.isArray(booking?.qualities) ? booking.qualities : [],
+        degree: booking?.degree ?? null,
+        courses: Array.isArray(booking?.courses) ? booking.courses : [],
       },
       appointments: booking?.booking_appointments?.map(this.mapAppointment) ?? [],
       address: {
@@ -184,6 +193,9 @@ export class BookingFormService {
         description: vals.booking.description || "",
         recurrent: !!vals.booking.recurrent,
         children: (vals.booking.child_ids ?? []).map(String),
+        qualities: vals.booking.qualities ?? [],
+        degree: vals.booking.degree ?? null,
+        courses: vals.booking.courses ?? [],
       },
       appointments: vals.appointments.map((a) => ({
         start_date: a.start_date,
@@ -196,9 +208,11 @@ export class BookingFormService {
 
   private fieldToStep(path: string): number {
     if (!path) return 1
-    if (path.startsWith("booking.")) return 1
+    if (path.startsWith("booking.description") || path.startsWith("booking.child_ids") || path.startsWith("booking.recurrent")) return 1
     if (path.startsWith("appointments")) return 2
     if (path.startsWith("address") || path === "booking.address_id") return 3
+    if (path.startsWith("booking.qualities") || path.startsWith("booking.degree") || path.startsWith("booking.courses")) return 4
+    if (path.startsWith("booking.")) return 1
     return 1
   }
 

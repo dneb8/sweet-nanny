@@ -18,6 +18,9 @@ class UpdateBookingRequest extends FormRequest
                 'description'=> '',
                 'recurrent'  => false,
                 'child_ids'  => [],
+                'qualities'  => [],
+                'degree'     => null,
+                'courses'    => [],
             ], (array) $this->input('booking', [])),
             'appointments' => (array) $this->input('appointments', []),
             'address'      => (array) $this->input('address', []),
@@ -54,6 +57,13 @@ class UpdateBookingRequest extends FormRequest
             'address.type'                 => ['nullable','string'],
             'address.other_type'           => ['nullable','string'],
             'address.internal_number'      => ['nullable','string'],
+            
+            // New fields: qualities, degree, courses
+            'booking.qualities'            => ['nullable', 'array'],
+            'booking.qualities.*'          => ['string'],
+            'booking.degree'               => ['nullable', 'string'],
+            'booking.courses'              => ['nullable', 'array'],
+            'booking.courses.*'            => ['string'],
         ];
     }
 

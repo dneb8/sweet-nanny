@@ -10,11 +10,20 @@ import type { Tutor } from '@/types/Tutor'
 const props = defineProps<{
   tutor: Tutor & { addresses: Address[]; children: Child[] }
   kinkships: string[]
+  qualities: Record<string, string>
+  degrees: Record<string, string>
+  courseNames: Record<string, string>
 }>()
 </script>
 
 <template>
   <Head title="Nuevo Servicio" />
   <Heading icon="fluent:calendar-add-24-regular" title="Crear Servicio" />
-  <BookingForm :tutor="props.tutor" :kinkships="props.kinkships" />
+  <BookingForm 
+    :tutor="props.tutor" 
+    :kinkships="props.kinkships"
+    :qualities="props.qualities"
+    :degrees="props.degrees"
+    :course-names="props.courseNames"
+  />
 </template>

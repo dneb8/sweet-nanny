@@ -18,6 +18,9 @@ const props = defineProps<{
     bookingAppointments: BookingAppointment[]
   }
   kinkships: string[]
+  qualities: Record<string, string>
+  degrees: Record<string, string>
+  courseNames: Record<string, string>
   initialBooking: any
 }>()
 
@@ -39,6 +42,9 @@ const tutorForForm = computed(() => {
     :booking-id="props.booking.id"
     :tutor="tutorForForm"
     :kinkships="props.kinkships"
+    :qualities="props.qualities"
+    :degrees="props.degrees"
+    :course-names="props.courseNames"
     :initial-booking="props.initialBooking"
   />
 </template>
