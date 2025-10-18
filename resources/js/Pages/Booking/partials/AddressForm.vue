@@ -89,7 +89,6 @@ function onPostalCodeInput(e: Event) {
   target.value = target.value.replace(/\D/g, "").slice(0, 6)
 }
 </script>
-</script>
 
 <template>
   <form class="max-w-md mx-auto space-y-4" @submit.prevent="onSubmit">
