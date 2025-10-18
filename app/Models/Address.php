@@ -28,29 +28,19 @@ class Address extends Model
 
     public function uniqueIds()
     {
-        return [
-            'ulid',
-        ];
+        return ['ulid'];
     }
 
     protected $casts = [
-        'type' => TypeEnum::class
+        'type' => TypeEnum::class, // Enum backeado por string
     ];
 
-    // Polymorphic relation
+    /**
+     * Relación polimórfica.
+     */
     public function addressable()
     {
         return $this->morphTo();
     }
 
-    // Keep old relations for backwards compatibility during migration
-    public function users()
-    {
-        return $this->hasMany(User::class);
-    }
-
-    public function bookingAppointments()
-    {
-        return $this->belongsToMany(BookingAppointment::class);
-    }
 }

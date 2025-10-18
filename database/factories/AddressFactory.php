@@ -3,6 +3,10 @@
 namespace Database\Factories;
 
 use App\Enums\Address\TypeEnum;
+use App\Models\Address;
+use App\Models\Tutor;
+use App\Models\Nanny;
+use App\Models\Booking;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -10,20 +14,54 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class AddressFactory extends Factory
 {
+    /** @var class-string<\App\Models\Address> */
+    protected $model = Address::class;
+
     /**
      * Define the model's default state.
+     *
+     * Nota: NO seteamos addressable_* por defecto; se deben crear
+     * SIEMPRE a través de la relación polimórfica o usando los helpers forX().
      *
      * @return array<string, mixed>
      */
     public function definition(): array
     {
+        // Selecciona un tipo válido del enum (string backeado)
+        $type = $this->faker->randomElement(TypeEnum::values());
+
         return [
-            'postal_code' => $this->faker->postcode(),
-            'street' => $this->faker->streetName(),
-            'neighborhood' => $this->faker->citySuffix(),
-            'type' => $type = $this->faker->randomElement(TypeEnum::values()),
-            'other_type' => $type === 'other' ? $this->faker->word() : null,
+            'postal_code'     => $this->faker->postcode(),
+            'street'          => $this->faker->streetName(),
+            'neighborhood'    => $this->faker->citySuffix(),
+            'type'            => $type, // cast a TypeEnum en el modelo
+            'other_type'      => $type === 'other' ? $this->faker->word() : null,
             'internal_number' => $this->faker->optional()->buildingNumber(),
+            // addressable_* se setean via ->for($owner, 'addressable') o helpers de abajo
         ];
+    }
+
+    /**
+     * Helper: asociar a un Tutor via relación polimórfica.
+     */
+    public function forTutor(Tutor $tutor): static
+    {
+        return $this->for($tutor, 'addressable');
+    }
+
+    /**
+     * Helper: asociar a una Nanny via relación polimórfica.
+     */
+    public function forNanny(Nanny $nanny): static
+    {
+        return $this->for($nanny, 'addressable');
+    }
+
+    /**
+     * Helper: asociar a una Booking (morphOne).
+     */
+    public function forBooking(Booking $booking): static
+    {
+        return $this->for($booking, 'addressable');
     }
 }
