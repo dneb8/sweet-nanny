@@ -102,7 +102,7 @@ export class BookingFormService {
         degree: booking?.degree ?? null,
         courses: Array.isArray(booking?.courses) ? booking.courses : [],
       },
-      appointments: booking?.booking_appointments?.map(this.mapAppointment) ?? [],
+      appointments: (booking?.bookingAppointments ?? booking?.booking_appointments)?.map(this.mapAppointment) ?? [],
       address: {
         postal_code: booking?.address?.postal_code ?? "",
         street: booking?.address?.street ?? "",

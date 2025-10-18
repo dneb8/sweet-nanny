@@ -30,9 +30,17 @@ class AddressController extends Controller
     /**
      * Almacena una nueva dirección
      */
-    public function store(AddressService $addressService, CreateAddressRequest $request): RedirectResponse
+    public function store(AddressService $addressService, CreateAddressRequest $request)
     {
-        $addressService->createAddress($request);
+        $address = $addressService->createAddress($request);
+
+        // If it's an AJAX request, return JSON
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'address' => $address,
+                'message' => 'Dirección creada correctamente.'
+            ], 201);
+        }
 
         return redirect()->back()->with('message', [
             'title' => 'Dirección creada',
@@ -43,11 +51,19 @@ class AddressController extends Controller
     /**
      * Actualiza una dirección existente
      */
-    public function update(AddressService $addressService, UpdateAddressRequest $request, Address $address): RedirectResponse
+    public function update(AddressService $addressService, UpdateAddressRequest $request, Address $address)
     {
         // Gate::authorize('edit', Address::class);
 
-        $addressService->updateAddress($address, $request);
+        $updatedAddress = $addressService->updateAddress($address, $request);
+
+        // If it's an AJAX request, return JSON
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'address' => $updatedAddress,
+                'message' => 'Dirección actualizada correctamente.'
+            ]);
+        }
 
         return redirect()->back()->with('message', [
             'title' => 'Dirección actualizada',
