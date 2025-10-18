@@ -69,20 +69,35 @@ export function useToast() {
 }
 ```
 
+#### useFlashMessages Composable
+**File**: `resources/js/composables/useFlashMessages.ts`
+
+Created a composable to automatically handle flash messages and display them as toasts. This eliminates code duplication across layouts:
+
+```typescript
+export function useFlashMessages() {
+    // Watches page.props.flash for changes
+    // Displays appropriate toasts based on message type
+    // Implements deduplication logic
+}
+```
+
 #### AppLayout.vue
 **File**: `resources/js/layouts/AppLayout.vue`
 
-Added a watcher for flash messages that automatically displays toasts:
+Integrated automatic toast notifications by calling `useFlashMessages()`:
 
-- Watches `page.props.flash` for changes
-- Handles all message types (success, error, warning, info, status, message)
-- Implements deduplication to prevent showing the same message multiple times
-- Auto-cleans displayed message cache after 10 seconds
+```typescript
+import { useFlashMessages } from '@/composables/useFlashMessages';
+useFlashMessages();
+```
+
+This enables automatic display of flash messages as toasts.
 
 #### AuthLayout.vue
 **File**: `resources/js/layouts/AuthLayout.vue`
 
-Added the same flash message watcher for authentication pages.
+Same integration as AppLayout for authentication pages.
 
 #### TypeScript Types
 **File**: `resources/js/types/index.d.ts`
