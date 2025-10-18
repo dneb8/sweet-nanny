@@ -14,8 +14,9 @@ class TutorSeeder extends Seeder
     public function run(): void
     {
         Tutor::factory()
-        ->count(5)
-        ->create() 
-        ->each(fn($nanny) => $nanny->user->assignRole('tutor'));
+            ->count(5)
+            ->has(\App\Models\Address::factory()->count(2), 'addresses') // morphMany relation
+            ->create() 
+            ->each(fn($tutor) => $tutor->user->assignRole('tutor'));
     }
 }

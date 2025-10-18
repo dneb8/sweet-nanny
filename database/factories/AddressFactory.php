@@ -24,20 +24,6 @@ class AddressFactory extends Factory
             'type' => $type = $this->faker->randomElement(TypeEnum::values()),
             'other_type' => $type === 'other' ? $this->faker->word() : null,
             'internal_number' => $this->faker->optional()->buildingNumber(),
-            // Polymorphic fields - can be overridden when creating
-            'addressable_type' => null,
-            'addressable_id' => null,
         ];
-    }
-    
-    /**
-     * Set the addressable owner for polymorphic relation
-     */
-    public function forOwner($owner)
-    {
-        return $this->state(fn (array $attributes) => [
-            'addressable_type' => get_class($owner),
-            'addressable_id' => $owner->id,
-        ]);
     }
 }

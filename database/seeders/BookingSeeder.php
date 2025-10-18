@@ -12,10 +12,10 @@ class BookingSeeder extends Seeder
     {
         $faker = Faker::create();
 
-        // 1) Crear 10 bookings
+        // 1) Crear 10 bookings (address is created automatically via factory's afterCreating)
         $bookings = Booking::factory()->count(10)->create();
 
-        // 2) Por booking: citas, dirección y niños
+        // 2) Por booking: citas y niños
         foreach ($bookings as $booking) {
             // --- Citas ---
             $nannyId = Nanny::inRandomOrder()->value('id');
@@ -32,9 +32,6 @@ class BookingSeeder extends Seeder
                     'end_date'   => $end,
                 ]);
             }
-
-            // --- Dirección ---
-            $booking->address()->associate(Address::factory()->create())->save();
 
             // --- Niños: crea con factory y anexa al booking ---
             if ($booking->tutor_id) {
