@@ -44,10 +44,10 @@ return new class extends Migration
             $table->unsignedBigInteger('addressable_id')->nullable(false)->change();
         });
         
-        // Drop the old foreign key constraint on bookings.address_id (it's now polymorphic)
-        // Note: This keeps the column for backwards compatibility but removes the constraint
+        // Drop the old foreign key constraint and the column itself (it's now polymorphic)
         Schema::table('bookings', function (Blueprint $table) {
             $table->dropForeign(['address_id']);
+            $table->dropColumn('address_id');
         });
     }
 
@@ -56,6 +56,12 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Restore address_id column to bookings
+        Schema::table('bookings', function (Blueprint $table) {
+            $table->foreignId('address_id')->nullable()->constrained()->onDelete('cascade');
+        });
+        
+        // Remove polymorphic columns from addresses
         Schema::table('addresses', function (Blueprint $table) {
             $table->dropIndex(['addressable_type', 'addressable_id']);
             $table->dropColumn(['addressable_type', 'addressable_id']);

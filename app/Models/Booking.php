@@ -11,7 +11,6 @@ class Booking extends Model
 
     protected $fillable = [
         'tutor_id',
-        'address_id',
         'description',
         'recurrent',
         'qualities',
@@ -23,6 +22,7 @@ class Booking extends Model
         'qualities' => 'array',
         'courses' => 'array',
         'recurrent' => 'boolean',
+        'degree' => 'string', // Can be changed to DegreeEnum::class if needed
     ];
 
     // Relación uno a muchos con BookingAppointment
