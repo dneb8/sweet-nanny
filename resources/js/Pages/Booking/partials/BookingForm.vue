@@ -152,7 +152,10 @@ const submit = async () => {
             </div>
 
             <div v-show="stepIndex === 3">
-              <StepAddress :addresses="props.tutor?.addresses ?? []" />
+              <StepAddress 
+                :tutor="props.tutor"
+                :initial-addresses="props.tutor?.addresses ?? []" 
+              />
             </div>
 
             <div v-show="stepIndex === 4">

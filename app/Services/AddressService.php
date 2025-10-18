@@ -48,7 +48,7 @@ class AddressService
     /**
      * Actualiza una dirección existente
      */
-    public function updateAddress(Address $address, UpdateAddressRequest $request): void
+    public function updateAddress(Address $address, UpdateAddressRequest $request): Address
     {
         $validated = $request->safe();
 
@@ -60,6 +60,8 @@ class AddressService
             'other_type' => $validated->other_type ?? $address->other_type,
             'internal_number' => $validated->internal_number ?? $address->internal_number,
         ]);
+        
+        return $address->fresh();
     }
 
     /**

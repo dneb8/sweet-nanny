@@ -27,6 +27,8 @@ class CreateAddressRequest extends FormRequest
             'type' => ['required', 'in:' . implode(',', TypeEnum::values())],
             'other_type' => ['nullable', 'string', 'max:255'],
             'internal_number' => ['nullable', 'string', 'max:50'],
+            'owner_type' => ['nullable', 'string'],
+            'owner_id' => ['nullable', 'integer'],
         ];
     }
 
