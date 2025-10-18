@@ -82,8 +82,9 @@ class UserService
         if ($request->get('sort') === 'role') {
             $query->leftJoin('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')
                 ->leftJoin('roles', 'model_has_roles.role_id', '=', 'roles.id')
-                ->orderBy('roles.name', $sortDirection)
-                ->select('users.*');
+                ->select('users.*')
+                ->distinct()
+                ->orderByRaw('COALESCE(roles.name, "") '.$sortDirection);
         } else {
             $query->orderBy($sortField, $sortDirection);
         }

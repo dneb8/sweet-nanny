@@ -2,8 +2,14 @@
 import type { Tutor } from '@/types/Tutor';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Icon } from '@iconify/vue';
+import { computed } from 'vue';
 
 const props = defineProps<{ tutor: Tutor }>();
+
+// Get first address from polymorphic addresses relationship
+const primaryAddress = computed(() => {
+    return props.tutor.addresses?.[0] ?? null;
+});
 </script>
 
 <template>
@@ -15,15 +21,15 @@ const props = defineProps<{ tutor: Tutor }>();
             </CardTitle>
         </CardHeader>
         <CardContent>
-            <div v-if="props.tutor.address" class="space-y-2">
+            <div v-if="primaryAddress" class="space-y-2">
                 <div class="flex items-start gap-2">
                     <Icon icon="mdi:home-outline" class="w-4 h-4 mt-0.5 text-muted-foreground" />
                     <div>
-                        <p class="text-sm font-medium">{{ props.tutor.address.street }}</p>
+                        <p class="text-sm font-medium">{{ primaryAddress.street }}</p>
                         <p class="text-sm text-muted-foreground">
-                            {{ props.tutor.address.city }}, {{ props.tutor.address.state }}
+                            {{ primaryAddress.city }}, {{ primaryAddress.state }}
                         </p>
-                        <p class="text-sm text-muted-foreground">{{ props.tutor.address.postal_code }}</p>
+                        <p class="text-sm text-muted-foreground">{{ primaryAddress.postal_code }}</p>
                     </div>
                 </div>
             </div>

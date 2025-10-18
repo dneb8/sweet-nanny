@@ -13,7 +13,7 @@ const props = defineProps<{ tutor: Tutor }>();
     >
         <div class="relative">
             <img
-                src="https://randomuser.me/api/portraits/men/32.jpg"
+                :src="props.tutor.user?.avatar_url ?? 'https://randomuser.me/api/portraits/men/32.jpg'"
                 alt="Foto de perfil"
                 class="w-28 h-28 rounded-full border-4 border-white shadow-lg object-cover"
             />

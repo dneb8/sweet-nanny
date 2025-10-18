@@ -16,11 +16,17 @@ export interface DataTableState {
     view: 'table' | 'cards';
 }
 
+export interface DataTableOptions {
+    only?: string[];
+    debounceMs?: number;
+}
+
 export function useDataTable(
     routeName: string,
     defaults: Partial<DataTableState> = {},
-    debounceMs: number = 300
+    options: DataTableOptions = {}
 ) {
+    const { only = ['users'], debounceMs = 300 } = options;
     // Current request abort controller
     let abortController: AbortController | null = null;
 
@@ -130,13 +136,19 @@ export function useDataTable(
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
-                only: ['users'],
+                only,
                 onStart: () => {
                     loading.value = true;
                 },
-                onSuccess: () => {
+                onSuccess: (page) => {
                     // Restore focus and cursor position after successful request
                     restoreCursorPosition();
+                    
+                    // Handle flash messages if available
+                    if (page.props.flash) {
+                        // Flash messages are available in page.props.flash
+                        // They can be handled by the consuming component
+                    }
                 },
                 onFinish: () => {
                     loading.value = false;

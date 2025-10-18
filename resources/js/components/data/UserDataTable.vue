@@ -273,8 +273,8 @@ function getRoleBadgeVariant(role: string): 'default' | 'secondary' | 'destructi
                                 </TableCell>
                                 <TableCell>{{ user.email }}</TableCell>
                                 <TableCell>
-                                    <Badge :variant="getRoleBadgeVariant(user.roles?.[0]?.name)">
-                                        {{ getRoleLabelByString(user.roles?.[0]?.name) ?? 'Sin rol' }}
+                                    <Badge :variant="getRoleBadgeVariant(user.roles?.[0]?.name ?? '')">
+                                        {{ getRoleLabelByString(user.roles?.[0]?.name ?? '') ?? 'Sin rol' }}
                                     </Badge>
                                 </TableCell>
                                 <TableCell>{{ formatDate(user.created_at) }}</TableCell>
