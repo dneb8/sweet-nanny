@@ -1,86 +1,79 @@
 import { usePage } from '@inertiajs/vue3';
-import { watch } from 'vue';
-import { useToast } from './useToast';
+import { watchEffect } from 'vue';
+import { useToast } from '@/components/ui/toast/use-toast';
 
 /**
  * Composable to automatically handle flash messages from the backend
- * and display them as toasts.
+ * and display them as toasts using shadcn-style toast component.
  *
  * This should be called at the root level (in app.ts) to ensure it works
  * with both full page loads and partial Inertia reloads.
  */
 export function useFlashMessages() {
+    const { toast } = useToast();
     const page = usePage();
-    const { success, error, warning, info } = useToast();
 
     // Track displayed messages to prevent duplicates
     const displayedMessages = new Set<string>();
 
-    watch(
-        () => page.props.flash,
-        (flash) => {
-            if (!flash) return;
+    watchEffect(() => {
+        const flash = (page.props.flash ?? {}) as Record<string, any>;
 
-            // Handle 'message' object with title and description
-            if (flash.message && typeof flash.message === 'object' && 'title' in flash.message) {
-                const messageKey = `message:${flash.message.title}:${flash.message.description || ''}`;
-                if (!displayedMessages.has(messageKey)) {
-                    success(flash.message.title, flash.message.description);
-                    displayedMessages.add(messageKey);
-                    setTimeout(() => displayedMessages.delete(messageKey), 10000);
-                }
-            }
+        // Process all flash message types
+        for (const key of ['success', 'error', 'warning', 'info', 'status', 'message']) {
+            const value = flash[key];
+            if (!value) continue;
 
-            // Handle success messages
-            if (flash.success) {
-                const messageKey = `success:${flash.success}`;
-                if (!displayedMessages.has(messageKey)) {
-                    success(flash.success);
-                    displayedMessages.add(messageKey);
-                    setTimeout(() => displayedMessages.delete(messageKey), 10000);
-                }
-            }
+            // Generate unique key for deduplication
+            const title = typeof value === 'string' ? value : value.title ?? key;
+            const description = typeof value === 'string' ? undefined : value.description;
+            const messageKey = `${key}:${title}:${description || ''}`;
 
-            // Handle status messages (treat as success)
-            if (flash.status) {
-                const messageKey = `status:${flash.status}`;
-                if (!displayedMessages.has(messageKey)) {
-                    success(flash.status);
-                    displayedMessages.add(messageKey);
-                    setTimeout(() => displayedMessages.delete(messageKey), 10000);
-                }
-            }
+            if (displayedMessages.has(messageKey)) continue;
 
-            // Handle error messages
-            if (flash.error) {
-                const messageKey = `error:${flash.error}`;
-                if (!displayedMessages.has(messageKey)) {
-                    error(flash.error);
-                    displayedMessages.add(messageKey);
-                    setTimeout(() => displayedMessages.delete(messageKey), 10000);
-                }
-            }
+            // Get styling for the message type
+            const { cls, icon } = getStyleForType(key === 'message' ? 'success' : key);
 
-            // Handle warning messages
-            if (flash.warning) {
-                const messageKey = `warning:${flash.warning}`;
-                if (!displayedMessages.has(messageKey)) {
-                    warning(flash.warning);
-                    displayedMessages.add(messageKey);
-                    setTimeout(() => displayedMessages.delete(messageKey), 10000);
-                }
-            }
+            // Show toast
+            toast({
+                title,
+                description,
+                class: cls,
+                icon,
+                duration: 5500,
+            });
 
-            // Handle info messages
-            if (flash.info) {
-                const messageKey = `info:${flash.info}`;
-                if (!displayedMessages.has(messageKey)) {
-                    info(flash.info);
-                    displayedMessages.add(messageKey);
-                    setTimeout(() => displayedMessages.delete(messageKey), 10000);
-                }
-            }
+            // Add to displayed set and schedule cleanup
+            displayedMessages.add(messageKey);
+            setTimeout(() => displayedMessages.delete(messageKey), 10000);
+        }
+    });
+}
+
+function getStyleForType(type: string): { cls: string; icon: string } {
+    const base = 'border shadow-sm';
+    const styleMap: Record<string, { cls: string; icon: string }> = {
+        success: {
+            cls: `${base} bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-50 dark:border-emerald-500/30`,
+            icon: 'mdi:check-circle',
         },
-        { immediate: true, deep: true }
-    );
+        info: {
+            cls: `${base} bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-500/20 dark:text-sky-50 dark:border-sky-500/30`,
+            icon: 'mdi:information',
+        },
+        warning: {
+            cls: `${base} bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-500/20 dark:text-amber-50 dark:border-amber-500/30`,
+            icon: 'mdi:alert',
+        },
+        error: {
+            cls: `${base} bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-500/20 dark:text-rose-50 dark:border-rose-500/30`,
+            icon: 'mdi:close-circle',
+        },
+        status: {
+            cls: `${base} bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-500/20 dark:text-sky-50 dark:border-sky-500/30`,
+            icon: 'mdi:information',
+        },
+    };
+
+    return styleMap[type] ?? styleMap.info;
 }
