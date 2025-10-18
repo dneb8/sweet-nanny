@@ -10,7 +10,7 @@ All toasts appear in the **top-right corner** of the screen, floating above all 
 ### Duration
 - **Success/Info/Warning**: 5 seconds
 - **Error**: 6 seconds (more time to read error messages)
-- **Pause on Hover**: Toasts pause when you hover over them
+<!-- Pause on Hover: Toasts do not currently pause when you hover over them -->
 
 ### Close Button
 All toasts have a visible close button (×) in the top-right corner for manual dismissal.
