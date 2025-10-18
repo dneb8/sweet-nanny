@@ -1,0 +1,150 @@
+/* Sweet Nanny Email Theme */
+/* Cute and site-consistent color palette */
+
+/* Base colors */
+:root {
+    --primary: #8B5CF6;
+    --primary-hover: #7C3AED;
+    --accent: #F472B6;
+    --background: #FDF7FF;
+    --text: #374151;
+    --text-light: #6B7280;
+    --white: #FFFFFF;
+    --border: #E9D5FF;
+}
+
+/* Main body */
+body {
+    background-color: var(--background);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Header */
+.header {
+    background-color: var(--primary);
+    padding: 20px;
+    text-align: center;
+}
+
+/* Content wrapper */
+.content {
+    background-color: var(--white);
+    border-radius: 8px;
+    padding: 32px;
+    margin: 20px auto;
+    max-width: 600px;
+}
+
+/* Primary button */
+.button {
+    background-color: var(--primary);
+    border-radius: 6px;
+    color: var(--white);
+    display: inline-block;
+    padding: 12px 32px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.button:hover {
+    background-color: var(--primary-hover);
+}
+
+/* Secondary button */
+.button-secondary {
+    background-color: var(--accent);
+    border-radius: 6px;
+    color: var(--white);
+    display: inline-block;
+    padding: 12px 32px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* Panel */
+.panel {
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    margin: 16px 0;
+}
+
+/* Footer */
+.footer {
+    color: var(--text-light);
+    font-size: 14px;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Links */
+a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+
+/* Subcopy */
+.subcopy {
+    border-top: 1px solid var(--border);
+    margin-top: 25px;
+    padding-top: 25px;
+    font-size: 14px;
+    color: var(--text-light);
+}
+
+/* Table */
+.table {
+    width: 100%;
+    margin: 16px 0;
+}
+
+.table th {
+    background-color: var(--background);
+    padding: 12px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+}
+
+.table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+/* Promotion */
+.promotion {
+    background-color: var(--background);
+    border: 2px solid var(--accent);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+/* Logo styling */
+.email-logo {
+    max-width: 200px;
+    height: auto;
+    margin: 0 auto 20px;
+    display: block;
+}
+
+/* Responsive */
+@media only screen and (max-width: 600px) {
+    .content {
+        padding: 20px;
+        margin: 10px;
+    }
+    
+    .button {
+        display: block;
+        margin: 10px 0;
+    }
+}
