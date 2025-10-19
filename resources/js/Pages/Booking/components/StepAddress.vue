@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import FormModal from "@/components/common/FormModal.vue"
-import AddressForm from "../partials/AddressForm.vue"
+import AddressForm from "@/Pages/Address/components/AddressForm.vue"
 import { TypeEnum } from "@/enums/addresses/type.enum"
 import type { Address } from "@/types/Address"
 import type { Tutor } from "@/types/Tutor"
@@ -20,7 +20,7 @@ const addressIdBF = useBoundField<number | null>("booking.address_id")
 const addressId = addressIdBF.value
 
 const addresses = ref<Address[]>(props.initialAddresses ?? [])
-const tutorId  = computed<number>(() => Number(props.tutor?.id ?? 0))
+const tutorId = computed<number>(() => Number(props.tutor?.id ?? 0))
 const tutorType = "App\\Models\\Tutor"
 
 const selectedId = computed<number | null>({
@@ -57,16 +57,12 @@ function openEdit(a: Address) {
   showFormModal.value = true
 }
 
-function onAddressSaved(address: Address) {
-  const i = addresses.value.findIndex(x => x.id === address.id)
-  if (i === -1) {
-    addresses.value.unshift(address)
-  } else {
-    addresses.value[i] = address
-  }
+function onAddressSaved() {
   showFormModal.value = false
-  // Auto-select the newly created/edited address
-  selectedId.value = address.id ?? null
+  // The form emits saved event, we just need to reload addresses
+  // In a real app, we'd fetch updated list or the service returns the address
+  // For now, we'll reload the page to refresh the address list
+  window.location.reload()
 }
 
 function onModalClose() {
@@ -163,7 +159,6 @@ function onModalClose() {
         :owner-id="tutorId"
         :owner-type="tutorType"
         @saved="onAddressSaved"
-        @loading="() => {}"
       />
     </FormModal>
   </div>
