@@ -18,8 +18,7 @@ class Career extends Model
     {
         return $this->belongsToMany(Nanny::class, 'career_nanny')
                     ->withPivot('degree', 'status', 'institution')
-                    ->withCasts(['status' => StatusEnum::class,])
-                    ->withCasts(['degree' => DegreeEnum::class,])
+                    ->withCasts(['status' => StatusEnum::class, 'degree' => DegreeEnum::class])
                     ->withTimestamps();
     }
 
