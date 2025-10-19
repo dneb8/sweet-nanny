@@ -2,6 +2,7 @@ import User from '.User';
 import Address from '.Address';
 
 export interface Tutor {
+  id: string;
   ulid: string;
   user_id: number;
   address_id?: number;

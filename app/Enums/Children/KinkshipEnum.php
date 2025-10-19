@@ -4,21 +4,33 @@ namespace App\Enums\Children;
 
 enum KinkshipEnum: string
 {
-    case HIJO = 'hijo';
-    case SOBRINO = 'sobrino';
-    case PRIMO = 'primo';
-    case HERMANO = 'hermano';
-    case OTRO = 'otro';
+    case HIJO     = 'hijo';
+    case SOBRINO  = 'sobrino';
+    case PRIMO    = 'primo';
+    case HERMANO  = 'hermano';
+    case OTRO     = 'otro';
 
     public function label(): string
     {
         return match ($this) {
-            static::HIJO => 'Hij@',
-            static::SOBRINO => 'Sobrin@',
-            static::PRIMO => 'Prim@',
-            static::HERMANO => 'Herman@',
-            static::OTRO=>'Otro'
+            self::HIJO     => 'Hijo(a)',
+            self::SOBRINO  => 'Sobrino(a)',
+            self::PRIMO    => 'Primo(a)',
+            self::HERMANO  => 'Hermana(a)',
+            self::OTRO     => 'Otro',
         };
     }
-}
 
+    public static function values(): array
+    {
+        return array_column(self::cases(), 'value');
+    }
+
+    public static function labels(): array
+    {
+        return array_combine(
+            self::values(),
+            array_map(fn ($case) => $case->label(), self::cases())
+        );
+    }
+}

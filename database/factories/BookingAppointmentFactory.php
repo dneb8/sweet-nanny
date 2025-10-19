@@ -2,12 +2,12 @@
 
 namespace Database\Factories;
 
-use App\Models\{BookingService, Nanny};
+use App\Models\{BookingAppointment, Nanny};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class BookingServiceFactory extends Factory
+class BookingAppointmentFactory extends Factory
 {
-    protected $model = BookingService::class;
+    protected $model = BookingAppointment::class;
 
     public function definition(): array
     {
