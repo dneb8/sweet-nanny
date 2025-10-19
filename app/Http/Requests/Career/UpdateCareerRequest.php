@@ -30,7 +30,7 @@ class UpdateCareerRequest extends FormRequest
             
             'name' => ['required', new Enum(NameCareerEnum::class)],
             'nanny_id' => ['nullable', 'integer', 'exists:nannies,id'],
-            'degree' => ['nullable', 'string', 'max:255'],
+            'degree' => ['nullable', new Enum(DegreeEnum::class)],
             'status' => ['nullable', 'string', new Enum(StatusEnum::class)],
             'institution' => ['nullable', 'string', 'max:255'],
         ];
