@@ -14,7 +14,6 @@ const props = defineProps<{
   isOwner: boolean
 }>()
 
-
 // Estado para crear/editar dirección
 const showModal = ref(false)
 const selectedAddress = ref<any>(null)
@@ -22,7 +21,7 @@ const selectedAddress = ref<any>(null)
 // Estado para eliminar dirección
 const showDeleteModal = ref(false)
 
-// Abrir modal para agregar o editar dirección
+// Abrir modal para agregar o editar
 const openModal = (address: any | null = null) => {
   selectedAddress.value = address
   showModal.value = true
@@ -57,7 +56,6 @@ const deleteAddress = () => {
           <Icon icon="lucide:map-pin" /> Dirección
         </div>
 
-        <!-- Mostrar botón "Nuevo" SOLO si no hay dirección -->
         <Button
           v-if="!props.nanny.user.address"
           size="sm"
@@ -73,9 +71,12 @@ const deleteAddress = () => {
       <div v-if="props.nanny.user.address" class="p-2 rounded shadow-sm border flex justify-between items-center">
         <!-- Información de la dirección -->
         <div>
-          <p class="font-medium">{{ props.nanny.user.address.street }}</p>
-          <p class="text-sm text-muted-foreground">{{ props.nanny.user.address.neighborhood }}</p>
-          <p class="text-sm text-muted-foreground">{{ props.nanny.user.address.postal_code }}</p>
+          <p class="font-medium"><strong>Calle:</strong> {{ props.nanny.user.address.street }}</p>
+          <p class="text-sm text-muted-foreground"><strong>Colonia:</strong> {{ props.nanny.user.address.neighborhood }}</p>
+          <p class="text-sm text-muted-foreground"><strong>Código postal:</strong> {{ props.nanny.user.address.postal_code }}</p>
+          <p class="text-sm text-muted-foreground"><strong>Tipo:</strong> {{ props.nanny.user.address.type }}</p>
+          <p v-if="props.nanny.user.address.other_type" class="text-sm text-muted-foreground"><strong>Otro tipo:</strong> {{ props.nanny.user.address.other_type }}</p>
+          <p v-if="props.nanny.user.address.internal_number" class="text-sm text-muted-foreground"><strong>Número interior:</strong> {{ props.nanny.user.address.internal_number }}</p>
         </div>
 
         <!-- Botones para editar/eliminar -->
@@ -102,7 +103,7 @@ const deleteAddress = () => {
     :title="selectedAddress ? 'Editar Dirección' : 'Agregar Dirección'"
     :form-component="AddressForm"
     :form-props="{
-      nanny: nanny,
+      nanny: props.nanny,
       address: selectedAddress
     }"
   />
