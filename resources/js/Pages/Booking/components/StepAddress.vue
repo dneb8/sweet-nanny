@@ -112,7 +112,12 @@ async function confirmDelete() {
 
     <CardContent class="space-y-4">
       <ScrollArea>
-        <div class="max-h-64 rounded border p-6">
+        <div
+          class="max-h-64 rounded border p-6"
+          :class="addressIdBF.errorMessage?.value ? 'border-rose-300' : ''"
+          :aria-invalid="!!addressIdBF.errorMessage?.value"
+          aria-describedby="booking-address-error"
+        >
           <div v-if="!addresses.length" class="text-xs text-muted-foreground">
             No hay direcciones registradas.
           </div>
@@ -178,7 +183,13 @@ async function confirmDelete() {
           </div>
 
           <div class="mt-2 flex items-center justify-end">
-            <p v-if="addressIdBF.errorMessage?.value" class="text-[11px] text-rose-600">{{ addressIdBF.errorMessage?.value }}</p>
+            <p
+              v-if="addressIdBF.errorMessage?.value"
+              id="booking-address-error"
+              class="text-[11px] text-rose-600"
+            >
+              {{ addressIdBF.errorMessage?.value }}
+            </p>
           </div>
         </div>
       </ScrollArea>

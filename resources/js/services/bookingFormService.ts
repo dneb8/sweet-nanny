@@ -126,8 +126,10 @@ export class BookingFormService {
     this.canSubmit = computed(() => this.meta.value.valid && !this.loading.value)
 
     const onErrorHandler = (errs: Record<string, any>) => {
-      // Remapea errores del backend a los nombres del UI
       const remapped = remapServerErrors(errs)
+      // trazas de depuración
+      console.log('[BookingFormService] raw server errors:', errs)
+      console.log('[BookingFormService] remapped errors:', remapped)
       this.serverErrors.value = normalizeErrors(remapped)
       setErrors(remapped)
       this.setInvalidFromErrors(remapped)
@@ -208,11 +210,11 @@ export class BookingFormService {
 
   private fieldToStep(path: string): number {
     if (!path) return 1
-    if (path.startsWith("booking.description") || path.startsWith("booking.child_ids") || path.startsWith("booking.recurrent")) return 1
-    if (path.startsWith("appointments")) return 2
-    if (path.startsWith("address") || path === "booking.address_id") return 3
-    if (path.startsWith("booking.qualities") || path.startsWith("booking.degree") || path.startsWith("booking.courses")) return 4
-    if (path.startsWith("booking.")) return 1
+    if (path.startsWith('booking.description') || path.startsWith('booking.child_ids') || path.startsWith('booking.recurrent')) return 1
+    if (path.startsWith('appointments')) return 2
+    if (path.startsWith('address') || path === 'booking.address_id') return 3
+    if (path.startsWith('booking.qualities') || path.startsWith('booking.degree') || path.startsWith('booking.courses')) return 4
+    if (path.startsWith('booking.')) return 1
     return 1
   }
 
@@ -239,8 +241,16 @@ function remapServerErrors(errs: Record<string, any>): Record<string, string[]> 
   const out: Record<string, string[]> = {}
   Object.entries(errs ?? {}).forEach(([k, v]) => {
     let key = k
-    if (key === "booking.children") key = "booking.child_ids"
-    if (key.startsWith("booking.children.")) key = key.replace("booking.children.", "booking.child_ids.")
+    // children -> child_ids
+    if (key === 'booking.children') key = 'booking.child_ids'
+    if (key.startsWith('booking.children.')) {
+      key = key.replace('booking.children.', 'booking.child_ids.')
+    }
+    // address -> booking.address_id
+    if (key === 'address_id') key = 'booking.address_id'
+    if (key === 'booking.address') key = 'booking.address_id'
+    if (key === 'booking.address_id') key = 'booking.address_id'
+
     out[key] = Array.isArray(v) ? v.map(String) : [String(v)]
   })
   return out

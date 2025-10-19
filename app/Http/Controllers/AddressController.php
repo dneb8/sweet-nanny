@@ -6,32 +6,22 @@ use App\Http\Requests\Address\CreateAddressRequest;
 use App\Http\Requests\Address\UpdateAddressRequest;
 use App\Models\Address;
 use App\Services\AddressService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class AddressController extends Controller
 {
-    /**
-     * Normaliza un tipo de modelo a FQCN (App\Models\X)
-     */
-    private function normalizeOwnerFqcn(string $type): string
+    private function isInertia(Request $request): bool
     {
-        $type = str_replace('/', '\\', trim($type));
-        // Si ya parece FQCN, lo regresamos
-        if (str_contains($type, '\\')) {
-            return $type;
-        }
-        // Asegura StudlyCase y lo coloca bajo App\Models\
-        $studly = \Illuminate\Support\Str::studly($type);
-        return "App\\Models\\{$studly}";
+        // Inertia manda este header; úsalo para decidir la respuesta
+        return $request->hasHeader('X-Inertia');
     }
 
     public function store(AddressService $addressService, CreateAddressRequest $request)
     {
         $address = $addressService->createAddress($request);
 
-        if ($request->inertia()) {
+        if ($this->isInertia($request)) {
+            // SEE OTHER para formularios Inertia
             return back(303)->with([
                 'success' => 'Dirección creada correctamente.',
                 'recent'  => ['address' => $address->toArray()],
@@ -52,7 +42,7 @@ class AddressController extends Controller
     {
         $updated = $addressService->updateAddress($address, $request);
 
-        if ($request->inertia()) {
+        if ($this->isInertia($request)) {
             return back(303)->with([
                 'success' => 'Dirección actualizada correctamente.',
                 'recent'  => ['address' => $updated->toArray()],
@@ -73,14 +63,15 @@ class AddressController extends Controller
     {
         $address->delete();
 
+        if ($this->isInertia($request)) {
+            // <- IMPORTANTE: no devolver JSON a Inertia
+            return back(303)->with('success', 'Dirección eliminada correctamente.');
+        }
+
         if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
             return response()->json(['deleted' => true]);
         }
 
-        return back()->with('message', [
-            'title'       => 'Dirección eliminada',
-            'description' => 'La dirección ha sido eliminada correctamente.',
-        ]);
+        return back()->with('success', 'Dirección eliminada correctamente.');
     }
-
 }

@@ -16,7 +16,7 @@ enum KinkshipEnum: string
             self::HIJO     => 'Hijo(a)',
             self::SOBRINO  => 'Sobrino(a)',
             self::PRIMO    => 'Primo(a)',
-            self::HERMANO  => 'Hermana(a)',
+            self::HERMANO  => 'Hermano(a)',
             self::OTRO     => 'Otro',
         };
     }
