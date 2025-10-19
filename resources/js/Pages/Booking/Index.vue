@@ -63,7 +63,7 @@ const fmtDateTime = (value?: string | Date | null) => {
             </div>
           </td>
           <td class="px-4 py-3">
-            {{ (booking.children ?? []).map(c => c.name).join(', ') || '—' }}
+            {{ (booking.children ?? []).map((c: { name: string }) => c.name).join(', ') || '—' }}
           </td>
           <td class="px-4 py-3">
             <span class="inline-flex rounded-full border px-2 py-0.5 text-xs">
@@ -102,7 +102,8 @@ const fmtDateTime = (value?: string | Date | null) => {
       class="rounded-md border px-3 py-1.5 text-sm"
       :class="[ l.active ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-muted',
                 l.url === null ? 'pointer-events-none opacity-50' : '' ]"
-      v-html="l.label"
-    />
+    >
+      <span v-if="l.label" v-html="l.label"></span>
+    </Link>
   </nav>
 </template>

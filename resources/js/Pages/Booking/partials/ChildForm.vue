@@ -45,7 +45,7 @@ watch(
   }
 )
 
-const { isFieldDirty, loading, saved, errores } = service
+const { isFieldDirty, loading, errores } = service
 
 async function onSaveClick() {
   const ok = await service.guardar()
