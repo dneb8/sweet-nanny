@@ -67,6 +67,9 @@ class HandleInertiaRequests extends Middleware
                 'name' => $request->user()->name,
                 'email' => $request->user()->email,
             ] : null,
+
+            // Recent items
+            'recent' => fn () => $request->session()->get('recent'),
         ]);
     }
 }

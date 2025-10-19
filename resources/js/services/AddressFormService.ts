@@ -1,7 +1,8 @@
 import { ref, type Ref } from "vue"
 import { toTypedSchema } from "@vee-validate/zod"
 import { useForm } from "vee-validate"
-import { useForm as useInertiaForm } from "@inertiajs/vue3"
+import { useForm as useInertiaForm, usePage } from "@inertiajs/vue3"
+import { route } from "ziggy-js"
 import * as z from "zod"
 import type { Address } from "@/types/Address"
 
@@ -13,7 +14,6 @@ type Ctor = {
 
 export class AddressFormService {
   public address?: Ref<Address>
-
   public formSchema
   public values
   public isFieldDirty
@@ -21,6 +21,7 @@ export class AddressFormService {
   public loading = ref<boolean>(false)
   public saved = ref<boolean>(false)
   public errors = ref<Record<string, string[]>>({})
+  public savedAddress = ref<Address | null>(null)
 
   public saveAddress: (e?: Event) => void
   public updateAddress: (e?: Event) => void
@@ -73,6 +74,8 @@ export class AddressFormService {
         preserveState: true,
         onSuccess: () => {
           this.saved.value = true
+          const p: any = usePage().props
+          this.savedAddress.value = p?.recent?.address ?? null
         },
         onError: (errs: Record<string, any>) => {
           const normalized: Record<string, string[]> = {}
@@ -93,8 +96,11 @@ export class AddressFormService {
       const form = useInertiaForm(vals)
 
       form.patch(route("addresses.update", this.address.value.id), {
+        preserveState: true,
         onSuccess: () => {
           this.saved.value = true
+          const p: any = usePage().props
+          this.savedAddress.value = p?.recent?.address ?? null
         },
         onError: (errs: Record<string, any>) => {
           const normalized: Record<string, string[]> = {}
@@ -105,4 +111,33 @@ export class AddressFormService {
       })
     })
   }
+}
+
+// Compatibilidad: helpers con export nombrado
+export function createAddress(payload: any) {
+  const form = useInertiaForm(payload)
+  return new Promise<any>((resolve) => {
+    form.post(route("addresses.store"), {
+      preserveState: true,
+      onSuccess: () => {
+        const p: any = usePage().props
+        resolve(p?.recent?.address ?? null)
+      },
+      onError: () => resolve(null),
+    })
+  })
+}
+
+export function updateAddress(id: string | number, payload: any) {
+  const form = useInertiaForm(payload)
+  return new Promise<any>((resolve) => {
+    form.patch(route("addresses.update", id), {
+      preserveState: true,
+      onSuccess: () => {
+        const p: any = usePage().props
+        resolve(p?.recent?.address ?? null)
+      },
+      onError: () => resolve(null),
+    })
+  })
 }

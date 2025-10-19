@@ -16,8 +16,8 @@ class TutorSeeder extends Seeder
     {
         Tutor::factory()
             ->count(5)
-            ->has(Address::factory()->count(2), 'addresses') // morphMany relation
-            ->create() 
-            ->each(fn($tutor) => $tutor->user->assignRole('tutor'));
+            ->hasAddresses(2)
+            ->create()
+            ->each(fn($t) => $t->user->assignRole('tutor'));
     }
 }

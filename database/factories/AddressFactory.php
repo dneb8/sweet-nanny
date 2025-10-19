@@ -34,10 +34,9 @@ class AddressFactory extends Factory
             'postal_code'     => $this->faker->postcode(),
             'street'          => $this->faker->streetName(),
             'neighborhood'    => $this->faker->citySuffix(),
-            'type'            => $type, // cast a TypeEnum en el modelo
+            'type'            => $type = $this->faker->randomElement(\App\Enums\Address\TypeEnum::values()),
             'other_type'      => $type === 'other' ? $this->faker->word() : null,
             'internal_number' => $this->faker->optional()->buildingNumber(),
-            // addressable_* se setean via ->for($owner, 'addressable') o helpers de abajo
         ];
     }
 

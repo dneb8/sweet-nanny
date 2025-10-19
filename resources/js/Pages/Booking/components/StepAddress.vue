@@ -1,165 +1,208 @@
 <script setup lang="ts">
 import { ref, computed } from "vue"
-import { Icon } from "@iconify/vue"
+import axios from "axios"
+import { route } from "ziggy-js"
 import { useBoundField } from "@/services/bookingFormService"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Icon } from '@iconify/vue'
+
 import FormModal from "@/components/common/FormModal.vue"
+import DeleteModal from "@/components/common/DeleteModal.vue"
 import AddressForm from "@/Pages/Address/components/AddressForm.vue"
+
 import { TypeEnum } from "@/enums/addresses/type.enum"
 import type { Address } from "@/types/Address"
 import type { Tutor } from "@/types/Tutor"
 
 const props = defineProps<{
   tutor: Tutor | null
-  initialAddresses?: Address[]
+  initialAddresses?: Address[] | null
 }>()
 
-const addressIdBF = useBoundField<number | null>("booking.address_id")
+// Enlazar selección al campo booking.address_id
+const addressIdBF = useBoundField<number>('booking.address_id')
 const addressId = addressIdBF.value
 
-const addresses = ref<Address[]>(props.initialAddresses ?? [])
-const tutorId = computed<number>(() => Number(props.tutor?.id ?? 0))
-const tutorType = "App\\Models\\Tutor"
-
-const selectedId = computed<number | null>({
-  get: () => addressId.value,
-  set: (v) => { 
-    addressId.value = v
-  },
+const selectedAddressId = computed<number | null>({
+  get: () => (addressId.value ?? null) as number | null,
+  set: (v) => { addressId.value = v == null ? (null as any) : Number(v) },
 })
 
-const isSelected = (id?: number | null) => id != null && selectedId.value === id
+const isSelected = (id?: string | number | null) => id != null && Number(selectedAddressId.value) === Number(id)
 
-function toggleSelect(id: number) {
-  if (isSelected(id)) {
-    selectedId.value = null
-  } else {
-    selectedId.value = id
-  }
-}
+/** Estado local */
+const addresses  = ref<Address[]>(props.initialAddresses ?? [])
+const tutorIdNum = computed<number>(() => Number(props.tutor?.id ?? 0))
+const tutorType  = "App\\Models\\Tutor"
 
-// Modal crear/editar
+/** Helpers selección (1 única address) */
+/** Crear / Editar (mismo patrón que children) */
 const showFormModal = ref(false)
-const formTitle = ref("Agregar dirección")
-const formAddress = ref<Address | undefined>(undefined)
+const formTitle     = ref("Agregar dirección")
+const formAddress   = ref<Address | null>(null)
 
 function openCreate() {
   formTitle.value = "Agregar dirección"
-  formAddress.value = undefined
+  formAddress.value = null
   showFormModal.value = true
 }
-
 function openEdit(a: Address) {
   formTitle.value = "Editar dirección"
   formAddress.value = a
   showFormModal.value = true
 }
 
-function onAddressSaved() {
+/** Al guardar desde AddressForm:
+ *  - Inserta/actualiza en la lista local
+ *  - Autoselecciona la address
+ *  - Cierra modal
+ */
+function onAddressSaved(address: Address) {
+  const i = addresses.value.findIndex(x => String(x.id) === String(address.id))
+  if (i === -1) {
+    addresses.value.unshift(address)
+  } else {
+    addresses.value[i] = address
+  }
+  selectedAddressId.value = Number(address.id ?? 0)
   showFormModal.value = false
-  // The form emits saved event, we just need to reload addresses
-  // In a real app, we'd fetch updated list or the service returns the address
-  // For now, we'll reload the page to refresh the address list
-  window.location.reload()
 }
 
-function onModalClose() {
-  showFormModal.value = false
+/** Eliminar (mismo patrón que children) */
+const showDeleteModal = ref(false)
+const toDelete = ref<Address | null>(null)
+function openDelete(a: Address) {
+  toDelete.value = a
+  showDeleteModal.value = true
+}
+async function confirmDelete() {
+  if (!toDelete.value?.id) return
+  try {
+    await axios.delete(route("addresses.destroy", { address: String(toDelete.value.id) }), {
+      headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+    })
+    addresses.value = addresses.value.filter(x => String(x.id) !== String(toDelete.value?.id))
+    if (Number(selectedAddressId.value) === Number(toDelete.value?.id)) selectedAddressId.value = null
+  } finally {
+    showDeleteModal.value = false
+    toDelete.value = null
+  }
 }
 </script>
 
 <template>
-  <div class="space-y-4">
-    <div class="flex justify-between items-center">
-      <div>
-        <h3 class="text-lg font-semibold">Dirección del Servicio</h3>
-        <p class="text-sm text-muted-foreground">
-          Selecciona una dirección o crea una nueva
-        </p>
-      </div>
-      <Button type="button" size="sm" variant="outline" @click="openCreate">
-        <Icon icon="solar:add-circle-linear" class="w-4 h-4 mr-2" />
-        Nueva dirección
-      </Button>
-    </div>
+  <Card class="border-none bg-transparent shadow-none">
+    <CardHeader>
+      <CardTitle class="flex items-center justify-between">
+        <div class="flex flex-col gap-1">
+          <div class="flex items-center gap-2">
+            <Icon icon="lucide:map-pin" /> Dirección del servicio
+          </div>
+          <p class="text-xs text-muted-foreground max-w-md font-light italic">
+            Selecciona una dirección del tutor o crea una nueva. Solo puedes elegir una.
+          </p>
+        </div>
+        <Button size="sm" variant="outline" type="button" @click="openCreate">
+          <Icon icon="lucide:plus" /> Nueva
+        </Button>
+      </CardTitle>
+    </CardHeader>
 
-    <!-- Lista de direcciones -->
-    <div v-if="addresses.length > 0" class="space-y-2">
-      <ScrollArea class="h-[340px] w-full rounded-md border p-4">
-        <div class="space-y-3">
-          <Card
-            v-for="addr in addresses"
-            :key="addr.id"
-            class="cursor-pointer transition-all hover:shadow-md relative"
-            :class="[isSelected(addr.id) && 'ring-2 ring-primary bg-primary/5']"
-            @click="toggleSelect(addr.id!)"
-          >
-            <CardContent class="p-4">
-              <div class="flex items-start justify-between gap-3">
-                <div class="flex items-start gap-3 flex-1">
-                  <Icon 
-                    :icon="isSelected(addr.id) ? 'solar:check-circle-bold' : 'solar:map-point-linear'" 
-                    class="w-5 h-5 mt-0.5 flex-shrink-0"
-                    :class="[isSelected(addr.id) && 'text-primary']"
-                  />
-                  <div class="flex-1 min-w-0">
-                    <p class="font-medium text-sm truncate">{{ addr.street }}</p>
-                    <p class="text-xs text-muted-foreground mt-1">
-                      {{ addr.neighborhood }}
-                    </p>
-                    <div class="flex items-center gap-2 mt-2">
-                      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-secondary">
-                        CP {{ addr.postal_code }}
-                      </span>
-                      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-secondary">
-                        {{ TypeEnum.labels()[addr.type] || addr.type }}
-                      </span>
-                    </div>
-                  </div>
+    <CardContent class="space-y-4">
+      <ScrollArea>
+        <div class="max-h-64 rounded border p-6">
+          <div v-if="!addresses.length" class="text-xs text-muted-foreground">
+            No hay direcciones registradas.
+          </div>
+
+          <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+            <div
+              v-for="a in addresses"
+              :key="a.id"
+              class="relative rounded-md border p-3 transition select-none bg-background/50"
+              :class="[
+                isSelected(a.id) ? 'ring-2 ring-primary border-primary bg-primary/5' : 'hover:border-primary/50',
+                'cursor-pointer'
+              ]"
+              role="button"
+              tabindex="0"
+              @click="selectedAddressId = Number(a.id)"
+              @keydown.enter.prevent="selectedAddressId = Number(a.id)"
+              @keydown.space.prevent="selectedAddressId = Number(a.id)"
+              :aria-pressed="isSelected(a.id)"
+            >
+              <span
+                v-if="isSelected(a.id)"
+                class="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary"
+              >
+                <Icon icon="lucide:check-circle" class="h-3.5 w-3.5" /> Seleccionada
+              </span>
+
+              <div class="pr-16">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium truncate">{{ a.street }}</span>
                 </div>
-                <Button 
-                  type="button" 
-                  size="sm" 
+                <div class="mt-1 text-xs text-muted-foreground">
+                  {{ a.neighborhood }} • CP {{ a.postal_code }}
+                </div>
+                <div class="mt-2 text-[11px] inline-flex items-center px-2 py-0.5 rounded bg-secondary">
+                  {{ TypeEnum.labels()[a.type] || a.type }}
+                </div>
+              </div>
+
+              <div class="absolute right-2 bottom-2 flex items-center gap-2">
+                <Button
+                  size="icon"
                   variant="ghost"
-                  class="h-8 w-8 p-0"
-                  @click.stop="openEdit(addr)"
+                  class="h-8 w-8"
+                  type="button"
+                  @click.stop="openEdit(a)"
+                  :aria-label="`Editar ${a.street}`"
                 >
-                  <Icon icon="solar:pen-linear" class="w-4 h-4" />
+                  <Icon icon="lucide:edit" class="h-4 w-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="destructive"
+                  class="h-8 w-8"
+                  type="button"
+                  @click.stop="openDelete(a)"
+                  :aria-label="`Eliminar ${a.street}`"
+                >
+                  <Icon icon="lucide:trash" class="h-4 w-4" />
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+
+          <div class="mt-2 flex items-center justify-end">
+            <p v-if="addressIdBF.errorMessage?.value" class="text-[11px] text-rose-600">{{ addressIdBF.errorMessage?.value }}</p>
+          </div>
         </div>
       </ScrollArea>
-    </div>
+    </CardContent>
+  </Card>
 
-    <!-- Estado vacío -->
-    <div v-else class="flex flex-col items-center justify-center py-12 text-center border rounded-lg">
-      <Icon icon="solar:map-point-broken" class="w-16 h-16 text-muted-foreground/50 mb-4" />
-      <h4 class="text-sm font-medium mb-2">No hay direcciones guardadas</h4>
-      <p class="text-xs text-muted-foreground mb-4">
-        Crea tu primera dirección para continuar
-      </p>
-      <Button type="button" size="sm" @click="openCreate">
-        <Icon icon="solar:add-circle-linear" class="w-4 h-4 mr-2" />
-        Crear dirección
-      </Button>
-    </div>
+  <!-- Modal de formulario (igual que children) -->
+  <FormModal
+    v-model="showFormModal"
+    :title="formTitle"
+    :form-component="AddressForm"
+    :form-props="{
+      address: formAddress,
+      ownerId: tutorIdNum,
+      ownerType: tutorType
+    }"
+    @saved="onAddressSaved"
+  />
 
-    <!-- Modal para crear/editar -->
-    <FormModal 
-      :show="showFormModal" 
-      :title="formTitle"
-      @close="onModalClose"
-    >
-      <AddressForm
-        :address="formAddress"
-        :owner-id="tutorId"
-        :owner-type="tutorType"
-        @saved="onAddressSaved"
-      />
-    </FormModal>
-  </div>
+  <!-- Modal de eliminación -->
+  <DeleteModal
+    v-model:show="showDeleteModal"
+    title="dirección"
+    :message="`¿Seguro que deseas eliminar la dirección ${toDelete?.street}?`"
+    @confirm="confirmDelete"
+  />
 </template>

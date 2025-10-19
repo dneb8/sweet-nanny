@@ -31,8 +31,13 @@ const formService = new AddressFormService({
 const { errors, loading, saved } = formService
 
 // Cuando guarde/edite, notificar al padre (el padre hace reload parcial)
-watch(saved, (ok) => {
-  if (ok) emit("saved")
+watch(() => saved.value, (ok) => {
+  if (!ok) return
+  if (formService.savedAddress.value) {
+    emit("saved", formService.savedAddress.value)
+  } else {
+    emit("saved", { ...values })
+  }
 })
 
 // Submit

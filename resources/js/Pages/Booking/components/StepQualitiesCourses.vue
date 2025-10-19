@@ -36,7 +36,7 @@ const courseOptions = computed(() =>
     </div>
 
     <!-- Qualities -->
-    <div class="space-y-2">
+    <!-- <div class="space-y-2">
       <Label class="text-sm font-medium">Cualidades deseadas</Label>
       <TagsInput
         v-model="selectedQualities.value.value"
@@ -46,10 +46,10 @@ const courseOptions = computed(() =>
       <p v-if="selectedQualities.errorMessage" class="text-xs text-red-500">
         {{ selectedQualities.errorMessage }}
       </p>
-    </div>
+    </div> -->
 
     <!-- Degree / Career -->
-    <div class="space-y-2">
+    <!-- <div class="space-y-2">
       <Label class="text-sm font-medium">Carrera o formación académica</Label>
       <Select v-model="degree.value.value">
         <SelectTrigger class="w-full">
@@ -69,10 +69,10 @@ const courseOptions = computed(() =>
       <p v-if="degree.errorMessage" class="text-xs text-red-500">
         {{ degree.errorMessage }}
       </p>
-    </div>
+    </div> -->
 
     <!-- Courses -->
-    <div class="space-y-2">
+    <!-- <div class="space-y-2">
       <Label class="text-sm font-medium">Cursos especializados</Label>
       <TagsInput
         v-model="selectedCourses.value.value"
@@ -82,6 +82,6 @@ const courseOptions = computed(() =>
       <p v-if="selectedCourses.errorMessage" class="text-xs text-red-500">
         {{ selectedCourses.errorMessage }}
       </p>
-    </div>
+    </div> -->
   </div>
 </template>
