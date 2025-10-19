@@ -15,7 +15,7 @@ class CareerFactory extends Factory
         $allCareerEnums = NameCareerEnum::cases();
         $randomCareer = $this->faker->randomElement($allCareerEnums);
         return [
-            'name' => $randomCareer->label(),
+            'name' => $randomCareer->value,
         ];
     }
 }
