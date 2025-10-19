@@ -91,7 +91,7 @@ Ver [docs/auth.md](docs/auth.md) para opciones de producción (SendGrid, Mailgun
 
 ### Iniciar servidor de desarrollo
 ```bash
-composer dev
+composer run dev
 ```
 
 Esto iniciará:
