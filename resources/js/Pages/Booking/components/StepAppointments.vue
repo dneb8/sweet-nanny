@@ -48,21 +48,23 @@ function toIso(dateVal: unknown, time: string, duration: number) {
 function syncRow(i: number) {
   const r = rows.value[i]; if (!isComplete(r)) return
   const { startISO, endISO } = toIso(r.dateVal, r.time, r.duration)
-  if (!Array.isArray(appts.value.value)) appts.value.value = []
-  appts.value.value[i] = {
-    ...(appts.value.value[i] || {}),
+  let apptsValue = appts.value.value
+  if (!Array.isArray(apptsValue)) apptsValue = []
+  apptsValue[i] = {
+    ...(apptsValue[i] || {}),
     start_date: startISO,
     end_date: endISO,
     duration: r.duration,
-    status: appts.value.value[i]?.status ?? "pending",
-    payment_status: appts.value.value[i]?.payment_status ?? "unpaid",
-    extra_hours: appts.value.value[i]?.extra_hours ?? 0,
-    total_cost: appts.value.value[i]?.total_cost ?? 0
+    status: apptsValue[i]?.status ?? "pending",
+    payment_status: apptsValue[i]?.payment_status ?? "unpaid",
+    extra_hours: apptsValue[i]?.extra_hours ?? 0,
+    total_cost: apptsValue[i]?.total_cost ?? 0
   }
   if (!recurrent.value.value) {
-    appts.value.value = [appts.value.value[0]]
+    apptsValue = [apptsValue[0]]
     rows.value = [rows.value[0]]
   }
+  appts.value.value = apptsValue
 }
 
 const canAdd = computed(
