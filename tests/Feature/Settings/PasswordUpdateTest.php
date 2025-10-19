@@ -17,6 +17,7 @@ test('password can be updated', function () {
 
     $response
         ->assertSessionHasNoErrors()
+        ->assertSessionHas('success', 'Contraseña actualizada correctamente.')
         ->assertRedirect('/settings/password');
 
     expect(Hash::check('new-password', $user->refresh()->password))->toBeTrue();

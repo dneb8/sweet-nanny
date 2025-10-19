@@ -20,12 +20,12 @@ import { Icon } from "@iconify/vue"
 
     <!-- Subtítulo -->
     <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl">
-      Administra tus reservas y tu perfil de manera sencilla, con todas las herramientas al alcance de tu mano.
+      Administra tus servicios y tu perfil de manera sencilla, con todas las herramientas al alcance de tu mano.
     </p>
 
     <!-- Tarjetas de acceso rápido -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl">
-      <!-- Reservas -->
+      <!-- Servicios -->
       <div
         class="flex flex-col items-center gap-3 p-6 rounded-2xl bg-white/30 dark:bg-gray-800/30 backdrop-blur-md border border-white/40 dark:border-gray-700/40 shadow-md transition hover:shadow-lg"
       >
@@ -33,9 +33,9 @@ import { Icon } from "@iconify/vue"
           icon="mdi:calendar-account"
           class="w-8 h-8 text-primary-600 dark:text-primary-400"
         />
-        <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Mis Reservas</h2>
+        <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Mis Servicios</h2>
         <p class="text-sm text-gray-600 dark:text-gray-300 text-center">
-          Consulta y administra todas tus reservas activas.
+          Consulta y administra todas tus servicios activas.
         </p>
       </div>
 

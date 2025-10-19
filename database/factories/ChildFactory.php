@@ -17,8 +17,7 @@ class ChildFactory extends Factory
             'tutor_id' => Tutor::inRandomOrder()->first()?->id, // Usa un tutor existente
             'name' => $this->faker->firstName,
             'birthdate' => $this->faker->date('Y-m-d', '2015-12-31'),
-            'kinkship' => $this->faker->randomElement(['hijo', 'sobrino', 'primo', 'hermano', 'otro']),
-            #'kinkship' => $this->faker->randomElement(KinkshipEnum::cases())->value,
+            'kinkship' => $this->faker->randomElement(KinkshipEnum::values()),
         ];
     }
 }

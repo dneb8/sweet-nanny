@@ -20,17 +20,31 @@ const adminNavItems: NavItem[] = [
         href: '/users',
         icon: 'proicons:person-multiple',
     },
-    {
-        title: 'Niñeras',
-        href: '/nannies',
-        icon: 'mdi:face-female-shimmer-outline',
-    },
-    {
-        title: 'Tutores',
-        href: '/#',
-        icon: 'fluent-mdl2:family',
-    },
+    // {
+    //     title: 'Niñeras',
+    //     href: '/nannies',
+    //     icon: 'mdi:face-female-shimmer-outline',
+    // },
+    // {
+    //     title: 'Tutores',
+    //     href: '/#',
+    //     icon: 'fluent-mdl2:family',
+    // },
 ];
+
+const bookingsNavItems: NavItem[] = [
+  {
+    title: 'Servicios',
+    href: '/bookings',
+    icon: 'ph:baby-carriage',
+  },
+  {
+    title: 'Crear Servicio',
+    href: '/bookings/create',
+    icon: 'fluent:calendar-add-24-regular',
+  },
+];
+
 
 const footerNavItems: NavItem[] = [
     {
@@ -56,7 +70,8 @@ const footerNavItems: NavItem[] = [
         <SidebarContent>
             <NavMain 
                 :items="mainNavItems" 
-                :adminItems="adminNavItems" 
+                :adminItems="adminNavItems"
+                :bookingsItems="bookingsNavItems"
             />
         </SidebarContent>
 
