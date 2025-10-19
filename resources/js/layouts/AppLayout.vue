@@ -13,7 +13,7 @@ withDefaults(defineProps<Props>(), {
 });
 
 const page = usePage();
-const routeKey = computed(() => page.url); 
+const routeKey = computed(() => page.url);
 </script>
 
 <template>

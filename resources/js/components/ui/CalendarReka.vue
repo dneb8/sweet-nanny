@@ -6,7 +6,7 @@ import { getLocalTimeZone, today } from "@internationalized/date"
 import { CalendarRoot, useDateFormatter, useForwardPropsEmits } from "reka-ui"
 import { createDecade, createYear, toDate } from "reka-ui/date"
 import { computed, ref, watch } from "vue"
-import { cn } from "@/utils"
+import { cn } from "@/lib/utils"
 import {
   CalendarCell, CalendarCellTrigger, CalendarGrid, CalendarGridBody,
   CalendarGridHead, CalendarGridRow, CalendarHeadCell, CalendarHeader, CalendarHeading,

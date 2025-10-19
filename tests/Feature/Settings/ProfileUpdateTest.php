@@ -24,6 +24,7 @@ test('profile information can be updated', function () {
 
     $response
         ->assertSessionHasNoErrors()
+        ->assertSessionHas('success', 'Perfil actualizado correctamente.')
         ->assertRedirect('/settings/profile');
 
     $user->refresh();
@@ -45,6 +46,7 @@ test('email verification status is unchanged when the email address is unchanged
 
     $response
         ->assertSessionHasNoErrors()
+        ->assertSessionHas('success', 'Perfil actualizado correctamente.')
         ->assertRedirect('/settings/profile');
 
     expect($user->refresh()->email_verified_at)->not->toBeNull();

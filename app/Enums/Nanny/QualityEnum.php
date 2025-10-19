@@ -12,6 +12,10 @@ enum QualityEnum: string
     case ORGANIZADA = 'Organizada';
     case COMUNICATIVA = 'Comunicativa';
 
+    case EXTROVERTIDA = 'Extrovertida';
+
+    case LECTORA = 'Lectora';
+
     public function label(): string
     {
         return match ($this) {
@@ -22,6 +26,8 @@ enum QualityEnum: string
             self::CARIÑOSA => 'Cariñosa',
             self::ORGANIZADA => 'Organizada',
             self::COMUNICATIVA => 'Comunicativa',
+            self::EXTROVERTIDA => 'Extrovertida',
+            self::LECTORA => 'Lectora',
         };
     }
 

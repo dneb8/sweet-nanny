@@ -23,7 +23,13 @@ let service = new ChildFormService(props.child as Child)
 function wire() { watch(() => service.loading.value, v => emit("loading", v), { immediate: true }) }
 wire()
 watch(() => (props.child as any)?.id, () => { service = new ChildFormService(props.child as Child); wire() })
-
+watch(
+  () => (props.child as any)?.id,
+  () => {
+    service = new ChildFormService(props.child as Child)
+    wire()
+  }
+)
 const { isFieldDirty, loading, errores } = service
 
 async function onSaveClick() {
