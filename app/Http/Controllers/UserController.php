@@ -94,13 +94,13 @@ class UserController extends Controller
     {
         // Gate::authorize('update', $user);
 
-        $userService->updateUser( $user, $request);
+        $userService->updateUser($user, $request);
 
         return redirect()->route('users.index')->with([
             'message' => [
                 'title' => 'Usuario actualizado',
                 'description' => 'El usuario ha sido actualizado correctamente.',
-            ]
+            ],
         ]);
     }
 
