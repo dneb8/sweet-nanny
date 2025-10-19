@@ -102,7 +102,8 @@ const fmtDateTime = (value?: string | Date | null) => {
       class="rounded-md border px-3 py-1.5 text-sm"
       :class="[ l.active ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-muted',
                 l.url === null ? 'pointer-events-none opacity-50' : '' ]"
-      v-html="l.label"
-    />
+    >
+      <span v-html="l.label" />
+    </Link>
   </nav>
 </template>
