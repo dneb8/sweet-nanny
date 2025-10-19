@@ -40,8 +40,8 @@ class Address extends Model
         return $this->hasMany(User::class);
     }
 
-    public function bookingAppointments()
+    public function bookingServices()
     {
-        return $this->belongsToMany(BookingAppointment::class);
+        return $this->belongsToMany(BookingService::class);
     }
 }

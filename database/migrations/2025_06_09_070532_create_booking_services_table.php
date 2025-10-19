@@ -8,12 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('booking_appointments', function (Blueprint $table) {
+        Schema::create('booking_services', function (Blueprint $table) {
             $table->id();
 
             $table->foreignId('booking_id')->constrained('bookings')->cascadeOnDelete();
             $table->foreignId('nanny_id')->nullable()->constrained('nannies')->cascadeOnDelete();
-            // $table->foreignId('price_id')->constrained('prices')->cascadeOnDelete();
+            $table->foreignId('price_id')->constrained('prices')->cascadeOnDelete();
 
             $table->dateTime('start_date');
             $table->dateTime('end_date');
@@ -28,6 +28,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('booking_appointments');
+        Schema::dropIfExists('booking_services');
     }
 };

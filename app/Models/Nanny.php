@@ -46,9 +46,9 @@ class Nanny extends Model
     }
 
     //Relación 1:N con servicios 
-    public function bookingAppointments()
+    public function bookingServices()
     {
-        return $this->hasMany(BookingAppointment::class);
+        return $this->hasMany(BookingService::class);
     }
     public function reviews()
     {

@@ -17,7 +17,5 @@ require __DIR__.'/auth.php';
 require __DIR__.'/users.php';
 require __DIR__.'/nannies.php';
 require __DIR__.'/courses.php';
-require __DIR__.'/bookings.php';
 require __DIR__.'/addresses.php';
-require __DIR__.'/children.php';
 

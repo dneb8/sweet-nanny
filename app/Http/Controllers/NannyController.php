@@ -1,13 +1,11 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Http\Request;
+
 use App\Models\Nanny;
-use App\Models\Quality;
 use App\Http\Requests\Nanny\{CreateNannyRequest, UpdateNannyRequest};
 use App\Services\NannyService;
 use Inertia\{Inertia, Response};
-use App\Enums\Nanny\QualityEnum;
 
 
 class NannyController extends Controller
@@ -40,7 +38,7 @@ class NannyController extends Controller
                 'careers',         
                 'qualities',
                 'reviews',
-                'bookingAppointments.booking', 
+                'bookingServices.booking', 
             ]),
         ]);
     }
@@ -69,21 +67,4 @@ class NannyController extends Controller
     {
         //
     }
-
-    public function updateQualities(Request $request, Nanny $nanny)
-    {
-        $validated = $request->validate([
-            'qualities' => 'array',
-            'qualities.*' => 'string|in:' . implode(',', QualityEnum::values()),
-        ]);
-
-        $qualityIds = Quality::whereIn('name', $validated['qualities'])->pluck('id');
-        $nanny->qualities()->sync($qualityIds);
-
-        return response()->json([
-            'message' => 'Cualidades actualizadas correctamente.',
-            'qualities' => $nanny->qualities()->get(['id', 'name']),
-        ]);
-    }
-
 }

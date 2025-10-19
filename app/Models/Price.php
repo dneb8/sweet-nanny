@@ -17,9 +17,9 @@ class Price extends Model
         'special_care',
     ];
 
-    // Relación uno a muchos con BookingAppointment
-    public function bookingAppointments()
+    // Relación uno a muchos con BookingService
+    public function bookingServices()
     {
-        return $this->hasMany(BookingAppointment::class);
+        return $this->hasMany(BookingService::class);
     }
 }

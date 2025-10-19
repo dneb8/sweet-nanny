@@ -15,7 +15,7 @@ class Child extends Model
 
     protected $casts = [
         'kinkship' => KinkshipEnum::class,
-        'birthdate' => 'date:Y-m-d',
+        'birthdate' => 'date',
     ];
 
     protected $fillable = [
@@ -36,12 +36,5 @@ class Child extends Model
     public function tutor()
     {
         return $this->belongsTo(Tutor::class); 
-    }
-
-    // Child ↔ Booking (N:N)
-    public function bookings()
-    {
-        return $this->belongsToMany(Booking::class, 'booking_child', 'child_id', 'booking_id')
-                    ->withTimestamps();
     }
 }

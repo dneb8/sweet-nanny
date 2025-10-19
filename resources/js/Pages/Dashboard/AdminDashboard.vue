@@ -39,7 +39,7 @@ import { Icon } from "@iconify/vue"
         <Icon icon="mdi:calendar-clock" class="w-8 h-8 text-purple-600 dark:text-purple-400" />
         <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Bookings</h2>
         <p class="text-sm text-gray-500 dark:text-gray-400 text-center">
-          Supervisa y gestiona todas las servicios y citas de la plataforma.
+          Supervisa y gestiona todas las reservas y citas de la plataforma.
         </p>
       </div>
 
