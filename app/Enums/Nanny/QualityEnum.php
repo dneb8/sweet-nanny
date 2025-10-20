@@ -8,30 +8,30 @@ enum QualityEnum: string
     case PACIENTE = 'paciente';
     case CREATIVA = 'creativa';
     case PUNTUAL = 'puntual';
-    case CARIÑOSA = 'cariñosa';
+    case CARIÑOSA = 'carinosa';
     case ORGANIZADA = 'organizada';
     case COMUNICATIVA = 'comunicativa';
     case EXTROVERTIDA = 'extrovertida';
     case LECTORA = 'lectora';
-    case EMPATICA = 'empática';
+    case EMPATICA = 'empatica';
     case CUIDADOSA = 'cuidadosa';
     case HONESTA = 'honesta';
     case ATENTA = 'atenta';
     case ASERTIVA = 'asertiva';
     case RESPETUOSA = 'respetuosa';
-    case DINAMICA = 'dinámica';
+    case DINAMICA = 'dinamica';
     case PROACTIVA = 'proactiva';
     case DISCRETA = 'discreta';
     case OBSERVADORA = 'observadora';
     case RESOLUTIVA = 'resolutiva';
     case COLABORATIVA = 'colaborativa';
     case FLEXIBLE = 'flexible';
-    case LUDICA = 'lúdica';
+    case LUDICA = 'ludica';
     case ADAPTABLE = 'adaptable';
     case PERSEVERANTE = 'perseverante';
     case TOLERANTE = 'tolerante';
     case SEGURA = 'segura';
-    case BILINGUE = 'bilingüe';
+    case BILINGUE = 'bilingue';
 
     public function label(): string
     {
