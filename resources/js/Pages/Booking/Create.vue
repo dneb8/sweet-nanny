@@ -11,7 +11,7 @@ const props = defineProps<{
   tutor: Tutor & { addresses: Address[]; children: Child[] }
   kinkships: string[]
   qualities: Record<string, string>
-  degrees: Record<string, string>
+  careers: Record<string, string>
   courseNames: Record<string, string>
 }>()
 </script>
@@ -23,7 +23,7 @@ const props = defineProps<{
     :tutor="props.tutor" 
     :kinkships="props.kinkships"
     :qualities="props.qualities"
-    :degrees="props.degrees"
+    :careers="props.careers"
     :course-names="props.courseNames"
   />
 </template>

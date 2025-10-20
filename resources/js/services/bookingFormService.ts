@@ -19,7 +19,7 @@ type BookingFormValues = {
     recurrent: boolean
     child_ids: string[]            // <-- UI usa IDs planos
     qualities: string[]            // New: qualities array
-    degree: string | null          // New: degree
+    career: string | null          // New: career/formación académica
     courses: string[]              // New: courses array
   }
   appointments: AppointmentForForm[]
@@ -75,7 +75,7 @@ export class BookingFormService {
           ),
 
           qualities: z.array(z.string()).optional(),
-          degree: z.string().nullable().optional(),
+          career: z.string().nullable().optional(),
           courses: z.array(z.string()).optional(),
         }),
         appointments: z.array(appointmentItem).min(1, "Agrega al menos 1 cita"),
@@ -98,7 +98,7 @@ export class BookingFormService {
         recurrent: !!booking?.recurrent,
         child_ids: initialChildIds,
         qualities: Array.isArray(booking?.qualities) ? booking.qualities : [],
-        degree: booking?.degree ?? null,
+        career: booking?.career ?? booking?.degree ?? null,
         courses: Array.isArray(booking?.courses) ? booking.courses : [],
       },
       appointments: (booking?.booking_appointments ?? booking?.booking_appointments)?.map(this.mapAppointment) ?? [],
@@ -186,7 +186,7 @@ export class BookingFormService {
         recurrent: !!vals.booking.recurrent,
         children: (vals.booking.child_ids ?? []).map(String),
         qualities: vals.booking.qualities ?? [],
-        degree: vals.booking.degree ?? null,
+        career: vals.booking.career ?? null,
         courses: vals.booking.courses ?? [],
       },
       appointments: vals.appointments.map((a) => ({

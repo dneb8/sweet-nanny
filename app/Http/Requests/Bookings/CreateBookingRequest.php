@@ -67,9 +67,9 @@ class CreateBookingRequest extends FormRequest
         $appointments = array_values($incomingAppointments);
         $address      = (array) $incomingAddress;
 
-        // Get qualities, degree, and courses
+        // Get qualities, career, and courses
         $qualities = (array) data_get($incomingBooking, 'qualities', []);
-        $degree = data_get($incomingBooking, 'degree');
+        $career = data_get($incomingBooking, 'career') ?? data_get($incomingBooking, 'degree'); // Support both
         $courses = (array) data_get($incomingBooking, 'courses', []);
 
         // 6) Volcar normalización al request interno
@@ -82,7 +82,7 @@ class CreateBookingRequest extends FormRequest
                 // IMPORTANTE: ya normalizado a IDs string
                 'children'    => $childrenIds,
                 'qualities'   => $qualities,
-                'degree'      => $degree,
+                'career'      => $career,
                 'courses'     => $courses,
             ],
             'appointments' => $appointments,
@@ -126,10 +126,10 @@ class CreateBookingRequest extends FormRequest
             'address.other_type'           => ['nullable', 'string'],
             'address.internal_number'      => ['nullable', 'string'],
             
-            // New fields: qualities, degree, courses
+            // New fields: qualities, career, courses
             'booking.qualities'            => ['nullable', 'array'],
             'booking.qualities.*'          => ['string'],
-            'booking.degree'               => ['nullable', 'string'],
+            'booking.career'               => ['nullable', 'string'],
             'booking.courses'              => ['nullable', 'array'],
             'booking.courses.*'            => ['string'],
         ];

@@ -7,7 +7,7 @@ use App\Models\Booking;
 use App\Services\BookingService;
 use App\Enums\Children\KinkshipEnum;
 use App\Enums\Nanny\QualityEnum;
-use App\Enums\Career\DegreeEnum;
+use App\Enums\Career\NameCareerEnum;
 use App\Enums\Course\NameEnum as CourseNameEnum;
 use App\Http\Requests\Bookings\CreateBookingRequest;
 use App\Http\Requests\Bookings\UpdateBookingRequest;
@@ -42,7 +42,7 @@ class BookingController extends Controller
             'kinkships'   => $kinkships,
             'tutor'       => $user->tutor,
             'qualities'   => QualityEnum::labels(),
-            'degrees'     => DegreeEnum::labels(),
+            'careers'     => NameCareerEnum::labels(),
             'courseNames' => CourseNameEnum::labels(),
         ]);
     }
@@ -82,7 +82,7 @@ class BookingController extends Controller
             'initialBooking' => $booking,
             'kinkships'      => $kinkships,
             'qualities'      => QualityEnum::labels(),
-            'degrees'        => DegreeEnum::labels(),
+            'careers'        => NameCareerEnum::labels(),
             'courseNames'    => CourseNameEnum::labels(),
         ]);
     }

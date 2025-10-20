@@ -15,7 +15,7 @@ class Booking extends Model
         'description',
         'recurrent',
         'qualities',
-        'degree',
+        'career',
         'courses',
     ];
 
@@ -23,7 +23,7 @@ class Booking extends Model
         'qualities' => 'array',
         'courses' => 'array',
         'recurrent' => 'boolean',
-        'degree' => 'string', // Can be changed to DegreeEnum::class if needed
+        'career' => 'string',
     ];
 
     // Relación uno a muchos con BookingAppointment

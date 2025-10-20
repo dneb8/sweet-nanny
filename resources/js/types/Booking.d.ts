@@ -7,7 +7,8 @@ export interface Booking {
   address_id: number
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | string
   qualities?: string[]
-  degree?: string | null
+  career?: string | null
+  degree?: string | null  // Kept for backward compatibility
   courses?: string[]
 
   booking_appointments?: BookingAppointment[]

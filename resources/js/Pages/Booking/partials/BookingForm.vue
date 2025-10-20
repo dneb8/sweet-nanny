@@ -18,7 +18,7 @@ const props = withDefaults(defineProps<{
   tutor: (Tutor & { addresses?: Address[]; children?: Child[] }) | null
   kinkships: string[]
   qualities?: Record<string, string>
-  degrees?: Record<string, string>
+  careers?: Record<string, string>
   courseNames?: Record<string, string>
   initialBooking?: Partial<Booking> | null
   mode?: "edit" | "create"
@@ -27,7 +27,7 @@ const props = withDefaults(defineProps<{
   initialBooking: null,
   mode: "create",
   qualities: () => ({}),
-  degrees: () => ({}),
+  careers: () => ({}),
   courseNames: () => ({}),
 })
 
@@ -161,7 +161,7 @@ const submit = async () => {
             <div v-show="stepIndex === 4">
               <StepQualitiesCourses 
                 :qualities="props.qualities"
-                :degrees="props.degrees"
+                :careers="props.careers"
                 :course-names="props.courseNames"
               />
             </div>

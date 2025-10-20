@@ -7,13 +7,13 @@ import { useBoundField } from "@/services/bookingFormService"
 
 const props = defineProps<{
   qualities: Record<string, string>
-  degrees: Record<string, string>
+  careers: Record<string, string>
   courseNames: Record<string, string>
 }>()
 
 // Campos enlazados al form global
 const selectedQualities = useBoundField<string[]>("booking.qualities")
-const degree = useBoundField<string>("booking.degree")
+const career = useBoundField<string>("booking.career")
 const selectedCourses = useBoundField<string[]>("booking.courses")
 
 // Convert enums to options for TagsInput
@@ -36,7 +36,7 @@ const courseOptions = computed(() =>
     </div>
 
     <!-- Qualities -->
-    <!-- <div class="space-y-2">
+    <div class="space-y-2">
       <Label class="text-sm font-medium">Cualidades deseadas</Label>
       <TagsInput
         v-model="selectedQualities.value.value"
@@ -46,19 +46,19 @@ const courseOptions = computed(() =>
       <p v-if="selectedQualities.errorMessage" class="text-xs text-red-500">
         {{ selectedQualities.errorMessage }}
       </p>
-    </div> -->
+    </div>
 
-    <!-- Degree / Career -->
-    <!-- <div class="space-y-2">
+    <!-- Career -->
+    <div class="space-y-2">
       <Label class="text-sm font-medium">Carrera o formación académica</Label>
-      <Select v-model="degree.value.value">
+      <Select v-model="career.value.value">
         <SelectTrigger class="w-full">
           <SelectValue placeholder="Selecciona una formación" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="">Sin especificar</SelectItem>
           <SelectItem
-            v-for="(label, value) in props.degrees"
+            v-for="(label, value) in props.careers"
             :key="String(value)"
             :value="String(value)"
           >
@@ -66,13 +66,13 @@ const courseOptions = computed(() =>
           </SelectItem>
         </SelectContent>
       </Select>
-      <p v-if="degree.errorMessage" class="text-xs text-red-500">
-        {{ degree.errorMessage }}
+      <p v-if="career.errorMessage" class="text-xs text-red-500">
+        {{ career.errorMessage }}
       </p>
-    </div> -->
+    </div>
 
     <!-- Courses -->
-    <!-- <div class="space-y-2">
+    <div class="space-y-2">
       <Label class="text-sm font-medium">Cursos especializados</Label>
       <TagsInput
         v-model="selectedCourses.value.value"
@@ -82,6 +82,6 @@ const courseOptions = computed(() =>
       <p v-if="selectedCourses.errorMessage" class="text-xs text-red-500">
         {{ selectedCourses.errorMessage }}
       </p>
-    </div> -->
+    </div>
   </div>
 </template>

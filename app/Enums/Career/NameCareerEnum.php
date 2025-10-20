@@ -4,15 +4,21 @@ namespace App\Enums\Career;
 
 enum NameCareerEnum: string
 {
-    case PEDAGOGIA = 'PEDAGOGIA';
-    case PSICOLOGIA = 'PSICOLOGIA';
-    case ENFERMERIA = 'ENFERMERIA';
-    case ARTES = 'ARTES';
-    case EDUCACION_ESPECIAL = 'EDUCACION_ESPECIAL';
-    case TRABAJO_SOCIAL = 'TRABAJO_SOCIAL'; 
-    case PSICOPEDAGOGIA = 'PSICOPEDAGOGIA'; 
-    case EDUCACION_INFANTIL = 'EDUCACION_INFANTIL'; 
-    case NUTRICION = 'NUTRICION';
+    case PEDAGOGIA = 'pedagogia';
+    case PSICOLOGIA = 'psicologia';
+    case ENFERMERIA = 'enfermeria';
+    case ARTES = 'artes';
+    case EDUCACION_ESPECIAL = 'educacion_especial';
+    case TRABAJO_SOCIAL = 'trabajo_social'; 
+    case PSICOPEDAGOGIA = 'psicopedagogia'; 
+    case EDUCACION_INFANTIL = 'educacion_infantil'; 
+    case NUTRICION = 'nutricion';
+    case EDUCACION_PREESCOLAR = 'educacion_preescolar';
+    case PSICOLOGIA_INFANTIL = 'psicologia_infantil';
+    case PUERICULTURA = 'puericultura';
+    case TERAPIA_OCUPACIONAL = 'terapia_ocupacional';
+    case ESTIMULACION_TEMPRANA = 'estimulacion_temprana';
+    case ENFERMERIA_PEDIATRICA = 'enfermeria_pediatrica';
 
     public function label(): string
     {
@@ -21,11 +27,30 @@ enum NameCareerEnum: string
             self::PSICOLOGIA => 'Psicología',
             self::ENFERMERIA => 'Enfermería',
             self::ARTES => 'Artes',
-            self::EDUCACION_ESPECIAL => 'Educación especial',
-            self::TRABAJO_SOCIAL => 'Trabajo social',
+            self::EDUCACION_ESPECIAL => 'Educación Especial',
+            self::TRABAJO_SOCIAL => 'Trabajo Social',
             self::PSICOPEDAGOGIA => 'Psicopedagogía',
-            self::EDUCACION_INFANTIL => 'Educación infantil',
+            self::EDUCACION_INFANTIL => 'Educación Infantil',
             self::NUTRICION => 'Nutrición',
+            self::EDUCACION_PREESCOLAR => 'Educación Preescolar',
+            self::PSICOLOGIA_INFANTIL => 'Psicología Infantil',
+            self::PUERICULTURA => 'Puericultura',
+            self::TERAPIA_OCUPACIONAL => 'Terapia Ocupacional',
+            self::ESTIMULACION_TEMPRANA => 'Estimulación Temprana',
+            self::ENFERMERIA_PEDIATRICA => 'Enfermería Pediátrica',
         };
+    }
+
+    public static function values(): array
+    {
+        return array_column(self::cases(), 'value');
+    }
+
+    public static function labels(): array
+    {
+        return array_combine(
+            self::values(),
+            array_map(fn($case) => $case->label(), self::cases())
+        );
     }
 }
