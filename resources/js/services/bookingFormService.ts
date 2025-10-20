@@ -7,7 +7,6 @@ import { route } from "ziggy-js"
 import { useField } from "vee-validate"
 import * as z from "zod"
 import type { Booking } from "@/types/Booking"
-import type { Address } from "@/types/Address"
 import type { BookingAppointment } from "@/types/BookingAppointment"
 
 type AppointmentForForm = Pick<BookingAppointment, "start_date" | "end_date"> & { duration: number }
@@ -24,10 +23,6 @@ type BookingFormValues = {
     courses: string[]              // New: courses array
   }
   appointments: AppointmentForForm[]
-  address: Pick<
-    Address,
-    "postal_code" | "street" | "neighborhood" | "type" | "other_type" | "internal_number"
-  >
 }
 
 export class BookingFormService {
@@ -66,20 +61,24 @@ export class BookingFormService {
           description: z.string().trim().min(5, "Agrega una descripción"),
           recurrent: z.boolean(),
           child_ids: z.array(z.string()).min(1, "Selecciona al menos 1 niño").max(4, "Máximo 4 niños"),
-          address_id: z.number().nullable().optional(),
+
+          address_id: z.preprocess(
+            (v) => (v === null || v === "" ? undefined : v),
+            z.number({
+              required_error: "La dirección es obligatoria",
+              invalid_type_error: "La dirección es obligatoria",
+            })
+              .int({
+                message: "La dirección es obligatoria",
+              })
+              .min(1, "La dirección es obligatoria")
+          ),
+
           qualities: z.array(z.string()).optional(),
           degree: z.string().nullable().optional(),
           courses: z.array(z.string()).optional(),
         }),
         appointments: z.array(appointmentItem).min(1, "Agrega al menos 1 cita"),
-        address: z.object({
-          postal_code: z.string().min(4, "Código postal requerido"),
-          street: z.string().min(2, "Calle requerida"),
-          neighborhood: z.string().min(2, "Colonia requerida"),
-          type: z.string().min(2, "Tipo requerido"),
-          other_type: z.string().optional(),
-          internal_number: z.string().optional(),
-        }),
       })
     )
 
@@ -102,15 +101,7 @@ export class BookingFormService {
         degree: booking?.degree ?? null,
         courses: Array.isArray(booking?.courses) ? booking.courses : [],
       },
-      appointments: (booking?.bookingAppointments ?? booking?.booking_appointments)?.map(this.mapAppointment) ?? [],
-      address: {
-        postal_code: booking?.address?.postal_code ?? "",
-        street: booking?.address?.street ?? "",
-        neighborhood: booking?.address?.neighborhood ?? "",
-        type: booking?.address?.type ?? "",
-        other_type: booking?.address?.other_type ?? "",
-        internal_number: booking?.address?.internal_number ?? "",
-      },
+      appointments: (booking?.booking_appointments ?? booking?.booking_appointments)?.map(this.mapAppointment) ?? [],
     }
 
     const { values, isFieldDirty, handleSubmit, errors, meta, setErrors } = useForm<BookingFormValues>({
@@ -187,7 +178,6 @@ export class BookingFormService {
   }
 
   private createPayload(vals: BookingFormValues) {
-    // El backend espera booking.children (IDs), no child_ids
     return {
       booking: {
         tutor_id: Number(vals.booking.tutor_id ?? this.initialTutorId ?? 0),
@@ -204,7 +194,6 @@ export class BookingFormService {
         end_date: a.end_date,
         duration: Number(a.duration || 0),
       })),
-      address: vals.address,
     }
   }
 

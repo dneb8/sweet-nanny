@@ -12,7 +12,7 @@ import { CalendarIcon } from "lucide-vue-next"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 import TimePicker from "@/components/ui/Timepicker.vue"
 import { useBoundField } from "@/services/bookingFormService"
-import { DateFormatter, getLocalTimeZone, fromDate } from "@internationalized/date"
+import { DateFormatter, getLocalTimeZone, fromDate, today } from "@internationalized/date"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import { Icon } from "@iconify/vue"
 
@@ -29,6 +29,8 @@ const rows = ref<Row[]>([{ dateVal: null, time: "08:00", duration: 1 }])
 
 const tz = getLocalTimeZone()
 const df = new DateFormatter("es-MX", { dateStyle: "short" })
+// Only allow selecting dates from tomorrow onward
+const minDate = today(tz).add({ days: 1 })
 const maxCitas = 10
 const isComplete = (r: Row) => !!(r.dateVal && r.time && r.duration > 0)
 
@@ -168,7 +170,12 @@ watch(
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent class="w-auto p-0">
-                          <Calendar v-model="r.dateVal as any" initial-focus @update:modelValue="syncRow(i)" />
+                          <Calendar
+                            v-model="r.dateVal as any"
+                            initial-focus
+                            :min-value="minDate"
+                            @update:modelValue="syncRow(i)"
+                          />
                         </PopoverContent>
                       </Popover>
                     </div>
@@ -181,7 +188,7 @@ watch(
                         @update:modelValue="(v: string) => { r.duration = v != null ? Number(v) : 0; syncRow(i) }"
                       >
                         <SelectTrigger class="h-9 w-full">
-                          <SelectValue placeholder="Duración" class="font-medium" />
+                          <SelectValue placeholder="Selecciona duración" class="font-medium" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
@@ -218,7 +225,7 @@ watch(
                         v-if="!isComplete(r)"
                         class="absolute left-0 top-full mt-1 text-[11px] text-rose-600 pointer-events-none"
                       >
-                        Completa los campos
+                        Completa fecha, hora y duración.
                       </p>
                     </div>
                   </div>
@@ -241,7 +248,16 @@ watch(
           </CarouselItem>
         </CarouselContent>
         <CarouselPrevious v-if="rows.length > 1" />
-        <CarouselNext v-if="rows.length > 1" />
+        <CarouselNext
+          v-if="rows.length > 1"
+          type="button"
+          class="
+            after:content-['']
+            after:absolute after:inset-0 after:-z-10 after:rounded-full
+            after:bg-primary
+            after:blur-xs after:animate-pulse
+          "
+        />
       </Carousel>
 
       <div class="flex items-center justify-between" v-if="recurrent.value.value">
@@ -257,7 +273,6 @@ watch(
         </Button>
       </div>
 
-      <!-- error del array appointments -->
       <p v-if="appts.errorMessage" class="text-xs text-rose-600">
         {{ appts.errorMessage }}
       </p>
