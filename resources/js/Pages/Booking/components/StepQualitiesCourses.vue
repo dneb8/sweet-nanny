@@ -1,87 +1,62 @@
 <script setup lang="ts">
-import { computed } from "vue"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { TagsInput } from "@/components/ui/tags-input"
-import { useBoundField } from "@/services/bookingFormService"
+import MultiEnumPicker from '@/components/MultiEnumPicker.vue'
+import { useBoundField } from '@/services/bookingFormService'
 
 const props = defineProps<{
-  qualities: Record<string, string>
-  careers: Record<string, string>
-  courseNames: Record<string, string>
+  qualities: Record<string,string>
+  careers:   Record<string,string>
+  courseNames: Record<string,string>
+  loading?: boolean
 }>()
 
-// Campos enlazados al form global
-const selectedQualities = useBoundField<string[]>("booking.qualities")
-const career = useBoundField<string>("booking.career")
-const selectedCourses = useBoundField<string[]>("booking.courses")
-
-// Convert enums to options for TagsInput
-const qualityOptions = computed(() => 
-  Object.entries(props.qualities).map(([value, label]) => ({ value, label }))
-)
-
-const courseOptions = computed(() =>
-  Object.entries(props.courseNames).map(([value, label]) => ({ value, label }))
-)
+// useBoundField -> { value, errorMessage }
+const fQualities = useBoundField<string[]>('booking.qualities')
+const fCareers   = useBoundField<string[]>('booking.career')   // ← ahora también array
+const fCourses   = useBoundField<string[]>('booking.courses')
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
     <div>
-      <h3 class="text-lg font-semibold mb-4">Cualidades y Formación</h3>
-      <p class="text-sm text-muted-foreground mb-4">
-        Selecciona las cualidades, formación académica y cursos deseados para la niñera.
-      </p>
-    </div>
-
-    <!-- Qualities -->
-    <div class="space-y-2">
-      <Label class="text-sm font-medium">Cualidades deseadas</Label>
-      <TagsInput
-        v-model="selectedQualities.value.value"
-        :options="qualityOptions"
-        placeholder="Escribe o selecciona cualidades..."
+      <MultiEnumPicker
+        label="Cualidades deseadas"
+        placeholder="Agregar cualidad…"
+        :options="props.qualities"
+        :model-value="fQualities.value.value ?? []"
+        :max="5"
+        :loading="props.loading"
+        badge-class="bg-purple-200 text-purple-900 dark:text-purple-200 dark:bg-purple-900/60 dark:border-purple-200"
+        @update:modelValue="(v: string[]) => (fQualities.value.value = v)"
       />
-      <p v-if="selectedQualities.errorMessage" class="text-xs text-red-500">
-        {{ selectedQualities.errorMessage }}
-      </p>
+      <p v-if="fQualities.errorMessage" class="mt-2 text-xs text-rose-600">{{ fQualities.errorMessage }}</p>
     </div>
 
-    <!-- Career -->
-    <div class="space-y-2">
-      <Label class="text-sm font-medium">Carrera o formación académica</Label>
-      <Select v-model="career.value.value">
-        <SelectTrigger class="w-full">
-          <SelectValue placeholder="Selecciona una formación" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="">Sin especificar</SelectItem>
-          <SelectItem
-            v-for="(label, value) in props.careers"
-            :key="String(value)"
-            :value="String(value)"
-          >
-            {{ label }}
-          </SelectItem>
-        </SelectContent>
-      </Select>
-      <p v-if="career.errorMessage" class="text-xs text-red-500">
-        {{ career.errorMessage }}
-      </p>
-    </div>
-
-    <!-- Courses -->
-    <div class="space-y-2">
-      <Label class="text-sm font-medium">Cursos especializados</Label>
-      <TagsInput
-        v-model="selectedCourses.value.value"
-        :options="courseOptions"
-        placeholder="Escribe o selecciona cursos..."
+    <div>
+      <MultiEnumPicker
+        label="Carreras / formación"
+        placeholder="Agregar carrera…"
+        :options="props.careers"
+        :model-value="fCareers.value.value ?? []"
+        :max="5"
+        :loading="props.loading"
+        badge-class="bg-indigo-200 text-indigo-900 dark:text-indigo-100 dark:bg-indigo-500/40 dark:border-indigo-200"
+        @update:modelValue="(v: string[]) => (fCareers.value.value = v)"
       />
-      <p v-if="selectedCourses.errorMessage" class="text-xs text-red-500">
-        {{ selectedCourses.errorMessage }}
-      </p>
+      <p v-if="fCareers.errorMessage" class="mt-2 text-xs text-rose-600">{{ fCareers.errorMessage }}</p>
+    </div>
+
+    <div>
+      <MultiEnumPicker
+        label="Cursos especializados"
+        placeholder="Agregar curso…"
+        :options="props.courseNames"
+        :model-value="fCourses.value.value ?? []"
+        :max="5"
+        :loading="props.loading"
+        badge-class="bg-emerald-200 text-emerald-900 dark:text-emerald-100 dark:bg-emerald-900/60 dark:border-emerald-200"
+        @update:modelValue="(v: string[]) => (fCourses.value.value = v)"
+      />
+      <p v-if="fCourses.errorMessage" class="mt-2 text-xs text-rose-600">{{ fCourses.errorMessage }}</p>
     </div>
   </div>
 </template>

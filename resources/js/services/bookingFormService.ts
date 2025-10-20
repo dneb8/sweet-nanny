@@ -17,10 +17,10 @@ type BookingFormValues = {
     address_id: number | null
     description: string
     recurrent: boolean
-    child_ids: string[]            // <-- UI usa IDs planos
-    qualities: string[]            // New: qualities array
-    career: string | null          // New: career/formación académica
-    courses: string[]              // New: courses array
+    child_ids: string[]     
+    qualities: string[]      
+    careers: string[]        
+    courses: string[]        
   }
   appointments: AppointmentForForm[]
 }
@@ -53,7 +53,7 @@ export class BookingFormService {
       duration: z.number().min(1, "Mínimo 1h").max(8, "Máximo 8h"),
     })
 
-    // Validación para los campos que realmente bindea el UI
+    // Schema Zod (careers como array, máx 5)
     this.formSchema = toTypedSchema(
       z.object({
         booking: z.object({
@@ -68,15 +68,13 @@ export class BookingFormService {
               required_error: "La dirección es obligatoria",
               invalid_type_error: "La dirección es obligatoria",
             })
-              .int({
-                message: "La dirección es obligatoria",
-              })
+              .int({ message: "La dirección es obligatoria" })
               .min(1, "La dirección es obligatoria")
           ),
 
-          qualities: z.array(z.string()).optional(),
-          career: z.string().nullable().optional(),
-          courses: z.array(z.string()).optional(),
+          qualities: z.array(z.string()).optional().default([]),
+          careers:  z.array(z.string()).max(5, "Máximo 5 carreras").optional().default([]), // <- array
+          courses:  z.array(z.string()).optional().default([]),
         }),
         appointments: z.array(appointmentItem).min(1, "Agrega al menos 1 cita"),
       })
@@ -97,9 +95,17 @@ export class BookingFormService {
         description: booking?.description ?? "",
         recurrent: !!booking?.recurrent,
         child_ids: initialChildIds,
-        qualities: Array.isArray(booking?.qualities) ? booking.qualities : [],
-        career: booking?.career ?? booking?.degree ?? null,
-        courses: Array.isArray(booking?.courses) ? booking.courses : [],
+
+        qualities: Array.isArray((booking as any)?.qualities) ? (booking as any).qualities : [],
+        // Migración suave: si backend aún trae career/degree como string, mételo en array.
+        careers: Array.isArray((booking as any)?.careers)
+          ? (booking as any).careers
+          : (
+              (booking as any)?.career ? [(booking as any).career] :
+              (booking as any)?.degree ? [(booking as any).degree] : []
+            ),
+
+        courses: Array.isArray((booking as any)?.courses) ? (booking as any).courses : [],
       },
       appointments: (booking?.booking_appointments ?? booking?.booking_appointments)?.map(this.mapAppointment) ?? [],
     }
@@ -118,7 +124,6 @@ export class BookingFormService {
 
     const onErrorHandler = (errs: Record<string, any>) => {
       const remapped = remapServerErrors(errs)
-      // trazas de depuración
       console.log('[BookingFormService] raw server errors:', errs)
       console.log('[BookingFormService] remapped errors:', remapped)
       this.serverErrors.value = normalizeErrors(remapped)
@@ -185,9 +190,10 @@ export class BookingFormService {
         description: vals.booking.description || "",
         recurrent: !!vals.booking.recurrent,
         children: (vals.booking.child_ids ?? []).map(String),
+
         qualities: vals.booking.qualities ?? [],
-        career: vals.booking.career ?? null,
-        courses: vals.booking.courses ?? [],
+        careers:  vals.booking.careers ?? [],   // <- array
+        courses:  vals.booking.courses ?? [],
       },
       appointments: vals.appointments.map((a) => ({
         start_date: a.start_date,
@@ -202,7 +208,7 @@ export class BookingFormService {
     if (path.startsWith('booking.description') || path.startsWith('booking.child_ids') || path.startsWith('booking.recurrent')) return 1
     if (path.startsWith('appointments')) return 2
     if (path.startsWith('address') || path === 'booking.address_id') return 3
-    if (path.startsWith('booking.qualities') || path.startsWith('booking.degree') || path.startsWith('booking.courses')) return 4
+    if (path.startsWith('booking.qualities') || path.startsWith('booking.careers') || path.startsWith('booking.courses')) return 4
     if (path.startsWith('booking.')) return 1
     return 1
   }
@@ -224,21 +230,28 @@ function normalizeErrors(e: Record<string, any>): Record<string, string[]> {
   return out
 }
 
-// Convierte claves del backend a las del UI:
-// - booking.children.0 -> booking.child_ids.0
+// Convierte claves del backend a las del UI
 function remapServerErrors(errs: Record<string, any>): Record<string, string[]> {
   const out: Record<string, string[]> = {}
   Object.entries(errs ?? {}).forEach(([k, v]) => {
     let key = k
+
     // children -> child_ids
     if (key === 'booking.children') key = 'booking.child_ids'
     if (key.startsWith('booking.children.')) {
       key = key.replace('booking.children.', 'booking.child_ids.')
     }
+
     // address -> booking.address_id
     if (key === 'address_id') key = 'booking.address_id'
     if (key === 'booking.address') key = 'booking.address_id'
     if (key === 'booking.address_id') key = 'booking.address_id'
+
+    // legacy: career (string) -> careers (array)
+    if (key === 'booking.career') key = 'booking.careers'
+    if (key.startsWith('booking.career.')) {
+      key = key.replace('booking.career.', 'booking.careers.')
+    }
 
     out[key] = Array.isArray(v) ? v.map(String) : [String(v)]
   })
