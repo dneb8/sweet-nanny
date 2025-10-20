@@ -11,7 +11,7 @@ const props = defineProps<{
 
 // useBoundField -> { value, errorMessage }
 const fQualities = useBoundField<string[]>('booking.qualities')
-const fCareers   = useBoundField<string[]>('booking.career')   // ← ahora también array
+const fCareers   = useBoundField<string[]>('booking.careers')   // careers es array
 const fCourses   = useBoundField<string[]>('booking.courses')
 </script>
 

@@ -9,26 +9,11 @@ import { router } from '@inertiajs/vue3'
 import CareerForm from '../forms/CareerForm.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
+import { getStatusLabel } from '@/enums/careers/status.enum'
+import { getDegreeLabel } from '@/enums/careers/degree.enum'
+import { getCareerNameLabel } from '@/enums/careers/career-name.enum'
 
-import { StatusEnum, labels as statusLabels } from '@/enums/careers/status.enum'
-import { DegreeEnum, labels as degreeLabels } from '@/enums/careers/degree.enum'
-import { NameCareerEnum, labels as nameCareerLabels } from '@/enums/careers/name_career.enum'
-
-
-const getStatusLabel = (status: string) =>
-  statusLabels()[status as keyof typeof statusLabels] ?? status
-
-const getDegreeLabel = (degree: string) =>
-  degreeLabels()[degree as keyof typeof degreeLabels] ?? degree
-
-const getNameCareerLabel = (name_career: string) => {
-  const key = name_career.toUpperCase()
-  return nameCareerLabels()[key as keyof typeof nameCareerLabels] ?? name_career
-}
-
-const props = defineProps<{ 
-  nanny: Nanny 
-}>()
+const props = defineProps<{ nanny: Nanny }>()
 
 // Estado para crear/editar carrera
 const showModal = ref(false)
@@ -49,7 +34,7 @@ const openDelete = (career: Career) => {
   showDeleteModal.value = true
 }
 
-// Función para eliminar al confirmar 
+// Eliminar al confirmar 
 const deleteCareer = () => {
   if (!selectedCareer.value) return
   router.delete(route('careers.destroy', selectedCareer.value.id), {
@@ -63,6 +48,8 @@ const deleteCareer = () => {
   })
 }
 </script>
+
+
 
 <template>
   <Card class="bg-blue-50 dark:bg-blue-500/10 border-none shadow-sm">
@@ -88,7 +75,7 @@ const deleteCareer = () => {
           <!-- Info -->
           <div>
             <p class="font-medium">
-              <strong>Nombre carrera:</strong> {{ getNameCareerLabel(career.name) }}
+              <strong>Nombre carrera:</strong> {{ getCareerNameLabel(career.name) }}
             </p>
             <p v-if="career.pivot?.degree" class="text-sm text-muted-foreground">
               <strong>Grado académico:</strong> {{ getDegreeLabel(career.pivot.degree) }}

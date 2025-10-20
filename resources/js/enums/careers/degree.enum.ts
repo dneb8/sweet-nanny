@@ -1,24 +1,23 @@
-// Degree Enum - matches quality.enum.ts pattern
+// Degree Enum — sincronizado con DegreeEnum.php
 
-// Matching PHP backend enum values
 export enum DegreeEnum {
-  BACHILLERATO = 'bachillerato',
-  TECNICO = 'tecnico',
   LICENCIATURA = 'licenciatura',
   MAESTRIA = 'maestria',
   DOCTORADO = 'doctorado',
+  TECNICO = 'tecnico',
+  DIPLOMADO = 'diplomado',
+  CERTIFICACION = 'certificacion',
 }
 
 // Human-readable labels (matching PHP::label())
 export const DegreeLabels: Record<DegreeEnum, string> = {
-  [DegreeEnum.BACHILLERATO]: 'Bachillerato / Preparatoria',
-  [DegreeEnum.TECNICO]: 'Técnico / Carrera Técnica',
-  [DegreeEnum.LICENCIATURA]: 'Licenciatura / Ingeniería',
-  [DegreeEnum.MAESTRIA]: 'Maestría / Especialidad',
+  [DegreeEnum.LICENCIATURA]: 'Licenciatura',
+  [DegreeEnum.MAESTRIA]: 'Maestría',
   [DegreeEnum.DOCTORADO]: 'Doctorado',
+  [DegreeEnum.TECNICO]: 'Técnico',
+  [DegreeEnum.DIPLOMADO]: 'Diplomado',
+  [DegreeEnum.CERTIFICACION]: 'Certificación',
 };
-
-// Helpers (matching quality.enum.ts pattern)
 
 // -> label()
 export function getDegreeLabel(d: DegreeEnum): string {
@@ -42,18 +41,18 @@ export function getDegreeLabelByString(value: string): string {
   return match ? DegreeLabels[match as DegreeEnum] : 'Grado desconocido';
 }
 
-// Type guard: is the string a valid DegreeEnum?
+// Type guard
 export function isDegree(value: string): value is DegreeEnum {
   return (Object.values(DegreeEnum) as string[]).includes(value);
 }
 
-// Options ready for <Select>
+// Options for <Select>
 export const DEGREE_OPTIONS = DEGREE_VALUES.map(v => ({
   value: v,
   label: DegreeLabels[v],
 }));
 
-// Backward compatibility
+// Backward compatibility helper
 export function labels(): Record<DegreeEnum, string> {
   return DegreeLabels;
 }

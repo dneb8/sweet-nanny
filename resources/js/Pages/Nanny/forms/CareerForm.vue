@@ -16,10 +16,10 @@ import { CareerFormService } from '@/services/careerFormService'
 import type { Nanny } from '@/types/Nanny'
 import type { Career } from '@/types/Career'
 
-// 1. Importar enum + función labels (con alias)
-import { StatusEnum,    labels as statusLabels }    from '@/enums/careers/status.enum'
-import { DegreeEnum,    labels as degreeLabels }    from '@/enums/careers/degree.enum'
-import { NameCareerEnum,labels as nameCareerLabels } from '@/enums/careers/name_career.enum'
+
+import { STATUS_OPTIONS } from '@/enums/careers/status.enum'
+import { DEGREE_OPTIONS } from '@/enums/careers/degree.enum'
+import { CAREER_NAME_OPTIONS } from '@/enums/careers/career-name.enum'
 
 const props = defineProps<{
   career?: Career
@@ -54,11 +54,11 @@ const submit = () =>
             </SelectTrigger>
             <SelectContent>
               <SelectItem
-                v-for="(label, value) in nameCareerLabels()"
-                :key="value"
-                :value="value"
+                v-for="opt in CAREER_NAME_OPTIONS"
+                :key="opt.value"
+                :value="opt.value"
               >
-                {{ label }}
+                {{ opt.label }}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -72,17 +72,17 @@ const submit = () =>
       <FormItem>
         <Label>Grado académico</Label>
         <FormControl>
-          <Select v-bind="componentField">
+          <Select v-bind="componentField" :disabled="loading">
             <SelectTrigger>
               <SelectValue placeholder="Selecciona un grado" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem
-                v-for="(label, value) in degreeLabels()"
-                :key="value"
-                :value="value"
+                v-for="opt in DEGREE_OPTIONS"
+                :key="opt.value"
+                :value="opt.value"
               >
-                {{ label }}
+                {{ opt.label }}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -96,17 +96,17 @@ const submit = () =>
       <FormItem>
         <Label>Estatus</Label>
         <FormControl>
-          <Select v-bind="componentField">
+          <Select v-bind="componentField" :disabled="loading">
             <SelectTrigger>
               <SelectValue placeholder="Selecciona un estatus" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem
-                v-for="(label, value) in statusLabels()"
-                :key="value"
-                :value="value"
+                v-for="opt in STATUS_OPTIONS"
+                :key="opt.value"
+                :value="opt.value"
               >
-                {{ label }}
+                {{ opt.label }}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -134,4 +134,5 @@ const submit = () =>
       <span v-else>{{ career ? 'Actualizar' : 'Guardar' }}</span>
     </Button>
   </div>
+
 </template>

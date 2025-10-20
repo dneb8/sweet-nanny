@@ -3,10 +3,13 @@ import { ref, Ref } from "vue";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useForm } from "vee-validate";
 import { useForm as useInertiaForm } from "@inertiajs/vue3";
+import { route } from "ziggy-js";
 import * as z from "zod";
-import { Career } from "@/types/Career";
-import { Nanny } from "@/types/Nanny";
-import { NameCareerEnum, labels as nameCareerLabels } from "@/enums/careers/name_career.enum";
+import type { Career } from "@/types/Career";
+import type { Nanny } from "@/types/Nanny";
+
+// ✅ Usa el enum nuevo y sus helpers exportados
+import {isCareerName } from "@/enums/careers/career-name.enum";
 
 export class CareerFormService {
   public career?: Ref<Career>;
@@ -28,22 +31,29 @@ export class CareerFormService {
       this.career = ref<Career>(JSON.parse(JSON.stringify(career)));
     }
 
-    // ---- aquí usamos la función importada ----
-    const validKeys = Object.keys(nameCareerLabels());
+  // Nota: si necesitas las claves del enum, usa CAREER_NAME_VALUES
 
     this.formSchema = toTypedSchema(
       z.object({
+        // name debe ser un valor EXACTO del enum (snake_case/minúsculas)
         name: z
           .string()
           .nonempty("El nombre es obligatorio")
-          .refine(val => validKeys.includes(val), {
-            message: "El nombre de la carrera seleccionado no es válido"
+          .refine((val) => isCareerName(val), {
+            message: "El nombre de la carrera seleccionado no es válido",
           }),
 
         nanny_id: z.number().optional(),
+
+        // degree y status también deberían validar contra sus enums
+        // pero como este servicio es solo de 'name', lo dejamos permisivo aquí
         degree: z.string().max(255, "El grado no puede exceder 255 caracteres").optional(),
         status: z.string().max(255, "El estado no puede exceder 255 caracteres").optional(),
-        institution: z.string().max(255, "La institución no puede exceder 255 caracteres").optional(),
+
+        institution: z
+          .string()
+          .max(255, "La institución no puede exceder 255 caracteres")
+          .optional(),
       })
     );
 
@@ -51,11 +61,11 @@ export class CareerFormService {
       validationSchema: this.formSchema,
       initialValues: {
         name: career ? career.name : "",
-        nanny_id: career?.pivot?.nanny_id || nanny?.id || undefined,
+        nanny_id: career?.pivot?.nanny_id ?? nanny?.id ?? undefined,
         degree: career?.pivot?.degree ?? "",
         status: career?.pivot?.status ?? "",
         institution: career?.pivot?.institution ?? "",
-      }
+      },
     });
 
     this.values = values;

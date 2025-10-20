@@ -4,22 +4,22 @@ namespace App\Enums\Career;
 
 enum DegreeEnum: string
 {
-    case LICENCIATURA = 'Licenciatura';
-    case MAESTRIA = 'Maestría';
-    case DOCTORADO = 'Doctorado';
-    case TECNICO = 'Técnico';
-    case DIPLOMADO = 'Diplomado';
-    case CERTIFICACION = 'Certificación';
+    case LICENCIATURA = 'licenciatura';
+    case MAESTRIA = 'maestria';
+    case DOCTORADO = 'doctorado';
+    case TECNICO = 'tecnico';
+    case DIPLOMADO = 'diplomado';
+    case CERTIFICACION = 'certificacion';
 
     public function label(): string
     {
         return match ($this) {
             self::LICENCIATURA => 'Licenciatura',
-            self::MAESTRIA => 'Maestría',
-            self::DOCTORADO => 'Doctorado',
-            self::TECNICO => 'Técnico',
-            self::DIPLOMADO => 'Diplomado',
-            self::CERTIFICACION => 'Certificación',
+            self::MAESTRIA     => 'Maestría',
+            self::DOCTORADO    => 'Doctorado',
+            self::TECNICO      => 'Técnico',
+            self::DIPLOMADO    => 'Diplomado',
+            self::CERTIFICACION=> 'Certificación',
         };
     }
 
@@ -32,7 +32,7 @@ enum DegreeEnum: string
     {
         return array_combine(
             self::values(),
-            array_map(fn($case) => $case->label(), self::cases())
+            array_map(fn(self $case) => $case->label(), self::cases())
         );
     }
 }
