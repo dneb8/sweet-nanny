@@ -11,7 +11,7 @@ export function useBookingAppointment(booking: Booking) {
   const deleteBooking = () => { showDeleteModal.value = true }
   const confirmDeleteBooking = () => router.delete(route('bookings.destroy', booking.id))
 
-  // 🔹 Estados ficticios (puedes mapear con tus enums reales en DB)
+  // 🔹 Estados ficticios 
   const statusLabels: Record<string, string> = {
     pending: "Pendiente",
     confirmed: "Confirmada",

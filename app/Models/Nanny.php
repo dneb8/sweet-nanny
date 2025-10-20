@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Enums\Career\StatusEnum;
+use App\Enums\Career\DegreeEnum;
 
 class Nanny extends Model
 {
@@ -30,6 +32,10 @@ class Nanny extends Model
     {
         return $this->belongsToMany(Career::class, 'career_nanny')
         ->withPivot('degree', 'status', 'institution') // ✅ estos sí existen
+        ->withCasts([
+            'status' => StatusEnum::class,
+            'degree' => DegreeEnum::class,
+        ])
         ->withTimestamps();
     }
 
