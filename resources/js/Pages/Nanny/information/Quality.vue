@@ -14,7 +14,7 @@ import {
 import { Check, ChevronsUpDown } from 'lucide-vue-next'
 import { cn } from '@/utils'
 import { QualityFormService } from "@/services/QualityFormService"
-import { qualitiesList } from "@/enums/qualityenum"
+import { qualitiesList, getQualityLabelByString } from "@/enums/quality.enum"
 
 const props = defineProps<{ nanny: Nanny }>()
 
@@ -73,7 +73,7 @@ const removeQuality = async (quality: string) => {
           :key="quality"
           class="bg-purple-200 text-purple-900 dark:text-purple-200 dark:bg-purple-900/60  dark:border-purple-200 flex items-center gap-1"
         >
-          {{ quality }}
+          {{ getQualityLabelByString(quality) }}
           <button
             @click.prevent="removeQuality(quality)"
             :class="[
@@ -135,7 +135,7 @@ const removeQuality = async (quality: string) => {
                       addQuality(val)
                     }"
                   >
-                    {{ q }}
+                    {{ getQualityLabelByString(q) }}
                     <Check
                       :class="cn('ml-auto h-4 w-4', 'opacity-0')"
                     />

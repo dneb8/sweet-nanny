@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import type { Nanny } from '@/types/Nanny'
-import { ref } from 'vue'
+import type { Address } from '@/types/Address'
+import { ref, computed } from 'vue'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Icon } from '@iconify/vue'
 import { router } from '@inertiajs/vue3'
+
+// Formulario polimórfico
 import AddressForm from '@/Pages/Address/components/AddressForm.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
@@ -14,35 +17,47 @@ const props = defineProps<{
   isOwner: boolean
 }>()
 
-// Estado para crear/editar dirección
-const showModal = ref(false)
-const selectedAddress = ref<any>(null)
+// Nanny::with('addresses')->findOrFail(...)
+const addresses = computed<Address[]>(() => props.nanny.addresses ?? [])
 
-// Estado para eliminar dirección
+// Dueño polimórfico para el AddressForm
+const ownerId = computed<number>(() => Number(props.nanny.id))
+const ownerType = "App\\Models\\Nanny"
+
+// Estado modal crear/editar
+const showModal = ref(false)
+const selectedAddress = ref<Address | null>(null)
+
+// Estado modal eliminar
 const showDeleteModal = ref(false)
 
-// Abrir modal para agregar o editar
-const openModal = (address: any | null = null) => {
+// Abrir modal crear/editar
+const openModal = (address: Address | null = null) => {
   selectedAddress.value = address
   showModal.value = true
 }
 
-// Abrir modal de eliminar
-const openDelete = (address: any) => {
+// Abrir modal eliminar
+const openDelete = (address: Address) => {
   selectedAddress.value = address
   showDeleteModal.value = true
 }
 
-// Función para eliminar al confirmar
+// Tras guardar/editar
+const onSaved = () => {
+  showModal.value = false
+  selectedAddress.value = null
+  router.reload({ only: ['nanny'] })
+}
+
+// Eliminar
 const deleteAddress = () => {
   if (!selectedAddress.value) return
   router.delete(route('addresses.destroy', selectedAddress.value.id), {
     onSuccess: () => {
       selectedAddress.value = null
       showDeleteModal.value = false
-    },
-    onError: (errors) => {
-      console.error(errors)
+      router.reload({ only: ['nanny'] })
     },
   })
 }
@@ -53,61 +68,66 @@ const deleteAddress = () => {
     <CardHeader>
       <CardTitle class="flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <Icon icon="lucide:map-pin" /> Dirección
+          <Icon icon="lucide:map-pin" />
+          <span>Direcciones</span>
         </div>
 
         <Button
-          v-if="!props.nanny.user.address"
           size="sm"
           variant="outline"
           @click="openModal()"
         >
-          <Icon icon="lucide:plus" /> Nuevo
+          <Icon icon="lucide:plus" class="mr-1" />
+          Nueva
         </Button>
       </CardTitle>
     </CardHeader>
 
     <CardContent>
-      <div v-if="props.nanny.user.address" class="p-2 rounded shadow-sm border flex justify-between items-center">
-        <!-- Información de la dirección -->
-        <div>
-          <p class="font-medium"><strong>Calle:</strong> {{ props.nanny.user.address.street }}</p>
-          <p class="text-sm text-muted-foreground"><strong>Colonia:</strong> {{ props.nanny.user.address.neighborhood }}</p>
-          <p class="text-sm text-muted-foreground"><strong>Código postal:</strong> {{ props.nanny.user.address.postal_code }}</p>
-          <p class="text-sm text-muted-foreground"><strong>Tipo:</strong> {{ props.nanny.user.address.type }}</p>
-          <p v-if="props.nanny.user.address.other_type" class="text-sm text-muted-foreground"><strong>Otro tipo:</strong> {{ props.nanny.user.address.other_type }}</p>
-          <p v-if="props.nanny.user.address.internal_number" class="text-sm text-muted-foreground"><strong>Número interior:</strong> {{ props.nanny.user.address.internal_number }}</p>
-        </div>
+      <div v-if="addresses.length" class="grid gap-3">
+        <div
+          v-for="addr in addresses"
+          :key="addr.id"
+          class="p-3 rounded border flex justify-between items-start"
+        >
+          <div class="space-y-1">
+            <p class="font-medium">{{ addr.street }}</p>
+            <p class="text-sm text-muted-foreground">{{ addr.neighborhood }}</p>
+            <p class="text-sm text-muted-foreground">CP {{ addr.postal_code }}</p>
+          </div>
 
-        <!-- Botones para editar/eliminar -->
-        <div class="flex gap-2">
-          <Button size="sm" variant="ghost" @click="openModal(props.nanny.user.address)">
-            <Icon icon="lucide:edit" />
-          </Button>
-          <Button size="sm" variant="destructive" @click="openDelete(props.nanny.user.address)">
-            <Icon icon="lucide:trash" />
-          </Button>
+          <div class="flex gap-2">
+            <Button size="sm" variant="ghost" @click="openModal(addr)">
+              <Icon icon="lucide:edit" />
+            </Button>
+            <Button size="sm" variant="destructive" @click="openDelete(addr)">
+              <Icon icon="lucide:trash" />
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div v-else class="flex flex-col items-center text-muted-foreground">
+      <div v-else class="flex flex-col items-center text-muted-foreground py-6">
         <Icon icon="lucide:map" class="w-8 h-8 mb-2" />
-        <span>No registrada</span>
+        <span>Sin direcciones registradas</span>
       </div>
     </CardContent>
   </Card>
 
-  <!-- Modales -->
+  <!-- Modal polimórfico con formComponent -->
   <FormModal
     v-model="showModal"
-    :title="selectedAddress ? 'Editar Dirección' : 'Agregar Dirección'"
+    :title="selectedAddress ? 'Editar dirección' : 'Agregar dirección'"
     :form-component="AddressForm"
     :form-props="{
-      nanny: props.nanny,
-      address: selectedAddress
+      address: selectedAddress ?? undefined,
+      ownerId: ownerId,
+      ownerType: ownerType
     }"
+    @saved="onSaved"
   />
 
+  <!-- Modal eliminar -->
   <DeleteModal
     v-model:show="showDeleteModal"
     title="dirección"

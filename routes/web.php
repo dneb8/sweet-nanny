@@ -21,4 +21,5 @@ require __DIR__.'/careers.php';
 require __DIR__.'/bookings.php';
 require __DIR__.'/addresses.php';
 require __DIR__.'/children.php';
+require __DIR__.'/enums.php';
 

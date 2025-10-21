@@ -14,8 +14,7 @@ export const KinshipLabels: Record<KinshipEnum, string> = {
   [KinshipEnum.HIJO]: 'Hijo(a)',
   [KinshipEnum.SOBRINO]: 'Sobrino(a)',
   [KinshipEnum.PRIMO]: 'Primo(a)',
-  // Nota: en tu PHP está 'Hermana(a)'; replico literalmente para que coincida
-  [KinshipEnum.HERMANO]: 'Hermana(a)',
+  [KinshipEnum.HERMANO]: 'Hermano(a)',
   [KinshipEnum.OTRO]: 'Otro',
 };
 

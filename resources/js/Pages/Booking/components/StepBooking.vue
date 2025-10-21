@@ -1,5 +1,6 @@
+<!-- resources/js/Pages/Booking/partials/StepBooking.vue -->
 <script setup lang="ts">
-import { ref, computed, watch, toRaw } from "vue"
+import { ref, computed, onMounted } from "vue"
 import { Icon } from "@iconify/vue"
 import axios from "axios"
 import { route } from "ziggy-js"
@@ -17,21 +18,51 @@ import type { Tutor } from "@/types/Tutor"
 import { getKinshipLabelByString } from "@/enums/kinkship.enum"
 
 const props = defineProps<{
-  tutor: Tutor | null
-  kinkships: string[]
+  // En CREATE vienes con tutor (incluye children)
+  tutor?: Tutor | null
+  // En EDIT puedes pasar initialChildren (si el controlador no adjunta tutor.children)
   initialChildren?: Child[] | null
+  kinkships: string[]
 }>()
 
-// Campos del form (vee-validate)
-const childIdsBF = useBoundField<string[]>("booking.child_ids")
+// --- Campos del formulario (vee-validate) ---
+const childIdsBF = useBoundField<number[]>("booking.child_ids")
 const descBF     = useBoundField<string>("booking.description")
-// Refs planos para v-model
-const childIds = childIdsBF.value       // Ref<string[]>
-const desc     = descBF.value           // Ref<string>
+const childIds   = childIdsBF.value
+const desc       = descBF.value
 
-const children = ref<Child[]>(props.initialChildren ?? [])
-const tutorId  = computed<string>(() => String(props.tutor?.id ?? ""))
+// --- Fuente de verdad de niños que se listan ---
+const children = ref<Child[]>(
+  // Prioriza initialChildren (EDIT), luego tutor?.children (CREATE), si no hay → []
+  (Array.isArray(props.initialChildren) && props.initialChildren.length > 0)
+    ? props.initialChildren
+    : (Array.isArray((props.tutor as any)?.children) ? (props.tutor as any).children : [])
+)
 
+const tutorId = computed<number | null>(() => {
+  const id = (props.tutor as any)?.id
+  return typeof id === "number" ? id : (id ? Number(id) : null)
+})
+
+// Si estás en EDIT y no vino ni initialChildren ni tutor.children → fetch
+onMounted(async () => {
+  const alreadyHave = Array.isArray(children.value) && children.value.length > 0
+  if (alreadyHave) return
+  if (!tutorId.value) return
+
+  try {
+    const { data } = await axios.get(
+      route("tutors.children.index", { tutor: tutorId.value }),
+      { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" } }
+    )
+    // soporto {data:[...]} o [...]
+    children.value = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : [])
+  } catch (e) {
+    console.warn("No se pudieron cargar los niños del tutor", e)
+  }
+})
+
+// --- Utilidades ---
 function ageFrom(birthdate?: string | null): string {
   if (!birthdate) return "—"
   const [y, m, d] = birthdate.split("-").map(Number)
@@ -44,74 +75,90 @@ function ageFrom(birthdate?: string | null): string {
   return `${age} años`
 }
 
-// Selección (1–4)
-const selectedIds = computed<string[]>({
-  get: () => Array.isArray(childIds.value) ? childIds.value.map(String) : [],
-  set: (v) => { childIds.value = v },
+// --- Selección controlada (1–4) por ID numérico ---
+const selectedIds = computed<number[]>({
+  get: () => Array.isArray(childIds.value) ? childIds.value.map(Number) : [],
+  set: (v) => { childIds.value = v.map(Number) },
 })
 const reachedLimit = computed(() => selectedIds.value.length >= 4)
-const isSelected = (id?: string | number | null) => id != null && selectedIds.value.includes(String(id))
+const isSelected = (id?: string | number | null) =>
+  id != null && selectedIds.value.includes(Number(id))
 
 function toggleSelect(id?: string | number | null) {
   if (id == null) return
-  const sid = String(id)
-  if (isSelected(sid)) selectedIds.value = selectedIds.value.filter(x => x !== sid)
-  else {
+  const nid = Number(id)
+  if (isSelected(nid)) {
+    selectedIds.value = selectedIds.value.filter(x => x !== nid)
+  } else {
     if (reachedLimit.value) return
-    selectedIds.value = [...selectedIds.value, sid]
+    selectedIds.value = [...selectedIds.value, nid]
   }
 }
 
-// Modal crear/editar
+// --- Modal crear/editar niño ---
 const showFormModal = ref(false)
 const formTitle = ref("Agregar niño")
 const formChild = ref<ChildInput | null>(null)
 
 function asChildInput(c?: Child | null): ChildInput {
-  if (!c) return { tutor_id: tutorId.value, name: "", birthdate: "", kinkship: (props.kinkships[0] ?? "") as any }
+  if (!c) {
+    return {
+      tutor_id: String(tutorId.value ?? ""),
+      name: "",
+      birthdate: "",
+      kinkship: (props.kinkships[0] ?? "") as any,
+    }
+  }
   return {
     id: c.id ? String(c.id) : undefined,
-    tutor_id: String((c as any).tutor_id ?? tutorId.value),
+    ulid: c.ulid ? String(c.ulid) : undefined,
+    tutor_id: String((c as any).tutor_id ?? (tutorId.value ?? "")),
     name: c.name ?? "",
     birthdate: c.birthdate ?? "",
     kinkship: (c as any).kinkship ?? (props.kinkships[0] ?? ""),
   }
 }
-function openCreate() { formTitle.value = "Agregar niño"; formChild.value = asChildInput(null); showFormModal.value = true }
-function openEdit(c: Child) { formTitle.value = "Editar niño"; formChild.value = asChildInput(c); showFormModal.value = true }
+
+function openCreate() {
+  formTitle.value = "Agregar niño"
+  formChild.value = asChildInput(null)
+  showFormModal.value = true
+}
+function openEdit(c: Child) {
+  formTitle.value = "Editar niño"
+  formChild.value = asChildInput(c)
+  showFormModal.value = true
+}
 
 function onChildSaved(child: Child) {
-  const i = children.value.findIndex(x => String(x.id) === String(child.id))
+  const i = children.value.findIndex(x => Number(x.id) === Number(child.id))
   if (i === -1) {
     children.value.unshift(child)
-    if (child.id && !reachedLimit.value) selectedIds.value = [...selectedIds.value, String(child.id)]
+    if (child.id && !reachedLimit.value) selectedIds.value = [...selectedIds.value, Number(child.id)]
   } else {
     children.value[i] = child
   }
   showFormModal.value = false
 }
 
-// Eliminar
+// --- Eliminar niño ---
 const showDeleteModal = ref(false)
 const toDelete = ref<Child | null>(null)
 function openDelete(c: Child) { toDelete.value = c; showDeleteModal.value = true }
 async function confirmDelete() {
-  if (!toDelete.value?.id) return
+  const key = toDelete.value?.ulid ?? toDelete.value?.id
+  if (!key) return
   try {
-    await axios.delete(route("children.destroy", String(toDelete.value.id)), {
+    await axios.delete(route("children.destroy", { child: String(key) }), {
       headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
     })
-    children.value = children.value.filter(x => String(x.id) !== String(toDelete.value?.id))
-    selectedIds.value = selectedIds.value.filter(x => x !== String(toDelete.value?.id))
+    children.value = children.value.filter(x => Number(x.id) !== Number(toDelete.value?.id))
+    selectedIds.value = selectedIds.value.filter(x => x !== Number(toDelete.value?.id))
   } finally {
     showDeleteModal.value = false
     toDelete.value = null
   }
 }
-
-// Logs
-watch(selectedIds, (v) => console.log("[ChildPicker] booking.child_ids ->", toRaw(v)), { immediate: true })
-watch(desc, (v) => console.log("[ChildPicker] booking.description ->", v), { immediate: true })
 </script>
 
 <template>
@@ -126,7 +173,7 @@ watch(desc, (v) => console.log("[ChildPicker] booking.description ->", v), { imm
             Selecciona entre 1 y 4 niños para el servicio. Si no aparece en la lista, agrégalo.
           </p>
         </div>
-        <Button size="sm" variant="outline" @click="openCreate">
+        <Button size="sm" variant="outline" @click="openCreate" type="button">
           <Icon icon="lucide:plus" /> Nuevo
         </Button>
       </CardTitle>
@@ -135,19 +182,20 @@ watch(desc, (v) => console.log("[ChildPicker] booking.description ->", v), { imm
     <CardContent class="space-y-4">
       <ScrollArea>
         <div class="max-h-64 rounded border p-6">
-          <div v-if="!children.length" class="text-xs text-muted-foreground">No hay niños registrados.</div>
+          <div v-if="!children.length" class="text-xs text-muted-foreground">
+            No hay niños registrados.
+          </div>
 
-          <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
             <div
               v-for="c in children"
-              :key="c.id"
+              :key="c.ulid ?? c.id"
               class="relative rounded-md border p-3 transition select-none bg-background/50"
               :class="[
                 isSelected(c.id) ? 'ring-2 ring-primary border-primary bg-primary/5' : 'hover:border-primary/50',
                 (!isSelected(c.id) && reachedLimit) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
               ]"
               role="button"
-
               tabindex="0"
               @click="toggleSelect(c.id)"
               @keydown.enter.prevent="toggleSelect(c.id)"
@@ -155,7 +203,10 @@ watch(desc, (v) => console.log("[ChildPicker] booking.description ->", v), { imm
               :aria-pressed="isSelected(c.id)"
               :title="(!isSelected(c.id) && reachedLimit) ? 'Límite de 4 alcanzado' : ''"
             >
-              <span v-if="isSelected(c.id)" class="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+              <span
+                v-if="isSelected(c.id)"
+                class="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary"
+              >
                 <Icon icon="lucide:check-circle" class="h-3.5 w-3.5" /> Seleccionado
               </span>
 
@@ -170,10 +221,10 @@ watch(desc, (v) => console.log("[ChildPicker] booking.description ->", v), { imm
               </div>
 
               <div class="absolute right-2 bottom-2 flex items-center gap-2">
-                <Button size="icon" variant="ghost" class="h-8 w-8" @click.stop="openEdit(c)" :aria-label="`Editar a ${c.name}`">
+                <Button size="icon" variant="ghost" class="h-8 w-8" @click.stop="openEdit(c)" type="button" :aria-label="`Editar a ${c.name}`">
                   <Icon icon="lucide:edit" class="h-4 w-4" />
                 </Button>
-                <Button size="icon" variant="destructive" class="h-8 w-8" @click.stop="openDelete(c)" :aria-label="`Eliminar a ${c.name}`">
+                <Button size="icon" variant="destructive" class="h-8 w-8" @click.stop="openDelete(c)" type="button" :aria-label="`Eliminar a ${c.name}`">
                   <Icon icon="lucide:trash" class="h-4 w-4" />
                 </Button>
               </div>
@@ -181,20 +232,43 @@ watch(desc, (v) => console.log("[ChildPicker] booking.description ->", v), { imm
           </div>
 
           <div class="mt-2 flex items-center justify-between">
-            <p class="text-[11px] text-muted-foreground">Seleccionados: <span class="font-medium">{{ selectedIds.length }}</span> / 4</p>
-            <p v-if="childIdsBF.errorMessage.value" class="text-[11px] text-rose-600">{{ childIdsBF.errorMessage.value }}</p>
+            <p class="text-[11px] text-muted-foreground">
+              Seleccionados: <span class="font-medium">{{ selectedIds.length }}</span> / 4
+            </p>
+            <p v-if="childIdsBF.errorMessage.value" class="text-[11px] text-rose-600">
+              {{ childIdsBF.errorMessage.value }}
+            </p>
           </div>
         </div>
       </ScrollArea>
 
       <div class="space-y-2">
         <Label for="booking-description" class="text-sm font-medium">Descripción</Label>
-        <Textarea id="booking-description" v-model.trim="desc" class="resize-none" placeholder="Escribe una breve descripción del servicio…" rows="3" />
-        <p v-if="descBF.errorMessage.value" class="text-[11px] text-rose-600">{{ descBF.errorMessage.value }}</p>
+        <Textarea
+          id="booking-description"
+          v-model.trim="desc"
+          class="resize-none"
+          placeholder="Escribe una breve descripción del servicio…"
+          rows="3"
+        />
+        <p v-if="descBF.errorMessage.value" class="text-[11px] text-rose-600">
+          {{ descBF.errorMessage.value }}
+        </p>
       </div>
     </CardContent>
   </Card>
 
-  <FormModal v-model="showFormModal" :title="formTitle" :form-component="ChildForm" :form-props="{ kinkships, child: formChild }" @saved="onChildSaved" />
-  <DeleteModal v-model:show="showDeleteModal" title="niño" :message="`¿Seguro que deseas eliminar a ${toDelete?.name}?`" @confirm="confirmDelete" />
+  <FormModal
+    v-model="showFormModal"
+    :title="formTitle"
+    :form-component="ChildForm"
+    :form-props="{ kinkships, child: formChild }"
+    @saved="onChildSaved"
+  />
+  <DeleteModal
+    v-model:show="showDeleteModal"
+    title="niño"
+    :message="`¿Seguro que deseas eliminar a ${toDelete?.name}?`"
+    @confirm="confirmDelete"
+  />
 </template>

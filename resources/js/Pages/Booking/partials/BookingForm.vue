@@ -1,77 +1,110 @@
+<!-- resources/js/Pages/Bookings/BookingForm.vue -->
 <script setup lang="ts">
-import { onMounted } from "vue"
+import { ref, onMounted, watch, nextTick } from "vue"
 import { Button } from "@/components/ui/button"
 import { Stepper, StepperDescription, StepperItem, StepperSeparator, StepperTitle, StepperTrigger } from "@/components/ui/stepper"
 import { Icon } from "@iconify/vue"
-
 import StepBooking from "../components/StepBooking.vue"
 import StepAppointments from "../components/StepAppointments.vue"
 import StepAddress from "../components/StepAddress.vue"
-
+import StepQualitiesCourses from "../components/StepQualitiesCourses.vue"
 import type { Address } from "@/types/Address"
 import type { Child } from "@/types/Child"
 import type { Tutor } from "@/types/Tutor"
+import type { Booking } from "@/types/Booking"
+import { BookingFormService, useBoundField } from "@/services/bookingFormService"
 
-import { useBookingForm, useBoundField } from "@/services/bookingFormService"
-
-// Tipos de props
-type AppointmentDTO = { start_date: string; end_date: string; duration: number }
-type InitialBookingFromServer = {
-  booking?: {
-    tutor_id?: number
-    address_id?: number | null
-    description?: string
-    recurrent?: boolean
-    child_ids?: Array<number | string>
-  }
-  appointments?: AppointmentDTO[]
-  bookingAppointments?: AppointmentDTO[]
-  address?: {
-    postal_code?: string
-    street?: string
-    neighborhood?: string
-    type?: string
-    other_type?: string
-    internal_number?: string
-  }
-  // Cuando mandas el modelo plano $booking:
-  tutor_id?: number
-  description?: string
-  recurrent?: boolean | number
-  address_id?: number | null
-  children?: Array<{ id: number }>
-}
-
-const props = defineProps<{
-  tutor: Tutor & { addresses?: Address[]; children?: Child[] }
+const props = withDefaults(defineProps<{
+  tutor: (Tutor & { addresses?: Address[]; children?: Child[] }) | null
   kinkships: string[]
-  initialBooking?: InitialBookingFromServer | null
+  qualities?: Record<string, string>
+  careers?: Record<string, string>
+  courseNames?: Record<string, string>
+  initialBooking?: Partial<Booking> | null
   mode?: "edit" | "create"
   bookingId?: number
-}>()
-
-const {
-  stepIndex, steps, nextStep, prevStep, onSubmit, isSubmitting, hydrateWithServerValues,
-} = useBookingForm({
-  mode: props.mode ?? "create",
-  bookingId: props.bookingId,
+}>(), {
+  initialBooking: null,
+  mode: "create",
+  qualities: () => ({}),
+  careers: () => ({}),
+  courseNames: () => ({}),
 })
 
-if (props.initialBooking) {
-  const safe = JSON.parse(JSON.stringify(props.initialBooking)) as InitialBookingFromServer
-  hydrateWithServerValues(safe)
-}
 
-const tutorIdField = useBoundField<number>("booking.tutor_id")
+// Instancia del service (pasamos tutor_id desde el front)
+const formService = new BookingFormService(
+  props.initialBooking as Booking | undefined,
+  props.tutor?.id
+)
+
+// Registrar tutor_id como campo del form (hidden)
+const tutorIdBF = useBoundField<number>("booking.tutor_id")
 onMounted(() => {
-  tutorIdField.value.value = Number(props.tutor.id)
+  if (props.tutor?.id) tutorIdBF.value.value = Number(props.tutor.id)
 })
+watch(() => props.tutor?.id, (id) => {
+  tutorIdBF.value.value = id ? Number(id) : 0
+})
+
+const stepIndex = ref(1)
+const steps = [
+  { step: 1, title: "Servicio",  description: "Describe tu servicio",        icon: "solar:clipboard-text-broken" },
+  { step: 2, title: "Citas",     description: "Selecciona fecha y hora",     icon: "solar:calendar-linear" },
+  { step: 3, title: "Dirección", description: "Lugar del servicio",          icon: "solar:map-point-linear" },
+  { step: 4, title: "Requisitos", description: "Cualidades y formación",     icon: "solar:user-check-linear" },
+]
+
+// Escucha un "tick" que el service incrementa cuando detecta errores
+watch(() => formService.errorTick.value, async () => {
+  const s = formService.lastInvalidStep.value
+  if (!s) return
+  stepIndex.value = s
+  await nextTick()
+  // Focus heurístico del primer campo con error
+  const key = formService.lastInvalidField.value || ""
+  // Remueve índices de array al final (appointments.0.start_date -> appointments.start_date)
+  const baseKey = key.replace(/\.\d+(?=\.|$)/g, "")
+  const last = baseKey.split(".").pop() || ""
+  const candidates: (string | null)[] = [
+    // IDs frecuentes en tus inputs
+    last,
+    // Mapeos comunes
+    baseKey === "booking.description" ? "booking-description" : null,
+    baseKey === "address.postal_code" ? "postal_code" : null,
+  ].filter(Boolean) as string[]
+  let el: Element | null = null
+  for (const id of candidates) {
+    if (id !== null) {
+      el = document.getElementById(id)
+      if (el) break
+    }
+  }
+  if (!el && key) {
+    // Intenta por atributo name exacto con notación bracket
+    const name = key.replace(/\.(\d+)(?=\.|$)/g, "[$1]").replace(/\./g, "][") + "]"
+    el = document.querySelector(`[name="${name.startsWith("]") ? name.slice(1) : name}"]`)
+  }
+  if (!el) el = document.querySelector('[aria-invalid="true"]')
+  if (el instanceof HTMLElement) el.focus()
+})
+
+function nextStep() { if (stepIndex.value < steps.length) stepIndex.value += 1 }
+function prevStep() { if (stepIndex.value > 1) stepIndex.value -= 1 }
+
+// Al enviar, el service se encarga de validar y, si hay errores, disparará errorTick
+const submit = async () => {
+  if (props.mode === "edit" && props.bookingId) await formService.updateBooking()
+  else await formService.saveBooking()
+}
 </script>
 
 <template>
   <div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
     <Stepper v-model="stepIndex" class="flex flex-col">
-      <form @submit.prevent="onSubmit" class="flex flex-col gap-8">
+      <form @submit.prevent="submit" class="flex flex-col gap-8">
+        <input type="hidden" name="booking[tutor_id]" :value="tutorIdBF.value ?? ''" />
+
         <div class="w-full max-w-6xl mx-auto">
           <div class="flex flex-wrap justify-center gap-4">
             <StepperItem
@@ -110,7 +143,7 @@ onMounted(() => {
             <div v-show="stepIndex === 1">
               <StepBooking
                 :tutor="props.tutor"
-                :initial-children="props.tutor.children ?? []"
+                :initial-children="props.tutor?.children ?? []"
                 :kinkships="props.kinkships"
               />
             </div>
@@ -120,7 +153,18 @@ onMounted(() => {
             </div>
 
             <div v-show="stepIndex === 3">
-              <StepAddress :addresses="props.tutor.addresses ?? []" />
+              <StepAddress 
+                :tutor="props.tutor"
+                :initial-addresses="props.tutor?.addresses ?? []" 
+              />
+            </div>
+
+            <div v-show="stepIndex === 4">
+              <StepQualitiesCourses 
+                :qualities="props.qualities"
+                :careers="props.careers"
+                :course-names="props.courseNames"
+              />
             </div>
           </div>
         </div>
@@ -133,7 +177,7 @@ onMounted(() => {
               v-else
               size="sm"
               type="submit"
-              :disabled="isSubmitting"
+              :disabled="!formService.canSubmit"
               class="bg-primary text-primary-foreground"
             >
               {{ props.initialBooking ? "Actualizar servicio" : "Crear servicio" }}

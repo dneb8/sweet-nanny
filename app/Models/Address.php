@@ -22,26 +22,25 @@ class Address extends Model
         'type',
         'other_type',
         'internal_number',
+        'addressable_type',
+        'addressable_id',
     ];
 
     public function uniqueIds()
     {
-        return [
-            'ulid',
-        ];
+        return ['ulid'];
     }
 
     protected $casts = [
-        'type' => TypeEnum::class
+        'type' => TypeEnum::class, // Enum backeado por string
     ];
 
-    public function users()
+    /**
+     * Relación polimórfica.
+     */
+    public function addressable()
     {
-        return $this->hasMany(User::class);
+        return $this->morphTo();
     }
 
-    public function bookingAppointments()
-    {
-        return $this->belongsToMany(BookingAppointment::class);
-    }
 }

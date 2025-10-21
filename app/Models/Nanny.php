@@ -56,9 +56,17 @@ class Nanny extends Model
     {
         return $this->hasMany(BookingAppointment::class);
     }
+    
     public function reviews()
     {
-    return $this->morphMany(Review::class, 'reviewable');}
+        return $this->morphMany(Review::class, 'reviewable');
+    }
+    
+    // Polymorphic relation to addresses
+    public function addresses()
+    {
+        return $this->morphMany(Address::class, 'addressable');
+    }
     
     public function uniqueIds()
     {

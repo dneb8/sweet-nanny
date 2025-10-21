@@ -1,63 +1,46 @@
 <script setup lang="ts">
+import { watch } from "vue"
 import { FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { watch } from 'vue'
-import { AddressFormService } from "@/services/AddressFormService";
-import { Nanny } from "@/types/Nanny"
-import { Address } from "@/types/Address"
-import { TypeEnum } from "@/enums/addresses/type.enum"; 
 
+import { AddressFormService } from "@/services/AddressFormService"
+import type { Address } from "@/types/Address"
+import { TypeEnum } from "@/enums/addresses/type.enum"
 
-//const props = defineProps<{
-  //address?: Address;
-  //modeltype?: Nanny | Tutor;
-  //model_type?: REUTILIZARLO PARA TUTOR Y NANNY TODO EL ADDRESS FORM  EN EL MODELTYPE VA A SER UN TIPO DE 
-  //OBJETO DE NANNY O TUTOR
-//}>()
-
-// const emit = defineEmits(["saved"])
-
-// // Inicializar valores
-// const initialAddress: Address = {
-//   user_id: props.modeltype?.user.id,
-//   postal_code: "",
-//   street: "",
-//   neighborhood: "",
-//   type: "",
-//   other_type: "",
-//   internal_number: "",
-// }
+// 🔸 Props polimórficas (REQUIRED)
 const props = defineProps<{
-  address?: Address;
-  nanny?: Nanny;
+  address?: Address
+  ownerId: number              // id del dueño (Tutor|Nanny|Booking)
+  ownerType: string            // FQCN, ej: "App\\Models\\Tutor"
 }>()
 
-const emit = defineEmits(["saved"])
+const emit = defineEmits<{
+  (e: "saved", payload?: any): void
+}>()
 
-// Inicializar valores
-const initialAddress: Address = {
-  nanny_id: props.nanny?.user.id,
-  postal_code: "",
-  street: "",
-  neighborhood: "",
-  type: "",
-  other_type: "",
-  internal_number: "",
-}
-
-// Inicializar servicio
-const formService = new AddressFormService(props.address || initialAddress)
-const { errors, loading, saved } = formService
-
-// Emitir evento saved al padre para actualizar la lista
-watch(() => saved.value, (value) => {
-  if (value) emit("saved")
+// Instancia del servicio (polimórfico)
+const formService = new AddressFormService({
+  address: props.address,
+  ownerId: props.ownerId,
+  ownerType: props.ownerType,
 })
 
-// Función de submit
+const { errors, loading, saved } = formService
+
+// Cuando guarde/edite, notificar al padre (el padre hace reload parcial)
+watch(() => saved.value, (ok) => {
+  if (!ok) return
+  if (formService.savedAddress.value) {
+    emit("saved", formService.savedAddress.value)
+  } else {
+    emit("saved", { ...values })
+  }
+})
+
+// Submit
 const submit = async () => {
   if (props.address?.id) {
     await formService.updateAddress()
@@ -107,12 +90,21 @@ const submit = async () => {
       <FormItem>
         <Label>Tipo de Dirección</Label>
         <FormControl>
-          <Select v-bind="componentField">
+          <!-- ⚠️ Usa model-value / @update:model-value para evitar valores vacíos -->
+          <Select
+            :model-value="componentField.value"
+            @update:model-value="componentField.onChange"
+          >
             <SelectTrigger>
               <SelectValue placeholder="Selecciona un tipo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem v-for="(label, value) in TypeEnum.labels()" :key="value" :value="value">
+              <!-- TypeEnum.labels(): { [value]: label } -->
+              <SelectItem
+                v-for="(label, value) in TypeEnum.labels()"
+                :key="String(value)"
+                :value="String(value)"
+              >
                 {{ label }}
               </SelectItem>
             </SelectContent>
@@ -153,4 +145,3 @@ const submit = async () => {
     </Button>
   </div>
 </template>
-

@@ -13,46 +13,68 @@ class BookingService
     public function create(array $payload): Booking
     {
         return DB::transaction(function () use ($payload) {
-            $bookingData = $payload['booking'];
-            $appointments = $payload['appointments'] ?? [];
-            $addressData  = $payload['address'] ?? null;
+            $bookingData = data_get($payload, 'booking', []);
+            $appointments = data_get($payload, 'appointments', []);
 
-            $addressId = $bookingData['address_id'] ?? null;
-            if (!$addressId && $addressData) {
-                $address = Address::create([
-                    'tutor_id'       => $bookingData['tutor_id'],
-                    'postal_code'    => $addressData['postal_code'] ?? '',
-                    'street'         => $addressData['street'] ?? '',
-                    'neighborhood'   => $addressData['neighborhood'] ?? '',
-                    'type'           => $addressData['type'] ?? null,
-                    'other_type'     => $addressData['other_type'] ?? null,
-                    'internal_number'=> $addressData['internal_number'] ?? null,
-                ]);
-                $addressId = $address->id;
+            // Handle address_id - store reference to tutor's address
+            $addressId = data_get($bookingData, 'address_id');
+            
+            // Validate that address belongs to the tutor
+            if ($addressId) {
+                $tutorId = (int) data_get($bookingData, 'tutor_id');
+                $address = Address::where('id', $addressId)
+                    ->where('addressable_type', 'App\\Models\\Tutor')
+                    ->where('addressable_id', $tutorId)
+                    ->first();
+                
+                if (!$address) {
+                    throw new \Exception('Invalid address_id: Address does not belong to tutor');
+                }
             }
-
+            
+            // Create booking with address_id reference
             $booking = Booking::create([
-                'tutor_id'   => $bookingData['tutor_id'],
-                'address_id' => $addressId,
-                'description'=> $bookingData['description'],
-                'recurrent'  => (bool) $bookingData['recurrent'],
+                'tutor_id'    => (int) data_get($bookingData, 'tutor_id'),
+                'address_id'  => $addressId, // Store reference to tutor's address
+                'description' => (string) data_get($bookingData, 'description', ''),
+                'recurrent'   => (bool) data_get($bookingData, 'recurrent', false),
+                'qualities'   => data_get($bookingData, 'qualities', []),
+                'careers'     => data_get($bookingData, 'careers', []),
+                'courses'     => data_get($bookingData, 'courses', []),
             ]);
 
-            $childIds = array_map('strval', $bookingData['child_ids'] ?? []);
+            // Children: acepta booking.children (preferido) o booking.child_ids
+            $rawChildren = data_get($bookingData, 'child_ids', data_get($bookingData, 'children', []));
+            $childIds = collect($rawChildren)
+                ->map(function ($c) {
+                    if (is_array($c)) {
+                        return (int) data_get($c, 'id', 0);
+                    }
+                    if (is_object($c)) {
+                        return (int) data_get($c, 'id', 0);
+                    }
+                    return (int) $c;
+                })
+                ->filter()   // quita 0 / null
+                ->unique()
+                ->values()
+                ->all();
+
             if (!empty($childIds)) {
                 $booking->children()->sync($childIds);
             }
 
+            // Appointments
             $rows = [];
             foreach ($appointments as $a) {
                 $rows[] = [
-                    'start_date'     => Carbon::parse($a['start_date']),
-                    'end_date'       => Carbon::parse($a['end_date']),
-                    'duration'       => (int) $a['duration'],
-                    'status'         => Arr::get($a, 'status', 'pending'),
-                    'payment_status' => Arr::get($a, 'payment_status', 'unpaid'),
-                    'extra_hours'    => (int) Arr::get($a, 'extra_hours', 0),
-                    'total_cost'     => (float) Arr::get($a, 'total_cost', 0),
+                    'start_date'     => Carbon::parse(data_get($a, 'start_date')),
+                    'end_date'       => Carbon::parse(data_get($a, 'end_date')),
+                    'duration'       => (int) data_get($a, 'duration', 0),
+                    'status'         => (string) data_get($a, 'status', 'pending'),
+                    'payment_status' => (string) data_get($a, 'payment_status', 'unpaid'),
+                    'extra_hours'    => (int) data_get($a, 'extra_hours', 0),
+                    'total_cost'     => (float) data_get($a, 'total_cost', 0),
                     'created_at'     => now(),
                     'updated_at'     => now(),
                 ];
@@ -72,48 +94,36 @@ class BookingService
             $appointments = $payload['appointments'] ?? [];
             $addressData  = $payload['address'] ?? null;
 
-            // 1) Resolver address_id:
-            //    - Si viene explícito en el payload, se respeta (permitiendo null para limpiar).
-            //    - Si NO viene, conservamos el address_id actual.
-            if (array_key_exists('address_id', $bookingData)) {
-                $addressId = $bookingData['address_id'] ? (int) $bookingData['address_id'] : null;
-            } else {
-                $addressId = $booking->address_id;
-            }
-
-            // 2) Crear/actualizar dirección inline si NO hay address_id pero SÍ vienen datos de address.
-            if (!$addressId && $addressData) {
-                if ($booking->address) {
-                    $booking->address->update([
-                        'tutor_id'        => $bookingData['tutor_id'] ?? $booking->tutor_id,
-                        'postal_code'     => $addressData['postal_code']     ?? $booking->address->postal_code,
-                        'street'          => $addressData['street']          ?? $booking->address->street,
-                        'neighborhood'    => $addressData['neighborhood']    ?? $booking->address->neighborhood,
-                        'type'            => $addressData['type']            ?? $booking->address->type,
-                        'other_type'      => $addressData['other_type']      ?? $booking->address->other_type,
-                        'internal_number' => $addressData['internal_number'] ?? $booking->address->internal_number,
-                    ]);
-                    $addressId = $booking->address->id;
-                } else {
-                    $address = Address::create([
-                        'tutor_id'        => $bookingData['tutor_id'] ?? $booking->tutor_id,
-                        'postal_code'     => $addressData['postal_code']     ?? '',
-                        'street'          => $addressData['street']          ?? '',
-                        'neighborhood'    => $addressData['neighborhood']    ?? '',
-                        'type'            => $addressData['type']            ?? null,
-                        'other_type'      => $addressData['other_type']      ?? null,
-                        'internal_number' => $addressData['internal_number'] ?? null,
-                    ]);
-                    $addressId = $address->id;
+            // Handle address polymorphically
+            $addressId = $bookingData['address_id'] ?? null;
+            
+            // Handle address_id - validate and update
+            if (isset($bookingData['address_id'])) {
+                $addressId = $bookingData['address_id'];
+                
+                // Validate that address belongs to the tutor
+                if ($addressId) {
+                    $tutorId = (int) ($bookingData['tutor_id'] ?? $booking->tutor_id);
+                    $address = Address::where('id', $addressId)
+                        ->where('addressable_type', 'App\\Models\\Tutor')
+                        ->where('addressable_id', $tutorId)
+                        ->first();
+                    
+                    if (!$address) {
+                        throw new \Exception('address_id inválido: la dirección no pertenece al tutor');
+                    }
                 }
             }
 
-            // 3) Actualizar booking
+            // Update booking (including address_id if provided)
             $booking->update([
-                'tutor_id'   => (int) ($bookingData['tutor_id'] ?? $booking->tutor_id),
-                'address_id' => $addressId,
-                'description'=> $bookingData['description'] ?? $booking->description,
-                'recurrent'  => (bool) ($bookingData['recurrent'] ?? $booking->recurrent),
+                'tutor_id'    => (int) ($bookingData['tutor_id'] ?? $booking->tutor_id),
+                'address_id'  => $bookingData['address_id'] ?? $booking->address_id,
+                'description' => $bookingData['description'] ?? $booking->description,
+                'recurrent'   => (bool) ($bookingData['recurrent'] ?? $booking->recurrent),
+                'qualities'   => $bookingData['qualities'] ?? $booking->qualities,
+                'careers'     => $bookingData['careers'] ?? $booking->careers,
+                'courses'     => $bookingData['courses'] ?? $booking->courses,
             ]);
 
             // 4) Sincronizar niños (admite strings o ints)
