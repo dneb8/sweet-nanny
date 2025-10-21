@@ -14,7 +14,7 @@ const props = defineProps<{ nanny: Nanny }>()
 </script>
 
 <template>
-<Head :title="`SweetNanny — Niñera${props.nanny.user ? ` ${props.nanny.user.name} ${props.nanny.user.surnames}` : ''}`" />
+<Head :title="`SweetNanny — Niñera ${props.nanny.user.name} ${props.nanny.user.surnames}`" />
   <div class="grid grid-cols-1 gap-5">
     <!-- Columna superior -->
     <div class="space-y-5">
