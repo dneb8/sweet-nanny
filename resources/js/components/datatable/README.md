@@ -62,6 +62,9 @@ const data = [
 - `total`: Total de elementos (default: 0)
 - `lastPage`: Última página (default: 1)
 - `cardSlot`: Habilitar vista de cards en móvil (default: false)
+- `sortBy`: Columna inicial de ordenamiento (default: null)
+- `sortDir`: Dirección inicial de ordenamiento: 'asc' | 'desc' (default: null)
+- `searchQuery`: Valor inicial del campo de búsqueda (default: '')
 
 ## Columnas
 
@@ -160,6 +163,12 @@ const props = defineProps<{
   users: FetcherResponse<User>;
 }>();
 
+// Get current URL params for initial state
+const urlParams = new URLSearchParams(window.location.search);
+const initialSearch = urlParams.get('search') || '';
+const initialSort = urlParams.get('sort') || null;
+const initialDir = (urlParams.get('dir') as 'asc' | 'desc' | null) || null;
+
 const columns: DataTableColumn<User>[] = [
   {
     id: 'name',
@@ -175,8 +184,22 @@ const columns: DataTableColumn<User>[] = [
   },
 ];
 
+function getCurrentParams() {
+  const params = new URLSearchParams(window.location.search);
+  const result: Record<string, string> = {};
+  params.forEach((value, key) => {
+    result[key] = value;
+  });
+  return result;
+}
+
 function handleSearch(value: string) {
-  router.get(route('users.index'), { search: value || undefined }, {
+  const params = getCurrentParams();
+  router.get(route('users.index'), {
+    ...params,
+    search: value || undefined,
+    page: undefined, // Reset to first page
+  }, {
     preserveState: true,
     preserveScroll: true,
     replace: true,
@@ -184,9 +207,12 @@ function handleSearch(value: string) {
 }
 
 function handleSortChange({ id, direction }) {
+  const params = getCurrentParams();
   router.get(route('users.index'), {
+    ...params,
     sort: direction ? id : undefined,
     dir: direction || undefined,
+    page: undefined, // Reset to first page
   }, {
     preserveState: true,
     preserveScroll: true,
@@ -211,6 +237,9 @@ function handleGoto(url: string) {
     :per-page="users.per_page"
     :total="users.total"
     :last-page="users.last_page"
+    :search-query="initialSearch"
+    :sort-by="initialSort"
+    :sort-dir="initialDir"
     @search="handleSearch"
     @sort:change="handleSortChange"
     @goto="handleGoto"

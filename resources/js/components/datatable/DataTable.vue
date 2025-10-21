@@ -47,6 +47,11 @@ interface Props {
     lastPage?: number;
     // Optional card slot for responsive view
     cardSlot?: boolean;
+    // Initial sort state
+    sortBy?: string | null;
+    sortDir?: 'asc' | 'desc' | null;
+    // Initial search value
+    searchQuery?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -56,6 +61,9 @@ const props = withDefaults(defineProps<Props>(), {
     total: 0,
     lastPage: 1,
     cardSlot: false,
+    sortBy: null,
+    sortDir: null,
+    searchQuery: '',
 });
 
 const emit = defineEmits<{
@@ -66,7 +74,7 @@ const emit = defineEmits<{
 }>();
 
 // Search state
-const searchValue = ref('');
+const searchValue = ref(props.searchQuery || '');
 
 // Column visibility state
 const columnVisibility = ref<Record<string, boolean>>({});
@@ -80,8 +88,8 @@ onMounted(() => {
 
 // Sort state
 const sortState = ref<{ id: string | null; direction: 'asc' | 'desc' | null }>({
-    id: null,
-    direction: null,
+    id: props.sortBy || null,
+    direction: props.sortDir || null,
 });
 
 // Visible columns

@@ -19,6 +19,12 @@ const props = defineProps<{
     sortables: string[];
 }>();
 
+// Get current URL params for initial state
+const urlParams = new URLSearchParams(window.location.search);
+const initialSearch = urlParams.get('search') || '';
+const initialSort = urlParams.get('sort') || null;
+const initialDir = (urlParams.get('dir') as 'asc' | 'desc' | null) || null;
+
 // Define columns for the DataTable
 const columns = computed<DataTableColumn<User>[]>(() => [
     {
@@ -71,11 +77,26 @@ function getRoleBadgeVariant(role: string): 'default' | 'secondary' | 'destructi
     }
 }
 
+// Get current URL params
+function getCurrentParams() {
+    const params = new URLSearchParams(window.location.search);
+    const result: Record<string, string> = {};
+    params.forEach((value, key) => {
+        result[key] = value;
+    });
+    return result;
+}
+
 // Handle search
 function handleSearch(value: string) {
+    const params = getCurrentParams();
     router.get(
         route('users.index'),
-        { search: value || undefined },
+        {
+            ...params,
+            search: value || undefined,
+            page: undefined, // Reset to first page
+        },
         {
             preserveState: true,
             preserveScroll: true,
@@ -86,11 +107,14 @@ function handleSearch(value: string) {
 
 // Handle sort change
 function handleSortChange({ id, direction }: { id: string; direction: 'asc' | 'desc' | null }) {
+    const params = getCurrentParams();
     router.get(
         route('users.index'),
         {
+            ...params,
             sort: direction ? id : undefined,
             dir: direction || undefined,
+            page: undefined, // Reset to first page
         },
         {
             preserveState: true,
@@ -137,6 +161,9 @@ function handleDelete(user: User) {
         :total="users.total"
         :last-page="users.last_page"
         :card-slot="true"
+        :search-query="initialSearch"
+        :sort-by="initialSort"
+        :sort-dir="initialDir"
         @search="handleSearch"
         @sort:change="handleSortChange"
         @goto="handleGoto"
