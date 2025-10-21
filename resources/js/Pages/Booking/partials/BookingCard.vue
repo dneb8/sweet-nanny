@@ -2,19 +2,8 @@
 import { Card, CardHeader, CardContent } from '@/components/ui/card'
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Icon } from '@iconify/vue'
-import type { Booking } from '@/types/Booking'
-import { getRoleLabelByString, RoleEnum } from '@/enums/role.enum'
 
-const props = defineProps<{ booking: Booking }>()
 
-function getRoleBadgeClass(role?: string) {
-  switch (role) {
-    case RoleEnum.ADMIN: return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
-    case RoleEnum.NANNY: return 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300'
-    case RoleEnum.TUTOR: return 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300'
-    default: return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
-  }
-}
 </script>
 
 <template>
