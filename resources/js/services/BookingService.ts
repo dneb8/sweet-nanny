@@ -79,3 +79,8 @@ export function useBookingView(booking: Booking) {
     scrollContainer,
   }
 }
+
+// Export estandarizado para consumidores: mismo API que useBookingView
+export function useBookingService(booking: Booking) {
+  return useBookingView(booking)
+}
