@@ -6,6 +6,11 @@ import { route } from "ziggy-js"
 import * as z from "zod"
 import type { Address } from "@/types/Address"
 
+export type Owner = {
+  ownerId: number | string
+  ownerType: string // FQCN: "App\\Models\\Tutor" | "App\\Models\\Nanny" | "App\\Models\\Booking"
+}
+
 type Ctor = {
   address?: Address
   ownerId: number
@@ -114,30 +119,40 @@ export class AddressFormService {
 }
 
 // Compatibilidad: helpers con export nombrado
-export function createAddress(payload: any) {
-  const form = useInertiaForm(payload)
-  return new Promise<any>((resolve) => {
+export function createAddress(payload: any, owner: Owner) {
+  const formData = {
+    ...payload,
+    addressable_id: owner.ownerId,
+    addressable_type: owner.ownerType,
+  }
+  const form = useInertiaForm(formData)
+  return new Promise<Address>((resolve, reject) => {
     form.post(route("addresses.store"), {
       preserveState: true,
       onSuccess: () => {
         const p: any = usePage().props
         resolve(p?.recent?.address ?? null)
       },
-      onError: () => resolve(null),
+      onError: (errors) => reject({ response: { data: { errors } } }),
     })
   })
 }
 
-export function updateAddress(id: string | number, payload: any) {
-  const form = useInertiaForm(payload)
-  return new Promise<any>((resolve) => {
+export function updateAddress(id: string | number, payload: any, owner: Owner) {
+  const formData = {
+    ...payload,
+    addressable_id: owner.ownerId,
+    addressable_type: owner.ownerType,
+  }
+  const form = useInertiaForm(formData)
+  return new Promise<Address>((resolve, reject) => {
     form.patch(route("addresses.update", id), {
       preserveState: true,
       onSuccess: () => {
         const p: any = usePage().props
         resolve(p?.recent?.address ?? null)
       },
-      onError: () => resolve(null),
+      onError: (errors) => reject({ response: { data: { errors } } }),
     })
   })
 }

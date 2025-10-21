@@ -8,7 +8,7 @@ import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { createAddress, updateAddress, type Owner } from "@/services/addressFormService"
+import { createAddress, updateAddress, type Owner } from "@/services/AddressFormService"
 import type { Address } from "@/types/Address"
 import { TypeEnum } from "@/enums/addresses/type.enum"
 import * as z from "zod"
@@ -40,7 +40,7 @@ const formSchema = toTypedSchema(
   })
 )
 
-const { values, isFieldDirty, handleSubmit } = useForm({
+const { isFieldDirty, handleSubmit } = useForm({
   validationSchema: formSchema,
   initialValues: {
     postal_code: props.address?.postal_code ?? "",
