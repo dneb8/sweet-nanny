@@ -15,14 +15,21 @@ return new class extends Migration
         Schema::create('addresses', function (Blueprint $table) {
             $table->id();
             $table->ulid('ulid')->unique();
+
             $table->string('postal_code');
             $table->string('street');
             $table->string('neighborhood');
             $table->enum('type', TypeEnum::values());
             $table->string('other_type')->nullable();
             $table->string('internal_number')->nullable();
+
+            $table->morphs('addressable'); 
+
             $table->softDeletes();
             $table->timestamps();
+
+            $table->index('postal_code');
+            $table->index('type');
         });
     }
 

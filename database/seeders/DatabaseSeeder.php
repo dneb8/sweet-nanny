@@ -16,13 +16,13 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             NannySeeder::class,
             TutorSeeder::class,
-            BookingSeeder::class,
             ReviewSeeder::class,
             CourseSeeder::class,
             CareerSeeder::class,
             CareerNannySeeder::class,
             ChildSeeder::class,
             NannyQualitySeeder::class,
+            BookingSeeder::class,
         ]);
 
     }

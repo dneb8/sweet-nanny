@@ -7,6 +7,7 @@ import { Icon } from "@iconify/vue"
 import StepBooking from "../components/StepBooking.vue"
 import StepAppointments from "../components/StepAppointments.vue"
 import StepAddress from "../components/StepAddress.vue"
+import StepQualitiesCourses from "../components/StepQualitiesCourses.vue"
 import type { Address } from "@/types/Address"
 import type { Child } from "@/types/Child"
 import type { Tutor } from "@/types/Tutor"
@@ -16,13 +17,20 @@ import { BookingFormService, useBoundField } from "@/services/bookingFormService
 const props = withDefaults(defineProps<{
   tutor: (Tutor & { addresses?: Address[]; children?: Child[] }) | null
   kinkships: string[]
+  qualities?: Record<string, string>
+  careers?: Record<string, string>
+  courseNames?: Record<string, string>
   initialBooking?: Partial<Booking> | null
   mode?: "edit" | "create"
   bookingId?: number
 }>(), {
   initialBooking: null,
   mode: "create",
+  qualities: () => ({}),
+  careers: () => ({}),
+  courseNames: () => ({}),
 })
+
 
 // Instancia del service (pasamos tutor_id desde el front)
 const formService = new BookingFormService(
@@ -44,6 +52,7 @@ const steps = [
   { step: 1, title: "Servicio",  description: "Describe tu servicio",        icon: "solar:clipboard-text-broken" },
   { step: 2, title: "Citas",     description: "Selecciona fecha y hora",     icon: "solar:calendar-linear" },
   { step: 3, title: "Dirección", description: "Lugar del servicio",          icon: "solar:map-point-linear" },
+  { step: 4, title: "Requisitos", description: "Cualidades y formación",     icon: "solar:user-check-linear" },
 ]
 
 // Escucha un "tick" que el service incrementa cuando detecta errores
@@ -144,7 +153,18 @@ const submit = async () => {
             </div>
 
             <div v-show="stepIndex === 3">
-              <StepAddress :addresses="props.tutor?.addresses ?? []" />
+              <StepAddress 
+                :tutor="props.tutor"
+                :initial-addresses="props.tutor?.addresses ?? []" 
+              />
+            </div>
+
+            <div v-show="stepIndex === 4">
+              <StepQualitiesCourses 
+                :qualities="props.qualities"
+                :careers="props.careers"
+                :course-names="props.courseNames"
+              />
             </div>
           </div>
         </div>

@@ -7,7 +7,6 @@ import { route } from "ziggy-js"
 import { useField } from "vee-validate"
 import * as z from "zod"
 import type { Booking } from "@/types/Booking"
-import type { Address } from "@/types/Address"
 import type { BookingAppointment } from "@/types/BookingAppointment"
 
 type AppointmentForForm = Pick<BookingAppointment, "start_date" | "end_date"> & { duration: number }
@@ -18,13 +17,12 @@ type BookingFormValues = {
     address_id: number | null
     description: string
     recurrent: boolean
-    child_ids: string[]            // <-- UI usa IDs planos
+  child_ids: number[]     
+  qualities: string[]      
+  careers: string[]        
+  courses: string[]        
   }
   appointments: AppointmentForForm[]
-  address: Pick<
-    Address,
-    "postal_code" | "street" | "neighborhood" | "type" | "other_type" | "internal_number"
-  >
 }
 
 export class BookingFormService {
@@ -55,34 +53,39 @@ export class BookingFormService {
       duration: z.number().min(1, "Mínimo 1h").max(8, "Máximo 8h"),
     })
 
-    // Validación para los campos que realmente bindea el UI
+    // Schema Zod (careers como array, máx 5)
     this.formSchema = toTypedSchema(
       z.object({
         booking: z.object({
           tutor_id: z.number().int().min(1, "Tutor inválido"),
           description: z.string().trim().min(5, "Agrega una descripción"),
           recurrent: z.boolean(),
-          child_ids: z.array(z.string()).min(1, "Selecciona al menos 1 niño").max(4, "Máximo 4 niños"),
-          address_id: z.number().nullable().optional(),
+          child_ids: z.array(z.number()).min(1, "Selecciona al menos 1 niño").max(4, "Máximo 4 niños"),
+
+          address_id: z.preprocess(
+            (v) => (v === null || v === "" ? undefined : v),
+            z.number({
+              required_error: "La dirección es obligatoria",
+              invalid_type_error: "La dirección es obligatoria",
+            })
+              .int({ message: "La dirección es obligatoria" })
+              .min(1, "La dirección es obligatoria")
+          ),
+
+          qualities: z.array(z.string()).optional().default([]),
+          careers:  z.array(z.string()).max(5, "Máximo 5 carreras").optional().default([]), // <- array
+          courses:  z.array(z.string()).optional().default([]),
         }),
         appointments: z.array(appointmentItem).min(1, "Agrega al menos 1 cita"),
-        address: z.object({
-          postal_code: z.string().min(4, "Código postal requerido"),
-          street: z.string().min(2, "Calle requerida"),
-          neighborhood: z.string().min(2, "Colonia requerida"),
-          type: z.string().min(2, "Tipo requerido"),
-          other_type: z.string().optional(),
-          internal_number: z.string().optional(),
-        }),
       })
     )
 
-    const initialChildIds: string[] =
+    const initialChildIds: number[] =
       Array.isArray(booking?.children)
         ? booking!.children
             .map((c: any) => c?.id)
             .filter((id: any) => id != null)
-            .map((id: any) => String(id))
+            .map((id: any) => Number(id))
         : []
 
     const initial: BookingFormValues = {
@@ -91,17 +94,20 @@ export class BookingFormService {
         address_id: booking?.address_id ?? (booking?.address?.id as any) ?? null,
         description: booking?.description ?? "",
         recurrent: !!booking?.recurrent,
-        child_ids: initialChildIds,
+  child_ids: initialChildIds,
+
+        qualities: Array.isArray((booking as any)?.qualities) ? (booking as any).qualities : [],
+        // Migración suave: si backend aún trae career/degree como string, mételo en array.
+        careers: Array.isArray((booking as any)?.careers)
+          ? (booking as any).careers
+          : (
+              (booking as any)?.career ? [(booking as any).career] :
+              (booking as any)?.degree ? [(booking as any).degree] : []
+            ),
+
+        courses: Array.isArray((booking as any)?.courses) ? (booking as any).courses : [],
       },
-      appointments: booking?.booking_appointments?.map(this.mapAppointment) ?? [],
-      address: {
-        postal_code: booking?.address?.postal_code ?? "",
-        street: booking?.address?.street ?? "",
-        neighborhood: booking?.address?.neighborhood ?? "",
-        type: booking?.address?.type ?? "",
-        other_type: booking?.address?.other_type ?? "",
-        internal_number: booking?.address?.internal_number ?? "",
-      },
+      appointments: (booking?.booking_appointments ?? booking?.booking_appointments)?.map(this.mapAppointment) ?? [],
     }
 
     const { values, isFieldDirty, handleSubmit, errors, meta, setErrors } = useForm<BookingFormValues>({
@@ -117,8 +123,11 @@ export class BookingFormService {
     this.canSubmit = computed(() => this.meta.value.valid && !this.loading.value)
 
     const onErrorHandler = (errs: Record<string, any>) => {
-      // Remapea errores del backend a los nombres del UI
       const remapped = remapServerErrors(errs)
+      console.log('[BookingFormService] raw server errors:', errs)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[BookingFormService] remapped errors:', remapped)
+      }
       this.serverErrors.value = normalizeErrors(remapped)
       setErrors(remapped)
       this.setInvalidFromErrors(remapped)
@@ -168,38 +177,62 @@ export class BookingFormService {
   }
 
   private mapAppointment(a: BookingAppointment): AppointmentForForm {
+    const s = a.start_date ? new Date(String(a.start_date)) : null
+    const e = a.end_date ? new Date(String(a.end_date)) : null
+    const durH = s && e ? Math.max(1, Math.round((+e - +s) / 36e5)) : 1
     return {
-      start_date: String(a.start_date),
-      end_date: String(a.end_date),
-      duration: 0,
+      start_date: String(a.start_date ?? ''),
+      end_date: String(a.end_date ?? ''),
+      duration: durH,
     }
   }
 
   private createPayload(vals: BookingFormValues) {
-    // El backend espera booking.children (IDs), no child_ids
+    const childIds = (vals.booking.child_ids ?? []).map((n) => Number(n)).filter((n) => !Number.isNaN(n))
     return {
       booking: {
         tutor_id: Number(vals.booking.tutor_id ?? this.initialTutorId ?? 0),
         address_id: vals.booking.address_id ?? null,
         description: vals.booking.description || "",
         recurrent: !!vals.booking.recurrent,
-        children: (vals.booking.child_ids ?? []).map(String),
+        child_ids: childIds,
+        children: childIds.map(String),
+
+        qualities: vals.booking.qualities ?? [],
+        careers:  vals.booking.careers ?? [],   // <- array
+        courses:  vals.booking.courses ?? [],
       },
-      appointments: vals.appointments.map((a) => ({
+      appointments: this.values.appointments?.map((a: any) => ({
         start_date: a.start_date,
         end_date: a.end_date,
-        duration: Number(a.duration || 0),
-      })),
-      address: vals.address,
-    }
+        duration: Math.max(1, Number(a.duration || 0)),
+        status: a.status ?? 'pending',
+        payment_status: a.payment_status ?? 'unpaid',
+        extra_hours: Number(a.extra_hours || 0),
+        total_cost: Number(a.total_cost || 0),
+      })) ?? [],
+    };
   }
 
+  // Map a field name to a step number for validation errors
   private fieldToStep(path: string): number {
-    if (!path) return 1
-    if (path.startsWith("booking.")) return 1
-    if (path.startsWith("appointments")) return 2
-    if (path.startsWith("address") || path === "booking.address_id") return 3
-    return 1
+    if (!path) return 1;
+    if (
+      path.startsWith('booking.description') ||
+      path.startsWith('booking.child_ids') ||
+      path.startsWith('booking.recurrent')
+    )
+      return 1;
+    if (path.startsWith('appointments')) return 2;
+    if (path.startsWith('address') || path === 'booking.address_id') return 3;
+    if (
+      path.startsWith('booking.qualities') ||
+      path.startsWith('booking.careers') ||
+      path.startsWith('booking.courses')
+    )
+      return 4;
+    if (path.startsWith('booking.')) return 1;
+    return 1;
   }
 
   private setInvalidFromErrors(errs: Record<string, any>) {
@@ -219,14 +252,29 @@ function normalizeErrors(e: Record<string, any>): Record<string, string[]> {
   return out
 }
 
-// Convierte claves del backend a las del UI:
-// - booking.children.0 -> booking.child_ids.0
+// Convierte claves del backend a las del UI
 function remapServerErrors(errs: Record<string, any>): Record<string, string[]> {
   const out: Record<string, string[]> = {}
   Object.entries(errs ?? {}).forEach(([k, v]) => {
     let key = k
-    if (key === "booking.children") key = "booking.child_ids"
-    if (key.startsWith("booking.children.")) key = key.replace("booking.children.", "booking.child_ids.")
+
+    // children -> child_ids
+    if (key === 'booking.children') key = 'booking.child_ids'
+    if (key.startsWith('booking.children.')) {
+      key = key.replace('booking.children.', 'booking.child_ids.')
+    }
+
+    // address -> booking.address_id
+    if (key === 'address_id') key = 'booking.address_id'
+    if (key === 'booking.address') key = 'booking.address_id'
+    if (key === 'booking.address_id') key = 'booking.address_id'
+
+    // legacy: career (string) -> careers (array)
+    if (key === 'booking.career') key = 'booking.careers'
+    if (key.startsWith('booking.career.')) {
+      key = key.replace('booking.career.', 'booking.careers.')
+    }
+
     out[key] = Array.isArray(v) ? v.map(String) : [String(v)]
   })
   return out
