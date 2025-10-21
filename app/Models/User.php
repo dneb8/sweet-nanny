@@ -60,11 +60,6 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(Nanny::class);
     }
 
-    public function address()
-    {
-        return $this->belongsTo(Address::class);
-    }
-
     public function uniqueIds()
     {
         // Generación automática de ulid para la columna ulid.
