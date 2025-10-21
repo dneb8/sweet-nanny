@@ -19,7 +19,7 @@ class UpdateBookingRequest extends FormRequest
                 'recurrent'  => false,
                 'child_ids'  => [],
                 'qualities'  => [],
-                'career'     => null,
+                'careers'    => [], // Now an array
                 'courses'    => [],
             ], (array) $this->input('booking', [])),
             'appointments' => (array) $this->input('appointments', []),
@@ -58,10 +58,11 @@ class UpdateBookingRequest extends FormRequest
             'address.other_type'           => ['nullable','string'],
             'address.internal_number'      => ['nullable','string'],
             
-            // New fields: qualities, career, courses
+            // New fields: qualities, careers (array), courses
             'booking.qualities'            => ['nullable', 'array'],
             'booking.qualities.*'          => ['string'],
-            'booking.career'               => ['nullable', 'string'],
+            'booking.careers'              => ['nullable', 'array'],
+            'booking.careers.*'            => ['string'],
             'booking.courses'              => ['nullable', 'array'],
             'booking.courses.*'            => ['string'],
         ];

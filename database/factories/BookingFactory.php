@@ -28,7 +28,7 @@ class BookingFactory extends Factory
             'description' => $this->faker->sentence(),
             'recurrent'   => $this->faker->boolean(),
             'qualities'   => [],
-            'degree'      => null,
+            'careers'     => [],
             'courses'     => [],
         ];
     }

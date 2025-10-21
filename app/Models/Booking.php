@@ -15,15 +15,15 @@ class Booking extends Model
         'description',
         'recurrent',
         'qualities',
-        'career',
+        'careers',
         'courses',
     ];
 
     protected $casts = [
         'qualities' => 'array',
+        'careers' => 'array',
         'courses' => 'array',
         'recurrent' => 'boolean',
-        'career' => 'array',
     ];
 
     // Relación uno a muchos con BookingAppointment
