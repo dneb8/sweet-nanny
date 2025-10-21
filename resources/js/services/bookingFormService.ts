@@ -18,9 +18,9 @@ type BookingFormValues = {
     description: string
     recurrent: boolean
   child_ids: number[]     
-    qualities: string[]      
-    careers: string[]        
-    courses: string[]        
+  qualities: string[]      
+  careers: string[]        
+  courses: string[]        
   }
   appointments: AppointmentForForm[]
 }
