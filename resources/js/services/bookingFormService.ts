@@ -125,7 +125,9 @@ export class BookingFormService {
     const onErrorHandler = (errs: Record<string, any>) => {
       const remapped = remapServerErrors(errs)
       console.log('[BookingFormService] raw server errors:', errs)
-      console.log('[BookingFormService] remapped errors:', remapped)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[BookingFormService] remapped errors:', remapped)
+      }
       this.serverErrors.value = normalizeErrors(remapped)
       setErrors(remapped)
       this.setInvalidFromErrors(remapped)
