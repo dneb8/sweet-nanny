@@ -39,12 +39,12 @@ class BookingService
                 'description' => (string) data_get($bookingData, 'description', ''),
                 'recurrent'   => (bool) data_get($bookingData, 'recurrent', false),
                 'qualities'   => data_get($bookingData, 'qualities', []),
-                'degree'      => data_get($bookingData, 'degree'),
+                'careers'     => data_get($bookingData, 'careers', []),
                 'courses'     => data_get($bookingData, 'courses', []),
             ]);
 
             // Children: acepta booking.children (preferido) o booking.child_ids
-            $rawChildren = data_get($bookingData, 'children', data_get($bookingData, 'child_ids', []));
+            $rawChildren = data_get($bookingData, 'child_ids', data_get($bookingData, 'children', []));
             $childIds = collect($rawChildren)
                 ->map(function ($c) {
                     if (is_array($c)) {
@@ -122,7 +122,7 @@ class BookingService
                 'description' => $bookingData['description'] ?? $booking->description,
                 'recurrent'   => (bool) ($bookingData['recurrent'] ?? $booking->recurrent),
                 'qualities'   => $bookingData['qualities'] ?? $booking->qualities,
-                'degree'      => $bookingData['degree'] ?? $booking->degree,
+                'careers'     => $bookingData['careers'] ?? $booking->careers,
                 'courses'     => $bookingData['courses'] ?? $booking->courses,
             ]);
 
