@@ -8,11 +8,13 @@ import CoursesCard from './information/Course.vue'
 import CareersCard from './information/Career.vue'
 import QualitiesCard from './information/Quality.vue'
 import ServicesCard from './information/Booking.vue'
+import { Head } from '@inertiajs/vue3'
 
 const props = defineProps<{ nanny: Nanny }>()
 </script>
 
 <template>
+<Head :title="`SweetNanny — Niñera${props.nanny.user ? ` ${props.nanny.user.name} ${props.nanny.user.surnames}` : ''}`" />
   <div class="grid grid-cols-1 gap-5">
     <!-- Columna superior -->
     <div class="space-y-5">
