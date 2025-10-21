@@ -15,7 +15,7 @@ import { MoreVertical } from 'lucide-vue-next'
 import { Icon } from '@iconify/vue'
 
 import type { Booking } from '@/types/Booking'
-import { useBookingService } from '@/services/BookingService'
+// import { useBookingService } from '@/services/BookingService'
 import { getRoleLabelByString, RoleEnum } from '@/enums/role.enum'
 
 const props = defineProps<{
@@ -23,14 +23,14 @@ const props = defineProps<{
 }>()
 
 // Booking Service con funciones para manejar acciones del usuario
-const {
-  showDeleteModal,
-  showBooking,
-  editBooking,
-  deleteBooking,
-  confirmDeleteBooking,
-  getRoleBadgeClass,
-} = useBookingService(props.booking)
+// const {
+//   showDeleteModal,
+//   showBooking,
+//   editBooking,
+//   deleteBooking,
+//   confirmDeleteBooking,
+//   getRoleBadgeClass,
+// } = useBookingService(props.booking)
 </script>
 
 <template>
