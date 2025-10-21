@@ -33,6 +33,24 @@ class Tutor extends Model
         return $this->hasMany(Child::class);
     }
 
+    /**
+     * Get addresses through user relationship
+     * Returns a collection to match expected interface
+     */
+    public function addresses()
+    {
+        // Return user's address as a collection for consistency
+        // This is an accessor that wraps the single address in a collection
+        return $this->hasOneThrough(
+            Address::class,
+            User::class,
+            'id',           // Foreign key on users table
+            'id',           // Foreign key on addresses table
+            'user_id',      // Local key on tutors table
+            'address_id'    // Local key on users table
+        );
+    }
+
     public function uniqueIds()
     {
         // Generación automática de ulid para la columna ulid.

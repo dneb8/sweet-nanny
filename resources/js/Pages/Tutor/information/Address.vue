@@ -6,9 +6,9 @@ import { computed } from 'vue';
 
 const props = defineProps<{ tutor: Tutor }>();
 
-// Get first address from polymorphic addresses relationship
+// Get address from user relationship
 const primaryAddress = computed(() => {
-    return props.tutor.addresses?.[0] ?? null;
+    return props.tutor.user?.address ?? null;
 });
 </script>
 
@@ -26,10 +26,13 @@ const primaryAddress = computed(() => {
                     <Icon icon="mdi:home-outline" class="w-4 h-4 mt-0.5 text-muted-foreground" />
                     <div>
                         <p class="text-sm font-medium">{{ primaryAddress.street }}</p>
-                        <p class="text-sm text-muted-foreground">
-                            {{ primaryAddress.city }}, {{ primaryAddress.state }}
+                        <p v-if="primaryAddress.internal_number" class="text-sm text-muted-foreground">
+                            Número interior: {{ primaryAddress.internal_number }}
                         </p>
-                        <p class="text-sm text-muted-foreground">{{ primaryAddress.postal_code }}</p>
+                        <p class="text-sm text-muted-foreground">
+                            {{ primaryAddress.neighborhood }}
+                        </p>
+                        <p class="text-sm text-muted-foreground">C.P. {{ primaryAddress.postal_code }}</p>
                     </div>
                 </div>
             </div>

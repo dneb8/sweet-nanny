@@ -69,8 +69,7 @@ class TutorService
     {
         return Tutor::where('ulid', $id)
             ->with([
-                'user',           // user information
-                'addresses',      // polymorphic addresses relationship
+                'user.address',   // user information with address
                 'children',       // children information
             ])
             ->firstOrFail();
