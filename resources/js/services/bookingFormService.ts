@@ -17,7 +17,7 @@ type BookingFormValues = {
     address_id: number | null
     description: string
     recurrent: boolean
-    child_ids: string[]     
+  child_ids: number[]     
     qualities: string[]      
     careers: string[]        
     courses: string[]        
@@ -60,7 +60,7 @@ export class BookingFormService {
           tutor_id: z.number().int().min(1, "Tutor inválido"),
           description: z.string().trim().min(5, "Agrega una descripción"),
           recurrent: z.boolean(),
-          child_ids: z.array(z.string()).min(1, "Selecciona al menos 1 niño").max(4, "Máximo 4 niños"),
+          child_ids: z.array(z.number()).min(1, "Selecciona al menos 1 niño").max(4, "Máximo 4 niños"),
 
           address_id: z.preprocess(
             (v) => (v === null || v === "" ? undefined : v),
@@ -80,12 +80,12 @@ export class BookingFormService {
       })
     )
 
-    const initialChildIds: string[] =
+    const initialChildIds: number[] =
       Array.isArray(booking?.children)
         ? booking!.children
             .map((c: any) => c?.id)
             .filter((id: any) => id != null)
-            .map((id: any) => String(id))
+            .map((id: any) => Number(id))
         : []
 
     const initial: BookingFormValues = {
@@ -94,7 +94,7 @@ export class BookingFormService {
         address_id: booking?.address_id ?? (booking?.address?.id as any) ?? null,
         description: booking?.description ?? "",
         recurrent: !!booking?.recurrent,
-        child_ids: initialChildIds,
+  child_ids: initialChildIds,
 
         qualities: Array.isArray((booking as any)?.qualities) ? (booking as any).qualities : [],
         // Migración suave: si backend aún trae career/degree como string, mételo en array.
@@ -175,42 +175,62 @@ export class BookingFormService {
   }
 
   private mapAppointment(a: BookingAppointment): AppointmentForForm {
+    const s = a.start_date ? new Date(String(a.start_date)) : null
+    const e = a.end_date ? new Date(String(a.end_date)) : null
+    const durH = s && e ? Math.max(1, Math.round((+e - +s) / 36e5)) : 1
     return {
-      start_date: String(a.start_date),
-      end_date: String(a.end_date),
-      duration: 0,
+      start_date: String(a.start_date ?? ''),
+      end_date: String(a.end_date ?? ''),
+      duration: durH,
     }
   }
 
   private createPayload(vals: BookingFormValues) {
+    const childIds = (vals.booking.child_ids ?? []).map((n) => Number(n)).filter((n) => !Number.isNaN(n))
     return {
       booking: {
         tutor_id: Number(vals.booking.tutor_id ?? this.initialTutorId ?? 0),
         address_id: vals.booking.address_id ?? null,
         description: vals.booking.description || "",
         recurrent: !!vals.booking.recurrent,
-        children: (vals.booking.child_ids ?? []).map(String),
+        child_ids: childIds,
+        children: childIds.map(String),
 
         qualities: vals.booking.qualities ?? [],
         careers:  vals.booking.careers ?? [],   // <- array
         courses:  vals.booking.courses ?? [],
       },
-      appointments: vals.appointments.map((a) => ({
+      appointments: this.values.appointments?.map((a: any) => ({
         start_date: a.start_date,
         end_date: a.end_date,
-        duration: Number(a.duration || 0),
-      })),
-    }
+        duration: Math.max(1, Number(a.duration || 0)),
+        status: a.status ?? 'pending',
+        payment_status: a.payment_status ?? 'unpaid',
+        extra_hours: Number(a.extra_hours || 0),
+        total_cost: Number(a.total_cost || 0),
+      })) ?? [],
+    };
   }
 
+  // Map a field name to a step number for validation errors
   private fieldToStep(path: string): number {
-    if (!path) return 1
-    if (path.startsWith('booking.description') || path.startsWith('booking.child_ids') || path.startsWith('booking.recurrent')) return 1
-    if (path.startsWith('appointments')) return 2
-    if (path.startsWith('address') || path === 'booking.address_id') return 3
-    if (path.startsWith('booking.qualities') || path.startsWith('booking.careers') || path.startsWith('booking.courses')) return 4
-    if (path.startsWith('booking.')) return 1
-    return 1
+    if (!path) return 1;
+    if (
+      path.startsWith('booking.description') ||
+      path.startsWith('booking.child_ids') ||
+      path.startsWith('booking.recurrent')
+    )
+      return 1;
+    if (path.startsWith('appointments')) return 2;
+    if (path.startsWith('address') || path === 'booking.address_id') return 3;
+    if (
+      path.startsWith('booking.qualities') ||
+      path.startsWith('booking.careers') ||
+      path.startsWith('booking.courses')
+    )
+      return 4;
+    if (path.startsWith('booking.')) return 1;
+    return 1;
   }
 
   private setInvalidFromErrors(errs: Record<string, any>) {

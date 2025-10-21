@@ -24,56 +24,86 @@ const tabValue = computed<string>({
   set: v => (recurrent.value.value = v === "recurrente")
 })
 
-type Row = { dateVal: unknown | null; time: string; duration: number }
-const rows = ref<Row[]>([{ dateVal: null, time: "08:00", duration: 1 }])
+type Row = { dateVal: any | null; time: string; duration: number }
+const rows = ref<Row[]>([])
 
 const tz = getLocalTimeZone()
 const df = new DateFormatter("es-MX", { dateStyle: "short" })
 // Only allow selecting dates from tomorrow onward
 const minDate = today(tz).add({ days: 1 })
 const maxCitas = 10
+const toJsDate = (val: any): Date | null => val?.toDate?.(tz) ?? (val instanceof Date ? val : null)
+function isoToRow(startISO?: string, endISO?: string): Row {
+  if (!startISO || !endISO) return { dateVal: null, time: "08:00", duration: 1 }
+  const start = new Date(startISO)
+  const end = new Date(endISO)
+  const durH = Math.max(1, Math.round((+end - +start) / 36e5))
+  const dateVal = fromDate(new Date(start), tz)
+  const time = start.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", hour12: false })
+  return { dateVal, time, duration: durH }
+}
+function rowToIso(r: Row) {
+  const base = toJsDate(r.dateVal)
+  if (!base || !r.time || !r.duration) return { startISO: "", endISO: "" }
+  const [h, m] = r.time.split(":").map(Number)
+  const start = new Date(base); start.setHours(h, m, 0, 0)
+  const end = new Date(start); end.setHours(end.getHours() + r.duration)
+  return { startISO: start.toISOString(), endISO: end.toISOString() }
+}
 const isComplete = (r: Row) => !!(r.dateVal && r.time && r.duration > 0)
 
-const toJsDate = (val: unknown): Date | null => {
-  const anyVal = val as any
-  return anyVal?.toDate?.(tz) ?? null
-}
-function toIso(dateVal: unknown, time: string, duration: number) {
-  const base = toJsDate(dateVal)
-  if (!base) return { startISO: "", endISO: "", endHuman: "" }
-  const [h, m] = time.split(":").map(Number)
-  const start = new Date(base)
-  start.setHours(h, m, 0, 0)
-  const end = new Date(start)
-  end.setHours(end.getHours() + duration)
-  return {
-    startISO: start.toISOString(),
-    endISO: end.toISOString(),
-    endHuman: end.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })
-  }
-}
+// Hydrate rows from appointments on load/edit
+watch(
+  () => appts.value.value,
+  (list) => {
+    if (!Array.isArray(list) || list.length === 0) return
+    if (rows.value.length && rows.value.every(isComplete)) return
+    rows.value = list.map(a => isoToRow(a?.start_date, a?.end_date))
+  },
+  { immediate: true, deep: true }
+)
+
+// Ensure at least one row exists in non-recurrent mode
+watch(
+  () => recurrent.value.value,
+  (isRec) => {
+    if (!isRec && rows.value.length === 0) {
+      rows.value = [{ dateVal: null, time: "08:00", duration: 1 }]
+    }
+  },
+  { immediate: true }
+)
 
 function syncRow(i: number) {
   const r = rows.value[i]
-  if (!isComplete(r)) return
-  const { startISO, endISO } = toIso(r.dateVal, r.time, r.duration)
-  let apptsValue = appts.value.value
-  if (!Array.isArray(apptsValue)) apptsValue = []
-  apptsValue[i] = {
-    ...(apptsValue[i] || {}),
+  if (!r) return
+  let list = Array.isArray(appts.value.value) ? [...appts.value.value] : []
+
+  if (!isComplete(r)) {
+    if (list[i]) {
+      list.splice(i, 1)
+      rows.value.splice(i, 1)
+    }
+    appts.value.value = list
+    return
+  }
+
+  const { startISO, endISO } = rowToIso(r)
+  list[i] = {
+    ...(list[i] || {}),
     start_date: startISO,
     end_date: endISO,
-    duration: r.duration,
-    status: apptsValue[i]?.status ?? "pending",
-    payment_status: apptsValue[i]?.payment_status ?? "unpaid",
-    extra_hours: apptsValue[i]?.extra_hours ?? 0,
-    total_cost: apptsValue[i]?.total_cost ?? 0
+    duration: Math.max(1, Number(r.duration || 1)),
+    status: list[i]?.status ?? "pending",
+    payment_status: list[i]?.payment_status ?? "unpaid",
+    extra_hours: list[i]?.extra_hours ?? 0,
+    total_cost: list[i]?.total_cost ?? 0
   }
   if (!recurrent.value.value) {
-    apptsValue = [apptsValue[0]]
+    list = [list[0]]
     rows.value = [rows.value[0]]
   }
-  appts.value.value = apptsValue
+  appts.value.value = list
 }
 
 const canAdd = computed(
@@ -86,22 +116,26 @@ const canAdd = computed(
 function addRow() {
   if (!canAdd.value) return
   const last = rows.value[rows.value.length - 1]
-  let nextDateVal: unknown | null = null
-  if (last.dateVal) {
-    const base = toJsDate(last.dateVal)
-    if (base) {
-      const d = new Date(base)
-      d.setDate(base.getDate() + 1)
-      nextDateVal = fromDate(d, tz)
-    }
+  let nextDateVal: any = null
+  const base = toJsDate(last?.dateVal)
+  if (base) {
+    const d = new Date(base); d.setDate(d.getDate() + 1)
+    nextDateVal = fromDate(d, tz)
   }
-  rows.value.push({ dateVal: nextDateVal, time: "", duration: 0 })
+  const time = last?.time || "08:00"
+  const duration = last?.duration || 1
+  rows.value.push({ dateVal: nextDateVal, time, duration })
+  const list = Array.isArray(appts.value.value) ? [...appts.value.value] : []
+  list.push(undefined as any)
+  appts.value.value = list
 }
 
 function removeRow(i: number) {
   if (!recurrent.value.value || rows.value.length <= 1) return
   rows.value.splice(i, 1)
-  appts.value.value?.splice?.(i, 1)
+  const list = Array.isArray(appts.value.value) ? [...appts.value.value] : []
+  list.splice(i, 1)
+  appts.value.value = list
 }
 
 watch(
@@ -215,7 +249,7 @@ watch(
                     <div class="w-full relative">
                       <div class="text-[11px] text-muted-foreground mb-1">Hora fin</div>
                       <Input
-                        :value="isComplete(r) ? toIso(r.dateVal, r.time, r.duration).endHuman : ''"
+                        :value="isComplete(r) ? new Date(rowToIso(r).endISO).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}) : ''"
                         placeholder="—"
                         readonly
                         tabindex="-1"

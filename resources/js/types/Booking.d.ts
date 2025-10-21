@@ -14,4 +14,5 @@ export interface Booking {
   tutor?: Tutor
   address?: Address
   children?: Child[]
+  childrenWithTrashed?: Child[]
 }

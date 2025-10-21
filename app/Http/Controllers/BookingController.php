@@ -32,7 +32,7 @@ class BookingController extends Controller
             'tutor' => fn ($q) => $q->select('id','user_id')->with([
                 'children',
                 'user.address',
-                'addresses', // Include tutor's addresses
+                'addresses', 
             ]),
         ])->findOrFail(Auth::id());
 
@@ -68,23 +68,21 @@ class BookingController extends Controller
 
     public function edit(Booking $booking): Response
     {
-        $booking->load([
-            'tutor.addresses',
-            'children',
-            'bookingAppointments',
-            'address',
-        ]);
-
         $kinkships = array_map(fn($c) => $c->value, KinkshipEnum::cases());
+
+        $booking->load(['tutor.children', 'tutor.addresses', 'children', 'bookingAppointments', 'address']);
 
         return Inertia::render('Booking/Edit', [
             'booking'        => $booking,
             'initialBooking' => $booking,
+            'tutor'          => $booking->tutor, 
+            'initialChildren'=> $booking->tutor?->children ?? [],
             'kinkships'      => $kinkships,
             'qualities'      => QualityEnum::labels(),
             'careers'        => NameCareerEnum::labels(),
             'courseNames'    => CourseNameEnum::labels(),
         ]);
+
     }
 
     public function update(UpdateBookingRequest $request, Booking $booking, BookingService $service)

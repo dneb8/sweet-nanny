@@ -1,5 +1,6 @@
+<!-- resources/js/Pages/Booking/partials/StepBooking.vue -->
 <script setup lang="ts">
-import { ref, computed } from "vue"
+import { ref, computed, onMounted } from "vue"
 import { Icon } from "@iconify/vue"
 import axios from "axios"
 import { route } from "ziggy-js"
@@ -17,19 +18,51 @@ import type { Tutor } from "@/types/Tutor"
 import { getKinshipLabelByString } from "@/enums/kinkship.enum"
 
 const props = defineProps<{
-  tutor: Tutor | null
-  kinkships: string[]
+  // En CREATE vienes con tutor (incluye children)
+  tutor?: Tutor | null
+  // En EDIT puedes pasar initialChildren (si el controlador no adjunta tutor.children)
   initialChildren?: Child[] | null
+  kinkships: string[]
 }>()
 
-const childIdsBF = useBoundField<string[]>("booking.child_ids")
+// --- Campos del formulario (vee-validate) ---
+const childIdsBF = useBoundField<number[]>("booking.child_ids")
 const descBF     = useBoundField<string>("booking.description")
-const childIds = childIdsBF.value
-const desc     = descBF.value
+const childIds   = childIdsBF.value
+const desc       = descBF.value
 
-const children = ref<Child[]>(props.initialChildren ?? [])
-const tutorId  = computed<string>(() => String(props.tutor?.id ?? ""))
+// --- Fuente de verdad de niños que se listan ---
+const children = ref<Child[]>(
+  // Prioriza initialChildren (EDIT), luego tutor?.children (CREATE), si no hay → []
+  (Array.isArray(props.initialChildren) && props.initialChildren.length > 0)
+    ? props.initialChildren
+    : (Array.isArray((props.tutor as any)?.children) ? (props.tutor as any).children : [])
+)
 
+const tutorId = computed<number | null>(() => {
+  const id = (props.tutor as any)?.id
+  return typeof id === "number" ? id : (id ? Number(id) : null)
+})
+
+// Si estás en EDIT y no vino ni initialChildren ni tutor.children → fetch
+onMounted(async () => {
+  const alreadyHave = Array.isArray(children.value) && children.value.length > 0
+  if (alreadyHave) return
+  if (!tutorId.value) return
+
+  try {
+    const { data } = await axios.get(
+      route("tutors.children.index", { tutor: tutorId.value }),
+      { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" } }
+    )
+    // soporto {data:[...]} o [...]
+    children.value = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : [])
+  } catch (e) {
+    console.warn("No se pudieron cargar los niños del tutor", e)
+  }
+})
+
+// --- Utilidades ---
 function ageFrom(birthdate?: string | null): string {
   if (!birthdate) return "—"
   const [y, m, d] = birthdate.split("-").map(Number)
@@ -42,24 +75,27 @@ function ageFrom(birthdate?: string | null): string {
   return `${age} años`
 }
 
-// Selección (1–4) por ID numérico (para backend)
-const selectedIds = computed<string[]>({
-  get: () => Array.isArray(childIds.value) ? childIds.value.map(String) : [],
-  set: (v) => { childIds.value = v },
+// --- Selección controlada (1–4) por ID numérico ---
+const selectedIds = computed<number[]>({
+  get: () => Array.isArray(childIds.value) ? childIds.value.map(Number) : [],
+  set: (v) => { childIds.value = v.map(Number) },
 })
 const reachedLimit = computed(() => selectedIds.value.length >= 4)
-const isSelected = (id?: string | number | null) => id != null && selectedIds.value.includes(String(id))
+const isSelected = (id?: string | number | null) =>
+  id != null && selectedIds.value.includes(Number(id))
+
 function toggleSelect(id?: string | number | null) {
   if (id == null) return
-  const sid = String(id)
-  if (isSelected(sid)) selectedIds.value = selectedIds.value.filter(x => x !== sid)
-  else {
+  const nid = Number(id)
+  if (isSelected(nid)) {
+    selectedIds.value = selectedIds.value.filter(x => x !== nid)
+  } else {
     if (reachedLimit.value) return
-    selectedIds.value = [...selectedIds.value, sid]
+    selectedIds.value = [...selectedIds.value, nid]
   }
 }
 
-// Modal crear/editar
+// --- Modal crear/editar niño ---
 const showFormModal = ref(false)
 const formTitle = ref("Agregar niño")
 const formChild = ref<ChildInput | null>(null)
@@ -67,7 +103,7 @@ const formChild = ref<ChildInput | null>(null)
 function asChildInput(c?: Child | null): ChildInput {
   if (!c) {
     return {
-      tutor_id: tutorId.value,
+      tutor_id: String(tutorId.value ?? ""),
       name: "",
       birthdate: "",
       kinkship: (props.kinkships[0] ?? "") as any,
@@ -75,8 +111,8 @@ function asChildInput(c?: Child | null): ChildInput {
   }
   return {
     id: c.id ? String(c.id) : undefined,
-    ulid: c.ulid ? String(c.ulid) : undefined,           
-    tutor_id: String((c as any).tutor_id ?? tutorId.value),
+    ulid: c.ulid ? String(c.ulid) : undefined,
+    tutor_id: String((c as any).tutor_id ?? (tutorId.value ?? "")),
     name: c.name ?? "",
     birthdate: c.birthdate ?? "",
     kinkship: (c as any).kinkship ?? (props.kinkships[0] ?? ""),
@@ -95,17 +131,17 @@ function openEdit(c: Child) {
 }
 
 function onChildSaved(child: Child) {
-  const i = children.value.findIndex(x => String(x.id) === String(child.id))
+  const i = children.value.findIndex(x => Number(x.id) === Number(child.id))
   if (i === -1) {
     children.value.unshift(child)
-    if (child.id && !reachedLimit.value) selectedIds.value = [...selectedIds.value, String(child.id)]
+    if (child.id && !reachedLimit.value) selectedIds.value = [...selectedIds.value, Number(child.id)]
   } else {
     children.value[i] = child
   }
   showFormModal.value = false
 }
 
-// Eliminar usando ULID en la ruta
+// --- Eliminar niño ---
 const showDeleteModal = ref(false)
 const toDelete = ref<Child | null>(null)
 function openDelete(c: Child) { toDelete.value = c; showDeleteModal.value = true }
@@ -116,15 +152,13 @@ async function confirmDelete() {
     await axios.delete(route("children.destroy", { child: String(key) }), {
       headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
     })
-    // Limpia listas por id numérico (selección) y por objeto en memoria
-    children.value = children.value.filter(x => String(x.id) !== String(toDelete.value?.id))
-    selectedIds.value = selectedIds.value.filter(x => x !== String(toDelete.value?.id))
+    children.value = children.value.filter(x => Number(x.id) !== Number(toDelete.value?.id))
+    selectedIds.value = selectedIds.value.filter(x => x !== Number(toDelete.value?.id))
   } finally {
     showDeleteModal.value = false
     toDelete.value = null
   }
 }
-
 </script>
 
 <template>
@@ -136,7 +170,7 @@ async function confirmDelete() {
             <Icon icon="lucide:users" /> Niños
           </div>
           <p class="text-xs text-muted-foreground max-w-md font-light italic">
-            Selecciona entre 1 y 4 niños para la servicio. Si no aparece en la lista, agrégalo.
+            Selecciona entre 1 y 4 niños para el servicio. Si no aparece en la lista, agrégalo.
           </p>
         </div>
         <Button size="sm" variant="outline" @click="openCreate" type="button">
@@ -148,7 +182,9 @@ async function confirmDelete() {
     <CardContent class="space-y-4">
       <ScrollArea>
         <div class="max-h-64 rounded border p-6">
-          <div v-if="!children.length" class="text-xs text-muted-foreground">No hay niños registrados.</div>
+          <div v-if="!children.length" class="text-xs text-muted-foreground">
+            No hay niños registrados.
+          </div>
 
           <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
             <div
@@ -167,7 +203,10 @@ async function confirmDelete() {
               :aria-pressed="isSelected(c.id)"
               :title="(!isSelected(c.id) && reachedLimit) ? 'Límite de 4 alcanzado' : ''"
             >
-              <span v-if="isSelected(c.id)" class="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+              <span
+                v-if="isSelected(c.id)"
+                class="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary"
+              >
                 <Icon icon="lucide:check-circle" class="h-3.5 w-3.5" /> Seleccionado
               </span>
 
@@ -193,16 +232,28 @@ async function confirmDelete() {
           </div>
 
           <div class="mt-2 flex items-center justify-between">
-            <p class="text-[11px] text-muted-foreground">Seleccionados: <span class="font-medium">{{ selectedIds.length }}</span> / 4</p>
-            <p v-if="childIdsBF.errorMessage.value" class="text-[11px] text-rose-600">{{ childIdsBF.errorMessage.value }}</p>
+            <p class="text-[11px] text-muted-foreground">
+              Seleccionados: <span class="font-medium">{{ selectedIds.length }}</span> / 4
+            </p>
+            <p v-if="childIdsBF.errorMessage.value" class="text-[11px] text-rose-600">
+              {{ childIdsBF.errorMessage.value }}
+            </p>
           </div>
         </div>
       </ScrollArea>
 
       <div class="space-y-2">
         <Label for="booking-description" class="text-sm font-medium">Descripción</Label>
-        <Textarea id="booking-description" v-model.trim="desc" class="resize-none" placeholder="Escribe una breve descripción del servicio…" rows="3" />
-        <p v-if="descBF.errorMessage.value" class="text-[11px] text-rose-600">{{ descBF.errorMessage.value }}</p>
+        <Textarea
+          id="booking-description"
+          v-model.trim="desc"
+          class="resize-none"
+          placeholder="Escribe una breve descripción del servicio…"
+          rows="3"
+        />
+        <p v-if="descBF.errorMessage.value" class="text-[11px] text-rose-600">
+          {{ descBF.errorMessage.value }}
+        </p>
       </div>
     </CardContent>
   </Card>
