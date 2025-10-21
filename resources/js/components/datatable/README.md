@@ -7,9 +7,11 @@ Componente reutilizable para mostrar datos tabulares con funcionalidades backend
 - ✅ Búsqueda con botón (no realtime)
 - ✅ Paginación controlada por backend
 - ✅ Ordenamiento opcional por columna
+- ✅ Filtros por columna (backend-controlled)
 - ✅ Menú de columnas (mostrar/ocultar)
 - ✅ Estilos personalizables por columna
 - ✅ Vista responsive (tabla → cards en móvil)
+- ✅ Toggle manual de vista (tabla/cards/auto)
 - ✅ Slots para personalización
 - ✅ Sin columna de checkboxes
 
@@ -65,6 +67,8 @@ const data = [
 - `sortBy`: Columna inicial de ordenamiento (default: null)
 - `sortDir`: Dirección inicial de ordenamiento: 'asc' | 'desc' (default: null)
 - `searchQuery`: Valor inicial del campo de búsqueda (default: '')
+- `columnFilters`: Estado inicial de filtros por columna (default: {})
+- `viewMode`: Modo de vista: 'auto' | 'table' | 'cards' (default: 'auto')
 
 ## Columnas
 
@@ -75,6 +79,9 @@ interface DataTableColumn<T> {
   accessorKey?: keyof T;         // Llave para acceder al valor
   cell?: (row: T) => any;        // Función custom para renderizar
   sortable?: boolean;            // Si la columna es ordenable
+  filterable?: boolean;          // Si la columna es filtrable
+  filterType?: 'text' | 'select' | 'date' | 'number'; // Tipo de filtro
+  filterOptions?: Array<{ label: string; value: string | number | boolean }>; // Opciones para select
   headerClass?: string;          // Clases Tailwind para <th>
   cellClass?: string;            // Clases Tailwind para <td>
 }
@@ -104,6 +111,18 @@ Emitido al cambiar de página.
 Emitido al cambiar elementos por página.
 ```typescript
 (perPage: number) => void
+```
+
+### `@filters:change`
+Emitido al aplicar filtros por columna.
+```typescript
+(filters: Record<string, string | number | boolean | null>) => void
+```
+
+### `@view:change`
+Emitido al cambiar el modo de vista manualmente.
+```typescript
+(view: 'table' | 'cards' | 'auto') => void
 ```
 
 ## Slots
@@ -146,7 +165,15 @@ Estado vacío personalizado.
 Controles adicionales junto al buscador.
 ```vue
 <template #controls>
-  <Button>Filtros</Button>
+  <Button>Exportar</Button>
+</template>
+```
+
+#### `#view-toggle`
+Toggle personalizado para cambiar de vista (reemplaza el toggle por defecto).
+```vue
+<template #view-toggle>
+  <CustomViewToggle @change="handleViewChange" />
 </template>
 ```
 
@@ -250,6 +277,84 @@ function handleGoto(url: string) {
   </DataTable>
 </template>
 ```
+
+## Filtros por columna
+
+Las columnas pueden marcarse como `filterable` para mostrar controles de filtro en un panel lateral:
+
+```typescript
+const columns: DataTableColumn<User>[] = [
+  {
+    id: 'name',
+    header: 'Nombre',
+    accessorKey: 'name',
+    sortable: true,
+    filterable: true,
+    filterType: 'text',
+  },
+  {
+    id: 'role',
+    header: 'Rol',
+    accessorKey: 'role',
+    filterable: true,
+    filterType: 'select',
+    filterOptions: [
+      { label: 'Admin', value: 'admin' },
+      { label: 'Usuario', value: 'user' },
+    ],
+  },
+  {
+    id: 'age',
+    header: 'Edad',
+    accessorKey: 'age',
+    filterable: true,
+    filterType: 'number',
+  },
+];
+
+function handleFiltersChange(filters: Record<string, string | number | boolean | null>) {
+  const params = getCurrentParams();
+  router.get(route('users.index'), {
+    ...params,
+    filters,
+    page: undefined, // Reset to first page
+  }, {
+    preserveState: true,
+    preserveScroll: true,
+    replace: true,
+  });
+}
+```
+
+Los filtros NO se aplican localmente. Al hacer click en "Aplicar" o presionar Enter, se emite el evento `@filters:change` y el padre debe refrescar desde el backend.
+
+## Control manual de vista
+
+Por defecto, el componente usa `viewMode: 'auto'` que cambia automáticamente a cards en móvil. Puedes controlar la vista manualmente:
+
+```vue
+<script setup lang="ts">
+const currentView = ref<'auto' | 'table' | 'cards'>('auto');
+
+function handleViewChange(view: 'table' | 'cards' | 'auto') {
+  currentView.value = view;
+  // Opcionalmente guardar en localStorage o URL
+}
+</script>
+
+<template>
+  <DataTable
+    :view-mode="currentView"
+    @view:change="handleViewChange"
+    ...
+  />
+</template>
+```
+
+El toggle de vista aparece automáticamente con 3 opciones:
+- 📊 Tabla: Fuerza vista de tabla
+- 🔲 Cards: Fuerza vista de cards
+- 🔄 Auto: Responsive (tabla en desktop, cards en móvil)
 
 ## Responsiveness
 

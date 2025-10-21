@@ -20,6 +20,9 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from '@/components/ui/pagination';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 export interface DataTableColumn<T = any> {
     id: string;
@@ -27,6 +30,9 @@ export interface DataTableColumn<T = any> {
     accessorKey?: keyof T;
     cell?: (row: T) => any;
     sortable?: boolean;
+    filterable?: boolean;
+    filterType?: 'text' | 'select' | 'date' | 'number';
+    filterOptions?: Array<{ label: string; value: string | number | boolean }>;
     headerClass?: string;
     cellClass?: string;
 }
@@ -52,6 +58,10 @@ interface Props {
     sortDir?: 'asc' | 'desc' | null;
     // Initial search value
     searchQuery?: string;
+    // Column filters
+    columnFilters?: Record<string, string | number | boolean | null>;
+    // View mode
+    viewMode?: 'auto' | 'table' | 'cards';
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -64,6 +74,8 @@ const props = withDefaults(defineProps<Props>(), {
     sortBy: null,
     sortDir: null,
     searchQuery: '',
+    columnFilters: () => ({}),
+    viewMode: 'auto',
 });
 
 const emit = defineEmits<{
@@ -71,6 +83,8 @@ const emit = defineEmits<{
     'sort:change': [{ id: string; direction: 'asc' | 'desc' | null }];
     goto: [url: string];
     'change:perPage': [perPage: number];
+    'filters:change': [filters: Record<string, string | number | boolean | null>];
+    'view:change': [view: 'table' | 'cards' | 'auto'];
 }>();
 
 // Search state
@@ -78,6 +92,13 @@ const searchValue = ref(props.searchQuery || '');
 
 // Column visibility state
 const columnVisibility = ref<Record<string, boolean>>({});
+
+// Column filters state
+const activeFilters = ref<Record<string, string | number | boolean | null>>({ ...props.columnFilters });
+const filtersPanelOpen = ref(false);
+
+// View mode state
+const currentViewMode = ref<'table' | 'cards' | 'auto'>(props.viewMode);
 
 // Initialize column visibility
 onMounted(() => {
@@ -100,6 +121,27 @@ const visibleColumns = computed(() => {
 // Handle search
 function handleSearch() {
     emit('search', searchValue.value);
+}
+
+// Handle filters
+function handleFilterChange(columnId: string, value: string | number | boolean | null) {
+    activeFilters.value[columnId] = value;
+}
+
+function applyFilters() {
+    emit('filters:change', { ...activeFilters.value });
+    filtersPanelOpen.value = false;
+}
+
+function clearFilters() {
+    activeFilters.value = {};
+    emit('filters:change', {});
+}
+
+// Handle view mode change
+function handleViewModeChange(mode: 'table' | 'cards' | 'auto') {
+    currentViewMode.value = mode;
+    emit('view:change', mode);
 }
 
 // Handle sort
@@ -153,6 +195,14 @@ onUnmounted(() => {
     window.removeEventListener('resize', checkMobile);
 });
 
+// Computed view - respects viewMode prop
+const shouldShowCards = computed(() => {
+    if (currentViewMode.value === 'table') return false;
+    if (currentViewMode.value === 'cards') return true;
+    // 'auto' mode - use responsive detection
+    return isMobile.value;
+});
+
 // Pagination
 const pagesToShow = computed(() => {
     const total = props.lastPage || 1;
@@ -193,6 +243,77 @@ function handlePageChange(page: number) {
                 </Button>
             </div>
 
+            <!-- Filters button -->
+            <Popover v-if="columns.some(col => col.filterable)" v-model:open="filtersPanelOpen">
+                <PopoverTrigger as-child>
+                    <Button variant="outline" size="icon" :class="{ 'bg-primary/10': Object.keys(activeFilters).some(key => activeFilters[key]) }">
+                        <Icon icon="mdi:filter-variant" class="h-5 w-5" />
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" class="w-[320px]">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-semibold text-sm">Filtros</h4>
+                            <Button variant="ghost" size="sm" @click="clearFilters">
+                                <Icon icon="mdi:close" class="h-4 w-4 mr-1" />
+                                Limpiar
+                            </Button>
+                        </div>
+                        
+                        <div v-for="column in columns.filter(col => col.filterable)" :key="column.id" class="space-y-2">
+                            <label class="text-sm font-medium">{{ column.header }}</label>
+                            
+                            <!-- Text filter -->
+                            <Input
+                                v-if="!column.filterType || column.filterType === 'text'"
+                                :model-value="activeFilters[column.id] as string"
+                                @update:model-value="(val) => handleFilterChange(column.id, val)"
+                                @keydown.enter="applyFilters"
+                                placeholder="Filtrar..."
+                            />
+                            
+                            <!-- Number filter -->
+                            <Input
+                                v-else-if="column.filterType === 'number'"
+                                type="number"
+                                :model-value="activeFilters[column.id] as number"
+                                @update:model-value="(val) => handleFilterChange(column.id, val)"
+                                @keydown.enter="applyFilters"
+                                placeholder="Filtrar..."
+                            />
+                            
+                            <!-- Select filter -->
+                            <Select
+                                v-else-if="column.filterType === 'select' && column.filterOptions"
+                                :model-value="activeFilters[column.id] as string"
+                                @update:model-value="(val) => handleFilterChange(column.id, val)"
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Seleccionar..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="">Todos</SelectItem>
+                                    <SelectItem
+                                        v-for="option in column.filterOptions"
+                                        :key="option.value"
+                                        :value="String(option.value)"
+                                    >
+                                        {{ option.label }}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        
+                        <div class="flex justify-end">
+                            <Button @click="applyFilters" size="sm">
+                                <Icon icon="mdi:check" class="h-4 w-4 mr-1" />
+                                Aplicar
+                            </Button>
+                        </div>
+                    </div>
+                </PopoverContent>
+            </Popover>
+
             <!-- Columns menu -->
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>
@@ -214,12 +335,27 @@ function handlePageChange(page: number) {
                 </DropdownMenuContent>
             </DropdownMenu>
 
+            <!-- View toggle -->
+            <slot name="view-toggle">
+                <ToggleGroup type="single" :model-value="currentViewMode" @update:model-value="handleViewModeChange">
+                    <ToggleGroupItem value="table" aria-label="Vista tabla">
+                        <Icon icon="mdi:table" class="h-5 w-5" />
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="cards" aria-label="Vista tarjetas">
+                        <Icon icon="mdi:view-grid" class="h-5 w-5" />
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="auto" aria-label="Vista automática">
+                        <Icon icon="mdi:auto-fix" class="h-5 w-5" />
+                    </ToggleGroupItem>
+                </ToggleGroup>
+            </slot>
+
             <!-- Additional slot for custom controls -->
             <slot name="controls" />
         </div>
 
         <!-- Table view (desktop) or Cards view (mobile) -->
-        <div v-if="!isMobile || !cardSlot" class="border rounded-lg overflow-hidden">
+        <div v-if="!shouldShowCards || !cardSlot" class="border rounded-lg overflow-hidden">
             <div class="overflow-x-auto">
                 <Table>
                     <TableHeader>
@@ -278,7 +414,7 @@ function handlePageChange(page: number) {
         </div>
 
         <!-- Cards view (mobile with slot) -->
-        <div v-else-if="isMobile && cardSlot" class="grid grid-cols-1 gap-4">
+        <div v-else-if="shouldShowCards && cardSlot" class="grid grid-cols-1 gap-4">
             <slot name="card" v-for="(row, index) in data" :key="index" :row="row" />
             <div v-if="data.length === 0" class="text-center py-8 text-muted-foreground">
                 <slot name="empty">No se encontraron resultados.</slot>
