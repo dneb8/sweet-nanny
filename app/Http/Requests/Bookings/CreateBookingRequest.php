@@ -81,6 +81,7 @@ class CreateBookingRequest extends FormRequest
                 'recurrent'   => $recurrent,
                 // IMPORTANTE: ya normalizado a IDs string
                 'children'    => $childrenIds,
+                'child_ids'   => $childrenIds, // Also provide as child_ids for backend
                 'qualities'   => $qualities,
                 'careers'     => $careers,
                 'courses'     => $courses,
