@@ -15,7 +15,6 @@ class BookingService
         return DB::transaction(function () use ($payload) {
             $bookingData = data_get($payload, 'booking', []);
             $appointments = data_get($payload, 'appointments', []);
-            $addressData  = data_get($payload, 'address');
 
             // Handle address_id - store reference to tutor's address
             $addressId = data_get($bookingData, 'address_id');
@@ -111,7 +110,7 @@ class BookingService
                         ->first();
                     
                     if (!$address) {
-                        throw new \Exception('Invalid address_id: Address does not belong to tutor');
+                        throw new \Exception('address_id inválido: la dirección no pertenece al tutor');
                     }
                 }
             }

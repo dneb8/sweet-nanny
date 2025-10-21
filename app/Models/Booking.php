@@ -23,7 +23,7 @@ class Booking extends Model
         'qualities' => 'array',
         'courses' => 'array',
         'recurrent' => 'boolean',
-        'career' => 'string',
+        'career' => 'array',
     ];
 
     // Relación uno a muchos con BookingAppointment
