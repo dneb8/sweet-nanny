@@ -10,8 +10,9 @@ class NannySeeder extends Seeder
     public function run(): void
     {
         Nanny::factory()
-        ->count(25)
-        ->create() 
-        ->each(fn($nanny) => $nanny->user->assignRole('nanny'));
+            ->count(5)
+            ->has(\App\Models\Address::factory()->count(1), 'addresses') // morphMany relation
+            ->create() 
+            ->each(fn($nanny) => $nanny->user->assignRole('nanny'));
     }
 }

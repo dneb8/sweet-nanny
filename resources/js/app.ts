@@ -10,8 +10,9 @@ import { vGsapVue } from 'v-gsap-nuxt/vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { createPinia } from 'pinia';
 import { vueDebounce } from 'vue-debounce';
-// import { Toaster } from '@/components/ui/sonner';
-// import 'vue-sonner/style.css';
+import { Toaster } from '@/components/ui/sonner';
+import 'vue-sonner/style.css';
+import FlashMessagesHandler from '@/components/FlashMessagesHandler.vue';
 
 const appName = import.meta.env.VITE_APP_NAME || 'SweetNanny';
 
@@ -26,10 +27,12 @@ createInertiaApp({
     },
     setup({ el, App, props, plugin }) {
         const app = createApp({
-            render: () => h('div', {}, [
-                h(App, props), 
-                // h(Toaster)     
-            ])
+            render: () =>
+                h('div', {}, [
+                    h(App, props),
+                    h(Toaster),
+                    h(FlashMessagesHandler),
+                ]),
         });
 
         app.use(plugin)

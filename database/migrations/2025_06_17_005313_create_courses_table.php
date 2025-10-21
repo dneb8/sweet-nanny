@@ -17,8 +17,7 @@ return new class extends Migration
             $table->string('organization', 100)->nullable();
             $table->date('date')->nullable();
 
-            // $table->foreignId('nanny_id')->constrained()->onDelete('cascade');
-            $table->unsignedBigInteger('nanny_id')->nullable(); // Por si no existe aún el modelo Nanny
+            $table->foreignId('nanny_id')->constrained()->onDelete('cascade');
 
             $table->timestamps();
         });

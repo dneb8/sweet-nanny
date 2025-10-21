@@ -14,12 +14,22 @@ class Booking extends Model
         'address_id',
         'description',
         'recurrent',
+        'qualities',
+        'careers',
+        'courses',
     ];
 
-    // Relación uno a muchos con BookingService
-    public function bookingServices()
+    protected $casts = [
+        'qualities' => 'array',
+        'careers' => 'array',
+        'courses' => 'array',
+        'recurrent' => 'boolean',
+    ];
+
+    // Relación uno a muchos con BookingAppointment
+    public function bookingAppointments()
     {
-        return $this->hasMany(BookingService::class);
+        return $this->hasMany(BookingAppointment::class);
     }
 
     // Relación con Tutor (cada booking pertenece a un tutor)
@@ -28,9 +38,36 @@ class Booking extends Model
         return $this->belongsTo(Tutor::class);
     }
 
-    // Relación con Address (cada booking pertenece a una dirección)
+    // Relación con Address (belongsTo - foreign key reference)
+    // Address remains owned by Tutor, booking just references it
     public function address()
     {
         return $this->belongsTo(Address::class);
     }
+    
+    // Deprecated: Polymorphic relation (kept for migration)
+    public function addressPolymorphic()
+    {
+        return $this->morphOne(Address::class, 'addressable');
+    }
+
+    // Relación con Child (cada booking puede tener varios niños)
+    public function children()
+    {
+        return $this->belongsToMany(Child::class, 'booking_child', 'booking_id', 'child_id')
+                    ->withTimestamps();
+    }
+
+    // Incluye soft-deleted para vistas históricas
+    public function childrenWithTrashed()
+    {
+        return $this->belongsToMany(Child::class, 'booking_child', 'booking_id', 'child_id')
+            ->withTimestamps()
+            ->withTrashed();
+    }
+
+    // public function getRouteKeyName()
+    // {
+    //     return 'ulid';
+    // }
 }

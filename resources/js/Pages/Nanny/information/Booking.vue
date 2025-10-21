@@ -17,12 +17,12 @@ const currentPage = ref(1)
 const pageSize = 5
 
 const totalPages = computed(() => {
-  return Math.ceil((props.nanny.booking_services?.length ?? 0) / pageSize)
+  return Math.ceil((props.nanny.booking_appointments?.length ?? 0) / pageSize)
 })
 
 const paginatedServices = computed(() => {
   const start = (currentPage.value - 1) * pageSize
-  return props.nanny.booking_services?.slice(start, start + pageSize) ?? []
+  return props.nanny.booking_appointments?.slice(start, start + pageSize) ?? []
 })
 
 // Servicio seleccionado → mostrará calendario
@@ -57,7 +57,7 @@ const statusColors: Record<string, string> = {
     </CardHeader>
 
     <CardContent>
-      <div v-if="nanny.booking_services?.length">
+      <div v-if="nanny.booking_appointments?.length">
         <!-- Layout responsivo -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <!-- Calendario -->

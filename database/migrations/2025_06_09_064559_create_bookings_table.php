@@ -14,12 +14,20 @@ return new class extends Migration
     Schema::create('bookings', function (Blueprint $table) {
         $table->id();
 
-        $table->text('description');
+        $table->text('description')->nullable();
         $table->boolean('recurrent')->default(false);
+        
+        // Address reference (Tutor owns addresses, booking references by ID)
+        $table->foreignId('address_id')->nullable()->constrained('addresses')->onDelete('set null');
+        
+        // Nanny requirements (all as JSON arrays)
+        $table->json('qualities')->nullable();
+        $table->json('careers')->nullable();
+        $table->json('courses')->nullable();
+        
         $table->timestamps();
 
-        $table->foreignId('tutor_id')->constrained()->onDelete('cascade');
-        $table->foreignId('address_id')->constrained()->onDelete('cascade');
+        $table->foreignId('tutor_id')->constrained()->onDelete('cascade')->nullable();
     });
 }
 

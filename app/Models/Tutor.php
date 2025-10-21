@@ -28,9 +28,16 @@ class Tutor extends Model
     {
         return $this->belongsTo(User::class);
     }
+    
     public function children()
     {
         return $this->hasMany(Child::class);
+    }
+    
+    // Polymorphic relation to addresses
+    public function addresses()
+    {
+        return $this->morphMany(Address::class, 'addressable');
     }
 
     /**
