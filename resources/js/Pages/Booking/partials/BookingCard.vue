@@ -52,13 +52,14 @@ function getRoleBadgeClass(role?: string) {
     </CardHeader>
 
     <!-- Habilidades (solo nanny) -->
+    <CardContent>
       <ScrollArea class="w-full whitespace-nowrap">
         <div class="flex gap-2">
+          <!-- Example static quality, replace with v-for as needed -->
           <span
-            :key="idx"
             class="flex-none text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800"
           >
-            {{ quality.name }}
+            Habilidad
           </span>
         </div>
         <ScrollBar orientation="horizontal" class="pt-1 overflow-auto" />
