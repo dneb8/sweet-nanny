@@ -7,6 +7,7 @@ use App\Http\Requests\Address\UpdateAddressRequest;
 use App\Models\Address;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use App\Enums\Address\ZoneEnum;
 
 class AddressService
 {
@@ -49,11 +50,29 @@ class AddressService
     }
 
     /**
+     * Determina la zona (ZoneEnum) según el código postal
+     */
+    private function determineZoneFromPostalCode(int $cp): ZoneEnum
+    {
+        return match (true) {
+            $cp >= 44000 && $cp <= 45000 => ZoneEnum::GUADALAJARA,
+            $cp >= 45000 && $cp <= 45246 => ZoneEnum::ZAPOPAN,
+            $cp >= 45500 && $cp <= 45640 => ZoneEnum::TLAQUEPAQUE,
+            $cp >= 45640 && $cp <= 45680 => ZoneEnum::TLAJOMULCO,
+            $cp >= 45400 && $cp <= 45430 => ZoneEnum::TONALA,
+            default => throw new \InvalidArgumentException('Código postal fuera de rango'),
+        };
+    }
+
+    /**
      * Crea una dirección con relación polimórfica
      */
     public function createAddress(CreateAddressRequest $request): Address
     {
         $validated = $request->validated(); // ya normaliza addressable_* en el FormRequest
+
+        $cp = (int) $validated['postal_code'];
+        $zone = $this->determineZoneFromPostalCode($cp)->value;
 
         $data = [
             'postal_code'     => $validated['postal_code'],
@@ -62,6 +81,7 @@ class AddressService
             'type'            => $validated['type'],
             'other_type'      => $validated['other_type']      ?? null,
             'internal_number' => $validated['internal_number'] ?? null,
+            'zone'            => $zone, // se asigna automáticamente
         ];
 
         // Intentamos crear por la relación morphMany addresses()
@@ -98,6 +118,12 @@ class AddressService
             'other_type'      => array_key_exists('other_type', $validated) ? $validated['other_type'] : $address->other_type,
             'internal_number' => array_key_exists('internal_number', $validated) ? $validated['internal_number'] : $address->internal_number,
         ];
+
+        // Si cambia el CP, recalculamos la zona
+        if (!empty($validated['postal_code'])) {
+            $cp = (int) $validated['postal_code'];
+            $payload['zone'] = $this->determineZoneFromPostalCode($cp)->value;
+        }
 
         // Si quieren cambiar el owner, permitimos reasociación
         $hasOwnerType = !empty($validated['addressable_type']);

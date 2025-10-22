@@ -37,18 +37,31 @@ class CreateAddressRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'postal_code'     => ['required', 'string', 'max:10'],
+            'postal_code'     => ['required', 'string', 'max:10', function ($attribute, $value, $fail) {
+                $cp = (int) $value;
+
+                // Validar si el CP está dentro de los intervalos permitidos
+                $valid = ($cp >= 44000 && $cp <= 45000)   // Guadalajara
+                    || ($cp >= 45000 && $cp <= 45246)     // Zapopan
+                    || ($cp >= 45500 && $cp <= 45640)     // Tlaquepaque
+                    || ($cp >= 45640 && $cp <= 45680)     // Tlajomulco
+                    || ($cp >= 45400 && $cp <= 45430);    // Tonalá
+
+
+                if (!$valid) {
+                    $fail('El código postal no pertenece a una zona válida.');
+                }
+            }],
             'street'          => ['required', 'string', 'max:255'],
             'neighborhood'    => ['required', 'string', 'max:255'],
             'type'            => ['required', 'in:' . implode(',', TypeEnum::values())],
             'other_type'      => ['nullable', 'string', 'max:255'],
             'internal_number' => ['nullable', 'string', 'max:50'],
-
-            // polimórfico (REQUIRED al crear)
             'addressable_type' => ['required', 'string'],
             'addressable_id'   => ['required', 'integer'],
         ];
     }
+
 
     public function attributes(): array
     {
