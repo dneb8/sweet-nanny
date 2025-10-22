@@ -35,6 +35,7 @@ class NannyController extends Controller
     {
         return Inertia::render('Nanny/Show', [
             'nanny' => $nanny->load([
+                'user',
                 'addresses',
                 'courses',
                 'careers',         
