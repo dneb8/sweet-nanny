@@ -4,38 +4,46 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Career;
+use App\Models\Nanny;
 use App\Enums\Career\StatusEnum;
 use App\Enums\Career\DegreeEnum;
-use App\Models\Nanny;
 
 class CareerNannySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $nannies = Nanny::all();
         $careers = Career::all();
 
-        // Asegúrate de que haya datos previos
         if ($nannies->isEmpty() || $careers->isEmpty()) {
             $this->command->warn('No hay nannies o careers en la BD. Seedéalos primero.');
             return;
         }
 
+        // Lista de instituciones reales de Guadalajara
+        $institutionsGDL = [
+            'Universidad de Guadalajara (UDG)',
+            'ITESO',
+            'Tecnológico de Monterrey, Campus Guadalajara',
+            'Universidad del Valle de Atemajac (UNIVA)',
+            'CUCEA - UDG',
+            'Universidad Panamericana, Campus Guadalajara',
+            'Universidad Autónoma de Guadalajara (UAG)',
+        ];
+
         foreach ($nannies as $nanny) {
-            // Asignar entre 1 y 3 carreras aleatorias a cada niñera
-            $randomStatus = fake()->randomElement(StatusEnum::cases());
-            $randomDegree = fake()->randomElement(DegreeEnum::cases());
-            $selectedCareers = $careers->random(rand(1, 3));
+            // Elegimos entre 1 y 3 carreras al azar, sin repetir
+            $selectedCareers = $careers->shuffle()->take(rand(1, 3));
 
             foreach ($selectedCareers as $career) {
-                $nanny->careers()->attach($career->id, [
-                    'status' => $randomStatus->value,
-                    'degree' => $randomDegree->value,  
-                    'institution' => fake()->company(),
-                ]);
+                // Evitar duplicados
+                if (!$nanny->careers()->where('career_id', $career->id)->exists()) {
+                    $nanny->careers()->attach($career->id, [
+                        'status' => StatusEnum::cases()[array_rand(StatusEnum::cases())]->value,
+                        'degree' => DegreeEnum::cases()[array_rand(DegreeEnum::cases())]->value,
+                        'institution' => $institutionsGDL[array_rand($institutionsGDL)],
+                    ]);
+                }
             }
         }
     }
