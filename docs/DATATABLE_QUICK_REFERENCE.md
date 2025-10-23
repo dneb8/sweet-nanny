@@ -48,6 +48,9 @@ interface DataTableColumn<T> {
   id: string;                // Unique identifier
   header: string;            // Column header text
   accessorKey?: keyof T;     // Property key to access
+  filterable?: boolean;      // Enable column filtering
+  filterType?: 'text' | 'select' | 'date' | 'number'; // Filter type
+  filterOptions?: Array<{ label: string; value: string | number | boolean }>; // For select filters
   cell?: (row: T) => any;    // Custom cell renderer
   sortable?: boolean;        // Enable sorting
   headerClass?: string;      // Tailwind classes for <th>
@@ -141,19 +144,40 @@ function handleGoto(url: string) {
 }
 ```
 
+### @filters:change
+Triggered when filters are applied.
+```typescript
+function handleFiltersChange(filters: Record<string, string | number | boolean | null>) {
+  // Fetch data with filters
+  router.get(route('index'), { filters });
+}
+```
+
+### @view:change
+Triggered when view mode is changed manually.
+```typescript
+function handleViewChange(view: 'table' | 'cards' | 'auto') {
+  // Save preference or update state
+  currentView.value = view;
+}
+```
+
 ## 📱 Responsive
 
-The component automatically switches between table and card view at 768px breakpoint when `:card-slot="true"`.
+The component has three view modes controlled by the `viewMode` prop:
 
-**Desktop (≥ 768px):**
-- Table view
-- All columns visible (unless hidden via menu)
-- Sortable headers clickable
+**Auto (default):**
+- Automatically switches at 768px breakpoint
+- Desktop (≥ 768px): Table view
+- Mobile (< 768px): Card view (if card slot provided)
 
-**Mobile (< 768px):**
-- Card view (if card slot provided)
-- Search and controls at top
-- Pagination at bottom
+**Table:**
+- Forces table view regardless of screen size
+
+**Cards:**
+- Forces card view regardless of screen size
+
+The view can be changed manually using the toggle button (3 options: Table, Cards, Auto).
 
 ## 🎯 Common Patterns
 
@@ -192,6 +216,55 @@ function handleSort({ id, direction }) {
     page: undefined,
   }, { preserveState: true, preserveScroll: true, replace: true });
 }
+
+function handleFiltersChange(filters: Record<string, string | number | boolean | null>) {
+  const params = getCurrentParams();
+  router.get(route('index'), {
+    ...params,
+    ...filters,
+    page: undefined,
+  }, { preserveState: true, preserveScroll: true, replace: true });
+}
+```
+
+### Column Filters
+
+```typescript
+const columns: DataTableColumn<User>[] = [
+  {
+    id: 'name',
+    header: 'Name',
+    sortable: true,
+    filterable: true,
+    filterType: 'text',
+  },
+  {
+    id: 'status',
+    header: 'Status',
+    filterable: true,
+    filterType: 'select',
+    filterOptions: [
+      { label: 'Active', value: 'active' },
+      { label: 'Inactive', value: 'inactive' },
+    ],
+  },
+];
+```
+
+### View Mode Control
+
+```vue
+<script setup lang="ts">
+const viewMode = ref<'auto' | 'table' | 'cards'>('auto');
+</script>
+
+<template>
+  <DataTable
+    :view-mode="viewMode"
+    @view:change="(mode) => viewMode = mode"
+    ...
+  />
+</template>
 ```
 
 ### Badge in Cell
