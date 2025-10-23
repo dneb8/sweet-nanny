@@ -13,17 +13,6 @@ export class UserService {
   private scrollDirection = 1 // 1: derecha, -1: izquierda
   public scrollContainer: Ref<HTMLElement | null> = ref(null)
 
-  // Tags ficticias (si las quieres aquí)
-  public readonly fakeSkills: string[] = [
-    'Cuidado infantil',
-    'Primeros auxilios',
-    'Limpieza ligera',
-    'Cocina básica',
-    'Puntual',
-    'Habla inglés',
-    'Manejo de niños pequeños',
-  ]
-
   constructor(user: User) {
     this.user = user
   }

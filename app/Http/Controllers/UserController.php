@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Inertia\{Inertia, Response};
+use Spatie\Permission\Contracts\Role;
 
 class UserController extends Controller
 {
@@ -110,11 +111,11 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        if ($user->hasRole('nanny')) {
+        if ($user->hasRole(RoleEnum::NANNY->value)) {
             return redirect()->route('nannies.show', $user->nanny);
         }
 
-        if ($user->hasRole('tutor')) {
+        if ($user->hasRole(RoleEnum::TUTOR->value)) {
             return redirect()->route('tutors.show', $user->tutor);
         }
 

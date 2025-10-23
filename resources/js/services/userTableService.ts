@@ -17,6 +17,7 @@ export class UserTableService {
 
     // Constante reactiva que contiene las columnas visibles
     public visibleColumns = ref<Array<string>>([
+        'Perfil',
         'Nombre',
         'Apellidos',
         'Correo Electrónico',

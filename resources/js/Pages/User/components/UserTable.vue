@@ -53,7 +53,7 @@ const {
 
     <!-- Card responsivo -->
     <template #responsive-card="{ slotProps }">
-      <UserCard :user="slotProps" :permissions="permissions" />
+      <UserCard :user="slotProps"/>
     </template>
 
     <!-- Columna Perfil -->
@@ -61,7 +61,7 @@ const {
       <template #body="slotProps">
         <div
           @click="verUsuarioPerfil(slotProps.record)"
-          class="flex items-center gap-2 cursor-pointer hover:text-purple-600 dark:hover:text-purple-400"
+          class="flex items-center gap-2 cursor-pointer hover:text-rose-400 dark:hover:text-rose-300"
         >
           <Avatar shape="square" size="sm" class="cursor-pointer">
             <AvatarFallback>
