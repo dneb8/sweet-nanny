@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Enums\User\RoleEnum;
+use App\Http\Resources\UserResource;
 use App\Http\Requests\User\{CreateUserRequest, UpdateUserRequest};
 use App\Models\{User};
 use App\Services\UserService;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Inertia\{Inertia, Response};
 
@@ -14,19 +17,19 @@ class UserController extends Controller
     /**
      * Redirige al listado de usuarios
      */
+
     public function index(UserService $userService): Response
     {
         // Gate::authorize('viewAny', User::class);
 
-        $sortables = ['role', 'email_verified_at'];
-        $searchables = ['name', 'email', 'surnames'];
+        $roles = array_map(fn($role) => $role->value, RoleEnum::cases());
+
+
         $users = $userService->indexFetch();
 
         return Inertia::render('User/Index', [
             'users' => $users,
-            'roles' => RoleEnum::cases(),
-            'sortables' => $sortables,
-            'searchables' => $searchables,
+            'roles' => array_values($roles),
         ]);
     }
 

@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Eloquent\Builders\UserBuilder;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -74,5 +76,13 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getRouteKeyName()
     {
         return 'ulid';
+    }
+
+    /**
+     * Registra un custom Builder.
+     */
+    public function newEloquentBuilder($query): Builder
+    {
+        return new UserBuilder($query);
     }
 }

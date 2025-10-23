@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Classes\Fetcher\Filter;
+use App\Classes\Fetcher\{Fetcher, Filter};
 use App\Enums\User\RoleEnum;
 use App\Http\Requests\User\CreateUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
@@ -18,86 +18,30 @@ class UserService
      */
     public function indexFetch(): LengthAwarePaginator
     {
-        $user = Auth::user();
-        $request = request();
+        $users = User::query()
+            ->with([
+                'roles',
+                'nanny',
+                'nanny.qualities',
+                'tutor',
+                // 'profilePhoto',
+            ])
+            ->orderBy('created_at', 'desc');
 
-        $query = User::query()
-            ->whereNot('id', $user->id)
-            ->with(['roles', 'tutor', 'nanny.qualities']);
+        $sortables = ['email','name','surnames'];
+        $searchables = ['email', 'name', 'surnames'];
 
-        // Search
-        if ($search = $request->get('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('surnames', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-            });
-        }
+        $users = Fetcher::for($users)
+            ->allowFilters([
+                'role' => [
+                    'using' => fn (Filter $filter) => $filter->usingScope('filtrarPorRole'),
+                ],
+            ])
+            ->allowSort($sortables)
+            ->allowSearch($searchables)
+            ->paginate(12);
 
-        // Filters
-        if ($filters = $request->get('filters')) {
-            // Role filter
-            if (! empty($filters['role'])) {
-                $query->whereHas('roles', function ($q) use ($filters) {
-                    $q->where('name', $filters['role']);
-                });
-            }
-
-            // Status filter (assuming active/inactive based on deleted_at if using soft deletes)
-            if (! empty($filters['status'])) {
-                if ($filters['status'] === 'active') {
-                    // Active users (not soft deleted)
-                    $query->whereNull('deleted_at');
-                } elseif ($filters['status'] === 'inactive') {
-                    // Inactive users (soft deleted)
-                    $query->onlyTrashed();
-                }
-            }
-
-            // Email verified filter
-            if (! empty($filters['verified'])) {
-                if ($filters['verified'] === '1' || $filters['verified'] === 'verified') {
-                    $query->whereNotNull('email_verified_at');
-                } elseif ($filters['verified'] === '0' || $filters['verified'] === 'unverified') {
-                    $query->whereNull('email_verified_at');
-                }
-            }
-        }
-
-        // Sorting with whitelist
-        $sortField = $request->get('sort', 'created_at');
-        $sortDirection = $request->get('dir', 'desc');
-
-        $allowedSortFields = ['name', 'email', 'created_at', 'email_verified_at'];
-        $allowedDirections = ['asc', 'desc'];
-
-        if (! in_array($sortField, $allowedSortFields)) {
-            $sortField = 'created_at';
-        }
-        if (! in_array($sortDirection, $allowedDirections)) {
-            $sortDirection = 'desc';
-        }
-
-        // Special handling for role sorting
-        if ($request->get('sort') === 'role') {
-            $query->leftJoin('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')
-                ->leftJoin('roles', 'model_has_roles.role_id', '=', 'roles.id')
-                ->select('users.*')
-                ->distinct()
-                ->orderByRaw('COALESCE(roles.name, "") '.$sortDirection);
-        } else {
-            $query->orderBy($sortField, $sortDirection);
-        }
-
-        // Pagination
-        $perPage = $request->get('per_page', 15);
-        if ($perPage === 'all') {
-            $perPage = $query->count();
-        } else {
-            $perPage = min((int) $perPage, 100); // Max 100 items per page
-        }
-
-        return $query->paginate($perPage)->appends($request->query());
+        return $users;
     }
 
     /**
