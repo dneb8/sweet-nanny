@@ -33,16 +33,23 @@ class NannyController extends Controller
      */
     public function show(Nanny $nanny)
     {
+        $nanny->load([
+            'user',
+            'addresses',
+            'courses',
+            'careers',         
+            'qualities',
+            'reviews',
+        ]);
+
+        // Se cargan los bookingAppointments pero paginados
+        $bookings = $nanny->bookingAppointments()
+            ->with('booking')   // esto es lo mismo que antes: bookingAppointments.booking
+            ->paginate(3);   //PAGINACIÓN
+
         return Inertia::render('Nanny/Show', [
-            'nanny' => $nanny->load([
-                'user',
-                'addresses',
-                'courses',
-                'careers',         
-                'qualities',
-                'reviews',
-                'bookingAppointments.booking', 
-            ]),
+            'nanny' => $nanny,
+            'bookings' => $bookings,
         ]);
     }
 

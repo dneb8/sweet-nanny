@@ -10,7 +10,10 @@ import QualitiesCard from './information/Quality.vue'
 import ServicesCard from './information/Booking.vue'
 import { Head } from '@inertiajs/vue3'
 
-const props = defineProps<{ nanny: Nanny }>()
+const props = defineProps<{
+nanny: Nanny
+bookings: any 
+}>()
 </script>
 
 <template>
@@ -29,7 +32,7 @@ const props = defineProps<{ nanny: Nanny }>()
 
     <!-- Servicios -->
     <div class="space-y-6">
-      <ServicesCard :nanny="props.nanny" />
+      <ServicesCard :nanny="props.nanny" :bookings="props.bookings" />
     </div>
   </div>
 </template>

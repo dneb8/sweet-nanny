@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { Nanny } from "@/types/Nanny"
-import { ref, computed, Ref } from "vue"
+import { ref } from "vue"
 import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -8,37 +7,21 @@ import { Icon } from "@iconify/vue"
 import { parseDateTime, type DateValue } from "@internationalized/date"
 
 const props = defineProps<{
-  nanny: Nanny
-  isOwner: boolean
+  nanny: any
+  bookings: any // ✅ viene del backend ya paginado
+  isOwner?: boolean
 }>()
 
-// Paginación
-const currentPage = ref(1)
-const pageSize = 5
-
-const totalPages = computed(() => {
-  return Math.ceil((props.nanny.booking_appointments?.length ?? 0) / pageSize)
-})
-
-const paginatedServices = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return props.nanny.booking_appointments?.slice(start, start + pageSize) ?? []
-})
-
-// Servicio seleccionado → mostrará calendario
 const selectedServiceId = ref<number | null>(null)
-const selectedDate: Ref<DateValue | null> = ref(null)
+const selectedDate = ref<DateValue | null>(null)
 const expandedService = ref<number | null>(null)
 
 function selectService(service: any) {
   selectedServiceId.value = service.id
   expandedService.value = service.id
-  selectedDate.value = parseDateTime(
-    service.start_date.replace(" ", "T")
-  ) as DateValue
+  selectedDate.value = parseDateTime(service.start_date.replace(" ", "T")) as DateValue
 }
 
-// Mapear estatus a colores
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-500",
   unpaid: "bg-rose-500",
@@ -57,8 +40,7 @@ const statusColors: Record<string, string> = {
     </CardHeader>
 
     <CardContent>
-      <div v-if="nanny.booking_appointments?.length">
-        <!-- Layout responsivo -->
+      <div v-if="bookings.data.length">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <!-- Calendario -->
           <div class="flex justify-center">
@@ -81,65 +63,58 @@ const statusColors: Record<string, string> = {
 
           <!-- Lista de servicios -->
           <div class="space-y-3 lg:col-span-2">
-              <div
-                v-for="service in paginatedServices"
-                :key="service.id"
-                class="p-3 border rounded-lg cursor-pointer transition hover:bg-muted/40"
-                @click="selectService(service)"
-              >
-                <div class="flex items-start gap-3">
-                  <div
-                    class="size-3 rounded-full mt-1.5"
-                    :class="statusColors[service.status] ?? 'bg-gray-400'"
-                  ></div>
-                  <div class="flex-1">
-                    <!-- Básico -->
-                    <div class="font-semibold">
-                      Servicio #{{ service.id }}
-                    </div>
-                    <div class="text-xs text-muted-foreground">
-                      {{ service.start_date }} → {{ service.end_date }}
-                    </div>
-                    <div class="text-xs">
-                      Estado: <span class="capitalize">{{ service.status }}</span>
-                    </div>
-
-                    <!-- Extra al seleccionar -->
-                    <Transition name="expand">
-                      <div
-                        v-if="expandedService === service.id"
-                        class="mt-2 space-y-1 text-sm"
-                      >
-                        <div class="text-muted-foreground">
-                          {{ service.booking?.description ?? "Sin descripción" }}
-                        </div>
-                        <div>Costo: ${{ service.total_cost }}</div>
-                      </div>
-                    </Transition>
+            <div
+              v-for="service in bookings.data"
+              :key="service.id"
+              class="p-3 border rounded-lg cursor-pointer transition hover:bg-muted/40"
+              @click="selectService(service)"
+            >
+              <div class="flex items-start gap-3">
+                <div
+                  class="size-3 rounded-full mt-1.5"
+                  :class="statusColors[service.status] ?? 'bg-gray-400'"
+                ></div>
+                <div class="flex-1">
+                  <div class="font-semibold">Servicio #{{ service.id }}</div>
+                  <div class="text-xs text-muted-foreground">
+                    {{ service.start_date }} → {{ service.end_date }}
                   </div>
+                  <div class="text-xs">
+                    Estado: <span class="capitalize">{{ service.status }}</span>
+                  </div>
+
+                  <Transition name="expand">
+                    <div v-if="expandedService === service.id" class="mt-2 space-y-1 text-sm">
+                      <div class="text-muted-foreground">
+                        {{ service.booking?.description ?? "Sin descripción" }}
+                      </div>
+                      <div>Costo: ${{ service.total_cost }}</div>
+                    </div>
+                  </Transition>
                 </div>
               </div>
+            </div>
 
-            <!-- Paginación -->
-            <div class="flex justify-between items-center mt-4">
+            <!-- Paginación estilo "Anterior / Siguiente" -->
+            <div class="flex justify-center gap-2 mt-4">
               <Button
                 variant="outline"
                 size="sm"
-                :disabled="currentPage === 1"
-                @click="currentPage--"
+                :disabled="!bookings.prev_page_url"
+                @click="$inertia.visit(bookings.prev_page_url)"
               >
                 Anterior
               </Button>
 
-              <span class="text-sm text-muted-foreground">
-                Página {{ currentPage }} de {{ totalPages }}
+              <span class="text-sm text-muted-foreground px-2">
+                {{ bookings.current_page }} de {{ bookings.last_page }}
               </span>
 
               <Button
                 variant="outline"
                 size="sm"
-                :disabled="currentPage === totalPages"
-                @click="currentPage++"
+                :disabled="!bookings.next_page_url"
+                @click="$inertia.visit(bookings.next_page_url)"
               >
                 Siguiente
               </Button>
