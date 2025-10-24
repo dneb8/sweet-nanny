@@ -105,7 +105,7 @@ async function confirmDelete() {
           </p>
         </div>
         <Button size="sm" variant="outline" type="button" @click="openCreate">
-          <Icon icon="lucide:plus" /> Nueva
+          <Icon icon="lucide:plus" /> Registrar Dirección
         </Button>
       </CardTitle>
     </CardHeader>

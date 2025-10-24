@@ -47,14 +47,15 @@ class TutorController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Tutor $tutor)
+    public function show(Tutor $tutor, TutorService $tutorService): Response
     {
+        // Authorization check (if policy exists)
+        // $this->authorize('view', $tutor);
+
+        $tutorData = $tutorService->getShowData($tutor->ulid);
+
         return Inertia::render('Tutor/Show', [
-            'tutor' => $tutor->load([
-                'user',        // el usuario del tutor
-                'addresses',   // direcciones (morphMany)
-                'children',    // hijos
-            ]),
+            'tutor' => $tutorData,
         ]);
     }
 

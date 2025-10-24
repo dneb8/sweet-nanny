@@ -15,8 +15,10 @@ import { MoreVertical } from 'lucide-vue-next'
 import { Icon } from '@iconify/vue'
 
 import type { User } from '@/types/User'
-import { useUserService } from '@/services/UserService'
+import { UserService } from '@/services/UserService'
 import { getRoleLabelByString, RoleEnum } from '@/enums/role.enum'
+import { getQualityLabelByString } from '@/enums/quality.enum'
+
 
 const props = defineProps<{
   user: User
@@ -30,7 +32,7 @@ const {
   deleteUser,
   confirmDeleteUser,
   getRoleBadgeClass,
-} = useUserService(props.user)
+} = new UserService(props.user)
 </script>
 
 <template>
@@ -130,7 +132,7 @@ const {
             :key="idx"
             class="flex-none text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800"
           >
-            {{ quality.name }}
+            {{ getQualityLabelByString(quality.name) ?? '' }}
           </span>
         </div>
         <ScrollBar orientation="horizontal" class="pt-1 overflow-auto"/>

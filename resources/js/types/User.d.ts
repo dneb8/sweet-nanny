@@ -9,5 +9,6 @@ export interface User {
   number: string;
   roles: Array<Rol>;
   tutor?: Tutor; 
-  nanny?: Nanny; 
+  nanny?: Nanny;
+  created_at: string;
 }

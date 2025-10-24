@@ -31,7 +31,7 @@ class BookingController extends Controller
         $user = User::with([
             'tutor' => fn ($q) => $q->select('id','user_id')->with([
                 'children',
-                'user.address',
+                'user',
                 'addresses', 
             ]),
         ])->findOrFail(Auth::id());

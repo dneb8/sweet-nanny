@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { defineComponent } from 'vue';
+
+defineComponent({
+  name: 'Filter',
+});
+</script>
+<template>
+	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+		<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22 3H2l8 9.46V19l4 2v-8.54z" />
+	</svg>
+</template>
+

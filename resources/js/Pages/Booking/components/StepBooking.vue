@@ -57,8 +57,7 @@ onMounted(async () => {
     )
     // soporto {data:[...]} o [...]
     children.value = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : [])
-  } catch (e) {
-    console.warn("No se pudieron cargar los niños del tutor", e)
+  } catch {
   }
 })
 
@@ -174,7 +173,7 @@ async function confirmDelete() {
           </p>
         </div>
         <Button size="sm" variant="outline" @click="openCreate" type="button">
-          <Icon icon="lucide:plus" /> Nuevo
+          <Icon icon="lucide:plus" /> Registrar niño
         </Button>
       </CardTitle>
     </CardHeader>
