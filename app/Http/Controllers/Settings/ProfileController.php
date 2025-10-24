@@ -22,12 +22,19 @@ class ProfileController extends Controller
     public function edit(Request $request): Response
     {
         $user = $request->user();
-        $avatarUrl = $user->getFirstMediaUrl('images');
+        $media = $user->getFirstMedia('images');
+        $avatarUrl = $media?->getUrl();
+        
+        // Get validation status from custom properties
+        $avatarStatus = $media?->getCustomProperty('status', 'approved');
+        $avatarNote = $media?->getCustomProperty('note', null);
 
         return Inertia::render('settings/Profile', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
             'avatarUrl' => $avatarUrl ?: null,
+            'avatarStatus' => $avatarStatus,
+            'avatarNote' => $avatarNote,
         ]);
     }
 
@@ -48,7 +55,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the user's avatar image (async with background validation).
+     * Update the user's avatar image (save first, validate after).
      */
     public function updateAvatar(Request $request): RedirectResponse
     {
@@ -57,18 +64,20 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
-        $file = $request->file('avatar');
 
-        // Generate unique temporary key for S3 storage
-        $tmpKey = 'tmp/avatars/' . $user->ulid . '/' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+        // 1) Save image immediately to Spatie (S3 collection 'images')
+        $media = $user->addMediaFromRequest('avatar')
+            ->withCustomProperties([
+                'status' => 'pending',
+                'note' => 'En validación',
+            ])
+            ->toMediaCollection('images', 's3'); // singleFile() replaces previous
 
-        // Upload to S3 temporary location
-        Storage::disk('s3')->put($tmpKey, file_get_contents($file->getRealPath()));
+        // 2) Dispatch background validation job
+        \App\Jobs\ValidateAvatarMedia::dispatch($user->id, $media->id)->onQueue('default');
 
-        // Dispatch background job for validation
-        ProcessAvatarUpload::dispatch($user, $tmpKey);
-
-        return to_route('profile.edit')->with('info', 'Tu imagen está siendo validada. Recibirás una notificación cuando esté lista.');
+        // 3) Immediate response
+        return to_route('profile.edit')->with('info', 'Tu imagen se subió. Te notificaremos cuando esté validada.');
     }
 
     /**

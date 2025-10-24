@@ -17,6 +17,8 @@ interface Props {
     mustVerifyEmail: boolean;
     status?: string;
     avatarUrl?: string | null;
+    avatarStatus?: string;
+    avatarNote?: string | null;
 }
 
 const props = defineProps<Props>();
@@ -130,6 +132,15 @@ const deleteAvatar = () => {
                             <UserIcon v-else class="h-12 w-12 text-muted-foreground" />
                         </div>
 
+                        <!-- Validation Status Badge -->
+                        <div 
+                            v-if="props.avatarUrl && props.avatarStatus === 'pending'" 
+                            class="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 text-white shadow-md"
+                            :title="props.avatarNote || 'En validación'"
+                        >
+                            <Icon icon="line-md:loading-twotone-loop" class="h-4 w-4" />
+                        </div>
+
                         <!-- Loading overlay -->
                         <div
                             v-if="avatarForm.processing || isDeleting"
@@ -141,6 +152,12 @@ const deleteAvatar = () => {
 
                     <!-- Avatar Controls -->
                     <div class="flex flex-1 flex-col gap-4">
+                        <!-- Validation Status Message -->
+                        <div v-if="props.avatarUrl && props.avatarStatus === 'pending'" class="flex items-center gap-2 rounded-md bg-amber-50 dark:bg-amber-950 px-3 py-2 text-sm text-amber-800 dark:text-amber-200">
+                            <Icon icon="line-md:loading-twotone-loop" class="h-4 w-4" />
+                            <span>{{ props.avatarNote || 'Tu imagen está siendo validada' }}</span>
+                        </div>
+
                         <!-- File Input -->
                         <div>
                             <input
