@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Enums\Course\NameEnum;
 
 class Course extends Model
 {
@@ -14,6 +15,10 @@ class Course extends Model
         'organization',
         'date',
         'nanny_id',
+    ];
+
+     protected $casts = [
+        'name' => NameEnum::class,
     ];
 
     // Relación inversa con Nanny

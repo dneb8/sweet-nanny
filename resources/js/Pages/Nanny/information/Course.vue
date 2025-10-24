@@ -9,6 +9,7 @@ import { router } from '@inertiajs/vue3'
 import CourseForm from '../forms/CourseForm.vue'
 import FormModal from '@/components/common/FormModal.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
+import { getCourseNameLabelByString } from '@/enums/courses/course-name.enum'
 
 
 const props = defineProps<{ 
@@ -72,7 +73,7 @@ const deleteCourse = () => {
         >
           <!-- Info -->
           <div>
-            <p class="font-medium">{{ course.name }}</p>
+            <p class="font-medium">{{ getCourseNameLabelByString(course.name) }}</p>
             <p class="text-sm text-muted-foreground">{{ course.organization }}</p>
             <p class="text-sm text-muted-foreground">{{ course.date }}</p>
           </div>
