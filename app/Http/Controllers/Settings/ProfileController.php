@@ -18,9 +18,13 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $user = $request->user();
+        $avatarUrl = $user->getFirstMediaUrl('images');
+
         return Inertia::render('settings/Profile', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
+            'avatarUrl' => $avatarUrl ?: null,
         ]);
     }
 
@@ -38,6 +42,38 @@ class ProfileController extends Controller
         $request->user()->save();
 
         return to_route('profile.edit')->with('success', 'Perfil actualizado correctamente.');
+    }
+
+    /**
+     * Update the user's avatar image.
+     */
+    public function updateAvatar(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'avatar' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:4096'], // max 4MB
+        ]);
+
+        $user = $request->user();
+
+        // Add the image to the 'images' collection on S3
+        // singleFile() ensures it replaces any existing image
+        $user->addMediaFromRequest('avatar')
+            ->toMediaCollection('images', 's3');
+
+        return to_route('profile.edit')->with('success', 'Foto de perfil actualizada correctamente.');
+    }
+
+    /**
+     * Delete the user's avatar image.
+     */
+    public function deleteAvatar(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        // Clear all images from the 'images' collection
+        $user->clearMediaCollection('images');
+
+        return to_route('profile.edit')->with('success', 'Foto de perfil eliminada correctamente.');
     }
 
     /**
