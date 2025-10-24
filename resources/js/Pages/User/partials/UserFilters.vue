@@ -26,12 +26,6 @@ function toggleRole(role: string) {
   }
 }
 
-// Toggle verified 
-// Emitir cuando cambie
-watch(verifiedFilter, (val) => {
-  console.log("Nuevo valor:", val) 
-})
-
 // Reset filters: reinicia refs y fuerza actualización del DOM
 function resetFilters() {
   roleFilter.value = []

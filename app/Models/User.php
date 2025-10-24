@@ -8,40 +8,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail, HasMedia
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, HasUlids;
+    use HasFactory, Notifiable, HasRoles, HasUlids, InteractsWithMedia;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = [
-        'name',
-        'surnames',
-        'email',
-        'number',
-        'password',
-    ];
+    protected $fillable = ['name','surnames','email','number','password'];
+    protected $hidden = ['password','remember_token'];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -50,29 +27,18 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
-    public function tutor()
+    public function tutor() { return $this->hasOne(Tutor::class); }
+    public function nanny() { return $this->hasOne(Nanny::class); }
+
+    public function uniqueIds() { return ['ulid']; }
+    public function getRouteKeyName() { return 'ulid'; }
+
+    // 🔹 Spatie: define colección y disco
+    public function registerMediaCollections(): void
     {
-        return $this->hasOne(Tutor::class);
+        $this->addMediaCollection('images')
+            ->useDisk('s3')           // usa el disco S3
+            ->singleFile();           // una sola foto de perfil (la nueva reemplaza la anterior)
     }
 
-    public function nanny()
-    {
-        return $this->hasOne(Nanny::class);
-    }
-
-    public function uniqueIds()
-    {
-        // Generación automática de ulid para la columna ulid.
-        return [
-            'ulid',
-        ];
-    }
-
-    /**
-     * Usar ulid para obtener los modelos en los parámetros de rutas.
-     */
-    public function getRouteKeyName()
-    {
-        return 'ulid';
-    }
 }

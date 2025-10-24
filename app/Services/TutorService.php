@@ -69,8 +69,9 @@ class TutorService
     {
         return Tutor::where('ulid', $id)
             ->with([
-                'user.address',   // user information with address
-                'children',       // children information
+                'user',
+                'children',
+                'addresses',
             ])
             ->firstOrFail();
     }

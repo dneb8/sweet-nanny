@@ -15,11 +15,8 @@ const props = defineProps<{ tutor: Tutor }>();
             <img
                 :src="props.tutor.user?.avatar_url ?? 'https://randomuser.me/api/portraits/men/32.jpg'"
                 alt="Foto de perfil"
-                class="w-28 h-28 rounded-full border-4 border-white shadow-lg object-cover"
+                class="size-40 rounded-full border-3 border-white shadow-lg object-cover"
             />
-            <div class="absolute -bottom-2 -right-2 bg-primary text-primary-foreground rounded-full p-2 shadow-lg">
-                <Icon icon="mdi:school-outline" class="w-5 h-5" />
-            </div>
         </div>
         <div class="flex-1 space-y-3 text-center md:text-left">
             <div>
