@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
 use App\Jobs\ProcessAvatarUpload;
+use App\Jobs\ValidateAvatarMedia;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -74,7 +75,7 @@ class ProfileController extends Controller
             ->toMediaCollection('images', 's3'); // singleFile() replaces previous
 
         // 2) Dispatch background validation job
-        \App\Jobs\ValidateAvatarMedia::dispatch($user->id, $media->id)->onQueue('default');
+        ValidateAvatarMedia::dispatch($user->id, $media->id)->onQueue('default');
 
         // 3) Immediate response
         return to_route('profile.edit')->with('info', 'Tu imagen se subió. Te notificaremos cuando esté validada.');
