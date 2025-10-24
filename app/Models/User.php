@@ -64,4 +64,24 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
             ->useDisk('s3')           // usa el disco S3
             ->singleFile();           // una sola foto de perfil (la nueva reemplaza la anterior)
     }
+
+    /**
+     * Get avatar URL (temporary signed URL for private S3 bucket)
+     */
+    public function avatarUrl(?int $minutes = 10): ?string
+    {
+        $media = $this->getFirstMedia('images');
+        if (!$media) {
+            return null;
+        }
+
+        // For private S3 buckets, use temporary URL
+        // For public buckets, use getUrl() instead
+        try {
+            return $media->getTemporaryUrl(now()->addMinutes($minutes));
+        } catch (\Exception $e) {
+            // Fallback to regular URL if temporary URL generation fails
+            return $media->getUrl();
+        }
+    }
 }

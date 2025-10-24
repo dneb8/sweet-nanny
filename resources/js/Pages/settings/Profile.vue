@@ -45,6 +45,7 @@ const avatarForm = useForm({
 const previewUrl = ref<string | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const isDeleting = ref(false);
+let avatarToastShown = false; // Flag to prevent duplicate toasts
 
 const currentAvatarUrl = computed(() => previewUrl.value || props.avatarUrl);
 
@@ -75,20 +76,23 @@ const submitAvatar = () => {
             if (fileInputRef.value) {
                 fileInputRef.value.value = '';
             }
-            // Show toast for async processing
-            toast.info('Tu imagen está siendo validada. Recibirás una notificación cuando esté lista.', {
-                duration: 5000,
-            });
+            // Show toast only once per upload session
+            if (!avatarToastShown) {
+                avatarToastShown = true;
+                toast.info('Imagen subida. Te notificaremos cuando sea aprobada.', {
+                    duration: 5000,
+                });
+                // Reset flag after a short delay to allow future uploads
+                setTimeout(() => {
+                    avatarToastShown = false;
+                }, 6000);
+            }
+        },
+        onError: (errors) => {
+            toast.error(errors?.avatar ?? 'Error al subir imagen');
         },
     });
 };
-
-// Watch for flash messages from backend
-watch(() => page.props.flash, (flash) => {
-    if (flash?.info) {
-        toast.info(flash.info as string);
-    }
-}, { deep: true, immediate: true });
 
 const cancelPreview = () => {
     avatarForm.reset();
