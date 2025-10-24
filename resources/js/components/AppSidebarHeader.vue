@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import NotificationDropdown from '@/components/NotificationDropdown.vue';
 import type { BreadcrumbItemType } from '@/types';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAppearance } from '@/composables/useAppearance';
@@ -36,8 +37,12 @@ const toggleAppearance = () => {
             </template>
         </div>
         
-        <button @click="toggleAppearance" class="ml-auto p-2 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
-            <Icon :icon="themeIcon" width="20" height="20" />
-        </button>
+        <div class="ml-auto flex items-center gap-1">
+            <NotificationDropdown />
+            
+            <button @click="toggleAppearance" class="p-2 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
+                <Icon :icon="themeIcon" width="20" height="20" />
+            </button>
+        </div>
     </header>
 </template>

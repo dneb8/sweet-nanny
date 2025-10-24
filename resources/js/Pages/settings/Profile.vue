@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { User as UserIcon, X } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
+import { toast } from 'vue-sonner';
 
 import DeleteUser from '@/components/DeleteUser.vue';
 import HeadingSmall from '@/components/HeadingSmall.vue';
@@ -72,9 +73,20 @@ const submitAvatar = () => {
             if (fileInputRef.value) {
                 fileInputRef.value.value = '';
             }
+            // Show toast for async processing
+            toast.info('Tu imagen está siendo validada. Recibirás una notificación cuando esté lista.', {
+                duration: 5000,
+            });
         },
     });
 };
+
+// Watch for flash messages from backend
+watch(() => page.props.flash, (flash) => {
+    if (flash?.info) {
+        toast.info(flash.info as string);
+    }
+}, { deep: true, immediate: true });
 
 const cancelPreview = () => {
     avatarForm.reset();
