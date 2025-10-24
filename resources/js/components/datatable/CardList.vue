@@ -1,3 +1,42 @@
+<!--
+  CardList Component
+  ==================
+  
+  Componente de lista de tarjetas con filtrado y paginación del lado del cliente.
+  Ideal para vistas responsivas tipo "grid" con búsqueda global y filtros personalizados.
+  
+  Props:
+    - items: any[] (requerido) - Array de items a mostrar
+    - searchables: string[] (requerido) - Campos para búsqueda global
+    - sortables: string[] (requerido) - Campos disponibles para filtros
+    - FilterPanel: object (requerido) - Componente del panel de filtros
+    - perPage: number (opcional, default: 12) - Items por página
+  
+  Slots:
+    - default: { item } - Slot para renderizar cada tarjeta
+  
+  Características:
+    - Búsqueda global por campos configurables
+    - Panel de filtros personalizable (popover en móvil)
+    - Paginación automática del cliente
+    - Grid responsive (1→2→3 columnas)
+  
+  Ejemplo de uso:
+    <CardList 
+      :items="users.data" 
+      :searchables="['name', 'email']"
+      :sortables="['role']"
+      :FilterPanel="UserFilters"
+      :per-page="9"
+    >
+      <template #default="{ item }">
+        <UserCard :user="item" />
+      </template>
+    </CardList>
+  
+  📖 Documentación completa: ./README.md
+-->
+
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { Input } from '@/components/ui/input'

@@ -1,3 +1,25 @@
+<!--
+  DataTable Component
+  ===================
+  
+  Componente de tabla tradicional basado en @tanstack/vue-table (TanStack Table v8).
+  Ideal para visualización tabular de datos con soporte para sorting, filtering, y más.
+  
+  Props:
+    - columns: ColumnDef<TData, TValue>[] (opcional) - Definiciones de columnas TanStack
+    - data: TData[] (requerido) - Array de datos a mostrar
+  
+  Características:
+    - Auto-generación de columnas si no se proporcionan
+    - Tabla responsive usando componentes shadcn-vue
+    - Empty state cuando no hay datos
+  
+  Ejemplo de uso:
+    <DataTable :data="users" :columns="columns" />
+  
+  📖 Documentación completa: ./README.md
+-->
+
 <script setup lang="ts" generic="TData extends Record<string, any>, TValue">
 import type { ColumnDef } from '@tanstack/vue-table'
 import { generateColumns } from './Columns';
