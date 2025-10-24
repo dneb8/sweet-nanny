@@ -4,13 +4,13 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
-use App\Services\ImageModerationService;
-use Aws\Rekognition\RekognitionClient;
+use App\Jobs\ProcessAvatarUpload;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -48,7 +48,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the user's avatar image.
+     * Update the user's avatar image (async with background validation).
      */
     public function updateAvatar(Request $request): RedirectResponse
     {
@@ -56,60 +56,19 @@ class ProfileController extends Controller
             'avatar' => ['required', 'image', 'mimes:jpeg,jpg,png,webp', 'max:4096'], // 4MB
         ]);
 
-        // 1) Lee el archivo a memoria (bytes)
+        $user = $request->user();
         $file = $request->file('avatar');
-        $bytes = file_get_contents($file->getRealPath());
 
-        // 2) Cliente Rekognition (misma región que tu bucket)
-        $rekognition = new RekognitionClient([
-            'version' => 'latest',
-            'region'  => env('AWS_DEFAULT_REGION'), // ej. us-east-2
-            'credentials' => [
-                'key'    => env('AWS_ACCESS_KEY_ID'),
-                'secret' => env('AWS_SECRET_ACCESS_KEY'),
-            ],
-        ]);
+        // Generate unique temporary key for S3 storage
+        $tmpKey = 'tmp/avatars/' . $user->ulid . '/' . Str::uuid() . '.' . $file->getClientOriginalExtension();
 
-        // 3) Moderación rápida (bloquea contenido no apto)
-        $mod = $rekognition->detectModerationLabels([
-            'Image' => ['Bytes' => $bytes],
-            'MinConfidence' => 80, // ajusta si quieres
-        ]);
+        // Upload to S3 temporary location
+        Storage::disk('s3')->put($tmpKey, file_get_contents($file->getRealPath()));
 
-        $ban = [
-            'Explicit Nudity','Sexual Activity','Sexual Content',
-            'Graphic Male Nudity','Graphic Female Nudity',
-            'Violence','Hate Symbols'
-        ];
+        // Dispatch background job for validation
+        ProcessAvatarUpload::dispatch($user, $tmpKey);
 
-        $blocked = collect($mod['ModerationLabels'] ?? [])
-            ->contains(fn($l) =>
-                in_array($l['Name'] ?? '', $ban, true) &&
-                ($l['Confidence'] ?? 0) >= 80
-            );
-
-        if ($blocked) {
-            return to_route('profile.edit')
-                ->withErrors(['avatar' => 'La imagen no cumple con las políticas de contenido.']);
-        }
-
-        // 4) Rostros: exige exactamente 1
-        $faces = $rekognition->detectFaces([
-            'Image' => ['Bytes' => $bytes],
-            'Attributes' => ['DEFAULT'],
-        ]);
-
-        if (count($faces['FaceDetails'] ?? []) !== 1) {
-            return to_route('profile.edit')
-                ->withErrors(['avatar' => 'La foto debe mostrar exactamente un rostro.']);
-        }
-
-        // 5) Si pasa → ahora sí guarda en Spatie (S3)
-        $request->user()
-            ->addMediaFromRequest('avatar') // usa el mismo archivo del request
-            ->toMediaCollection('images', 's3');
-
-        return to_route('profile.edit')->with('success', 'Foto de perfil actualizada correctamente.');
+        return to_route('profile.edit')->with('info', 'Tu imagen está siendo validada. Recibirás una notificación cuando esté lista.');
     }
 
     /**
