@@ -12,9 +12,7 @@ import { UserTableService } from "@/services/userTableService";
 import UserFiltros from "./UserFiltros.vue";
 import { getRoleLabelByString } from "@/enums/role.enum";
 import Badge from "@/components/common/Badge.vue";
-// import Icon from "@/Components/common/Icon.vue"; // ajusta ruta/casing si aplica
 
-// 👇 Nuevo import
 import DeleteModal from '@/components/common/DeleteModal.vue';
 
 defineProps<{
