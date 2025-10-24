@@ -25,7 +25,7 @@ export const useQuerystringStore = defineStore("querystring", {
                 this.refreshQuerystring();
 
                 return true;
-            } catch (e) {
+            } catch {
                 return false;
             }
         },

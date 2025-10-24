@@ -57,7 +57,7 @@ onMounted(async () => {
     )
     // soporto {data:[...]} o [...]
     children.value = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : [])
-  } catch (e) {
+  } catch {
   }
 })
 
