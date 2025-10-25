@@ -2,7 +2,7 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { User as UserIcon, X } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
-import { toast } from 'vue-sonner';
+import { useNotify } from '@/composables/useNotify';
 
 import DeleteUser from '@/components/DeleteUser.vue';
 import HeadingSmall from '@/components/HeadingSmall.vue';
@@ -27,6 +27,7 @@ console.log('Profile props:', props);
 
 const page = usePage();
 const user = page.props.auth.user as User;
+const { notifyInfo, notifyError } = useNotify();
 
 const form = useForm({
     name: user.name,
@@ -81,9 +82,12 @@ const submitAvatar = () => {
             // Show toast only once per upload session
             if (!avatarToastShown.value) {
                 avatarToastShown.value = true;
-                toast.info('Imagen subida. Te notificaremos cuando sea aprobada.', {
-                    duration: 5000,
-                });
+                notifyInfo(
+                    'Imagen subida',
+                    'Te notificaremos cuando sea aprobada',
+                    'mdi:cloud-upload',
+                    5000
+                );
                 // Reset flag after a short delay to allow future uploads
                 setTimeout(() => {
                     avatarToastShown.value = false;
@@ -91,7 +95,11 @@ const submitAvatar = () => {
             }
         },
         onError: (errors) => {
-            toast.error(errors?.avatar ?? 'Error al subir imagen');
+            notifyError(
+                'Error al subir imagen',
+                errors?.avatar ?? 'Por favor, intenta nuevamente',
+                'mdi:alert-circle'
+            );
         },
     });
 };

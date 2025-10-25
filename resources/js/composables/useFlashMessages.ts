@@ -1,16 +1,17 @@
 import { usePage } from '@inertiajs/vue3';
 import { watchEffect } from 'vue';
-import { toast } from 'vue-sonner';
+import { useNotify } from './useNotify';
 
 /**
  * Composable to automatically handle flash messages from the backend
- * and display them as toasts using vue-sonner.
+ * and display them as custom toasts with Iconify icons.
  *
  * This should be called at the root level (in app.ts) to ensure it works
  * with both full page loads and partial Inertia reloads.
  */
 export function useFlashMessages() {
     const page = usePage();
+    const { notifySuccess, notifyError, notifyWarning, notifyInfo } = useNotify();
 
     // Track displayed messages to prevent duplicates
     const displayedMessages = new Set<string>();
@@ -23,30 +24,32 @@ export function useFlashMessages() {
             const value = flash[key];
             if (!value) continue;
 
+            // Extract title and description
+            const title = typeof value === 'string' ? value : value.title ?? value.message ?? key;
+            const description = typeof value === 'string' ? undefined : value.description;
+            const icon = typeof value === 'string' ? undefined : value.icon;
+
             // Generate unique key for deduplication
-            const message = typeof value === 'string' ? value : value.title ?? value.message ?? key;
-            const messageKey = `${key}:${message}`;
+            const messageKey = `${key}:${title}:${description || ''}`;
 
             if (displayedMessages.has(messageKey)) continue;
 
-            // Show toast using vue-sonner
+            // Show toast using unified notify system
             switch (key) {
                 case 'success':
                 case 'message':
-                    toast.success(message);
+                    notifySuccess(title, description, icon);
                     break;
                 case 'error':
-                    toast.error(message);
+                    notifyError(title, description, icon);
                     break;
                 case 'warning':
-                    toast.warning(message);
+                    notifyWarning(title, description, icon);
                     break;
                 case 'info':
                 case 'status':
-                    toast.info(message);
+                    notifyInfo(title, description, icon);
                     break;
-                default:
-                    toast(message);
             }
 
             // Add to displayed set and schedule cleanup

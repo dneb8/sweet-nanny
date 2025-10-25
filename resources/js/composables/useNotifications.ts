@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { toast } from 'vue-sonner';
+import { useNotify } from './useNotify';
 import axios from 'axios';
 
 export interface Notification {
@@ -18,6 +18,8 @@ const unreadCount = ref(0);
 const loading = ref(false);
 
 export function useNotifications() {
+    const { notifySuccess, notifyError, notifyInfo } = useNotify();
+
     const fetchNotifications = async () => {
         try {
             loading.value = true;
@@ -81,11 +83,26 @@ export function useNotifications() {
 
     // Listen for new notifications via events (for future broadcast integration)
     const handleNewNotification = (data: any) => {
-        // Show toast
-        if (data.success) {
-            toast.success(data.message);
+        // Show toast with unified system
+        if (data.type === 'avatar') {
+            if (data.success) {
+                notifySuccess(
+                    data.message,
+                    undefined,
+                    'mdi:check-circle',
+                    5000
+                );
+            } else {
+                notifyError(
+                    data.message,
+                    undefined,
+                    'mdi:alert-circle',
+                    6000
+                );
+            }
         } else {
-            toast.error(data.message);
+            // Generic notification
+            notifyInfo(data.message, undefined, 'mdi:bell', 5000);
         }
 
         // Refresh notifications
