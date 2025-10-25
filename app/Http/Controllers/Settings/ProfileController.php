@@ -4,14 +4,11 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
-use App\Jobs\ProcessAvatarUpload;
 use App\Jobs\ValidateAvatarMedia;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -66,8 +63,8 @@ class ProfileController extends Controller
                 'status' => 'pending',
                 'note' => 'En validación',
             ])
-            ->toMediaCollection('images', 's3'); // singleFile() replaces previous
-
+            ->toMediaCollection('images', 's3'); 
+            
         // 2) Dispatch background validation job
         ValidateAvatarMedia::dispatch($user->id, $media->id)->onQueue('default');
 

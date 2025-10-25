@@ -72,7 +72,7 @@ class ValidateAvatarMedia implements ShouldQueue
                     && ($l['Confidence'] ?? 0) >= $this->minConfidence);
 
             if ($blocked) {
-                $media->delete(); // ❌ Delete image from Spatie (and S3)
+                $media->delete(); 
                 $user->notify(new AvatarProcessed(false, 'La imagen no cumple con las políticas de contenido.'));
                 return;
             }
@@ -86,7 +86,7 @@ class ValidateAvatarMedia implements ShouldQueue
             $faceCount = count($faces['FaceDetails'] ?? []);
 
             if ($faceCount !== 1) {
-                $media->delete(); // ❌ Delete image from Spatie (and S3)
+                $media->delete(); 
                 $message = $faceCount === 0
                     ? 'Tu imagen fue rechazada porque no se detectó ningún rostro.'
                     : 'Tu imagen fue rechazada porque se detectaron múltiples rostros. Solo debe haber uno.';
