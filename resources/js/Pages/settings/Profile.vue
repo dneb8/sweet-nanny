@@ -45,7 +45,7 @@ const avatarForm = useForm({
 const previewUrl = ref<string | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const isDeleting = ref(false);
-let avatarToastShown = false; // Flag to prevent duplicate toasts
+const avatarToastShown = ref(false); // Flag to prevent duplicate toasts
 
 const currentAvatarUrl = computed(() => previewUrl.value || props.avatarUrl);
 

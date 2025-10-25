@@ -29,10 +29,7 @@ class ValidateAvatarMedia implements ShouldQueue
      */
     public function handle(): void
     {
-        $user = User::find($this->userId);
-        if (!$user) {
-            return;
-        }
+        $user = User::findOrFail($this->userId);
 
         $media = $user->media()->whereKey($this->mediaId)->first();
         if (!$media) {
