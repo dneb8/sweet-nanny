@@ -66,6 +66,19 @@ class Booking extends Model
             ->withTrashed();
     }
 
+    // Relación con nanny a través de bookingAppointments (para mostrar en listados)
+    public function nanny()
+    {
+        return $this->hasOneThrough(
+            Nanny::class,
+            BookingAppointment::class,
+            'booking_id',  // Foreign key on booking_appointments table
+            'id',           // Foreign key on nannies table
+            'id',           // Local key on bookings table
+            'nanny_id'      // Local key on booking_appointments table
+        );
+    }
+
     // public function getRouteKeyName()
     // {
     //     return 'ulid';

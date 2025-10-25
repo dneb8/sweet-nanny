@@ -17,11 +17,9 @@ use Throwable;
 
 class BookingController extends Controller
 {
-    public function index(): Response
+    public function index(BookingService $bookingService): Response
     {
-        $bookings = Booking::with(['tutor.user', 'address', 'bookingAppointments', 'children'])
-            ->latest('id')
-            ->paginate(12);
+        $bookings = $bookingService->indexFetch();
 
         return Inertia::render('Booking/Index', ['bookings' => $bookings]);
     }
