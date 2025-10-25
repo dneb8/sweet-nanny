@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { User as UserIcon, X } from 'lucide-vue-next';
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { toast } from 'vue-sonner';
 
 import DeleteUser from '@/components/DeleteUser.vue';
@@ -22,6 +22,8 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+console.log('Profile props:', props);
 
 const page = usePage();
 const user = page.props.auth.user as User;
@@ -77,14 +79,14 @@ const submitAvatar = () => {
                 fileInputRef.value.value = '';
             }
             // Show toast only once per upload session
-            if (!avatarToastShown) {
-                avatarToastShown = true;
+            if (!avatarToastShown.value) {
+                avatarToastShown.value = true;
                 toast.info('Imagen subida. Te notificaremos cuando sea aprobada.', {
                     duration: 5000,
                 });
                 // Reset flag after a short delay to allow future uploads
                 setTimeout(() => {
-                    avatarToastShown = false;
+                    avatarToastShown.value = false;
                 }, 6000);
             }
         },

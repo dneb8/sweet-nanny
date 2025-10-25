@@ -73,6 +73,7 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('message', [
             'title' => 'Usuario creado',
             'description' => 'El usuario ha sido creado correctamente.',
+            'icon' => 'check',
         ]);
     }
 

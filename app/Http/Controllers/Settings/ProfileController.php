@@ -9,6 +9,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -16,17 +17,24 @@ class ProfileController extends Controller
 {
     /**
      * Show the user's profile settings page.
+     * - Lanza validación en background si hay un avatar pendiente.
      */
     public function edit(Request $request): Response
     {
-        $user = $request->user();
+        $user = $request->user()->loadMissing([
+            // Opcional: evita N+1 si luego llamas getFirstMedia()
+            'media' => fn ($q) => $q->where('collection_name', 'images'),
+        ]);
+
+        // dispara validación asíncrona si es necesaria
+        $this->kickoffAvatarValidationIfNeeded($user);
 
         return Inertia::render('settings/Profile', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status'          => $request->session()->get('status'),
-            'avatarUrl'       => $user->avatar_url,
-            'avatarStatus'    => $user->avatar_status,
-            'avatarNote'      => $user->avatar_note,
+            'avatarUrl'       => $user->avatar_url,     // accessor
+            'avatarStatus'    => $user->avatar_status,  // accessor
+            'avatarNote'      => $user->avatar_note,    // accessor
         ]);
     }
 
@@ -47,7 +55,9 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the user's avatar image (save first, validate after).
+     * Update the user's avatar image:
+     * - Guarda primero
+     * - Redirige de inmediato
      */
     public function updateAvatar(Request $request): RedirectResponse
     {
@@ -57,18 +67,15 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        // 1) Save image immediately to Spatie (S3 collection 'images')
-        $media = $user->addMediaFromRequest('avatar')
+        // Guarda la imagen de inmediato (collection 'images' en disco 's3')
+        $user->addMediaFromRequest('avatar')
             ->withCustomProperties([
                 'status' => 'pending',
-                'note' => 'En validación',
+                'note'   => 'En validación',
             ])
-            ->toMediaCollection('images', 's3'); 
-            
-        // 2) Dispatch background validation job
-        ValidateAvatarMedia::dispatch($user->id, $media->id)->onQueue('default');
+            ->toMediaCollection('images', 's3');
 
-        // 3) Immediate response
+
         return to_route('profile.edit')->with('info', 'Tu imagen se subió. Te notificaremos cuando esté validada.');
     }
 
@@ -78,8 +85,6 @@ class ProfileController extends Controller
     public function deleteAvatar(Request $request): RedirectResponse
     {
         $user = $request->user();
-
-        // Clear all images from the 'images' collection
         $user->clearMediaCollection('images');
 
         return to_route('profile.edit')->with('success', 'Foto de perfil eliminada correctamente.');
@@ -95,14 +100,44 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
-
         Auth::logout();
-
         $user->delete();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    // ============================================================
+    // Helpers privados
+    // ============================================================
+
+    /**
+     * Si el usuario tiene media 'images' con status 'pending',
+     * dispara el Job de validación (una sola vez por ventana de tiempo).
+     */
+    private function kickoffAvatarValidationIfNeeded($user): void
+    {
+        $media = $user->getFirstMedia('images');
+        if (!$media) {
+            return;
+        }
+
+        $status = $media->getCustomProperty('status', 'approved');
+        if ($status !== 'pending') {
+            return;
+        }
+
+        // Evita re-encolar spams (lock de 30s; ajusta a lo que prefieras)
+        $lockKey = "validate-avatar:{$user->id}:{$media->id}";
+        $gotLock = Cache::lock($lockKey, 30)->get(); // true si obtiene el lock
+
+        if (!$gotLock) {
+            return;
+        }
+
+        // Encola validación en background
+        ValidateAvatarMedia::dispatch($user->id, $media->id)->onQueue('default');
     }
 }
