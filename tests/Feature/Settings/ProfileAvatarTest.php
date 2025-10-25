@@ -20,7 +20,7 @@ test('user can upload avatar', function () {
 
     $response
         ->assertSessionHasNoErrors()
-        ->assertSessionHas('success', 'Foto de perfil actualizada correctamente.')
+        ->assertSessionHas('info', 'Tu imagen se subió. Te notificaremos cuando esté validada.')
         ->assertRedirect('/settings/profile');
 
     expect($user->fresh()->getFirstMedia('images'))->not->toBeNull();
