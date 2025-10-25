@@ -24,7 +24,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         $media = $user->getFirstMedia('images');
-        $avatarUrl = $media?->getUrl();
+        $avatarUrl = $user->avatarUrl();
         
         // Get validation status from custom properties
         $avatarStatus = $media?->getCustomProperty('status', 'approved');
