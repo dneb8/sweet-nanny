@@ -5,16 +5,14 @@ import type { FetcherResponse } from "@/types/FetcherResponse";
 import type { User } from "@/types/User";
 import UserCard from "./UserCard.vue";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { getUserInitials } from "@/utils/getUserInitials";
 import { UserTableService } from "@/services/userTableService";
 import UserFiltros from "./UserFiltros.vue";
 import { getRoleLabelByString } from "@/enums/role.enum";
 import Badge from "@/components/common/Badge.vue";
-// import Icon from "@/Components/common/Icon.vue"; // ajusta ruta/casing si aplica
 
-// 👇 Nuevo import
 import DeleteModal from '@/components/common/DeleteModal.vue';
 
 defineProps<{
@@ -58,19 +56,21 @@ const {
 
     <!-- Columna Perfil -->
     <Column header="Perfil" field="id">
-      <template #body="slotProps">
+      <template #body="{ record }">
         <div
-          @click="verUsuarioPerfil(slotProps.record)"
+          @click="verUsuarioPerfil(record)"
           class="flex items-center gap-2 cursor-pointer hover:text-rose-400 dark:hover:text-rose-300"
         >
-          <Avatar shape="square" size="sm" class="cursor-pointer">
-            <AvatarFallback>
-              {{ getUserInitials(slotProps.record) }}
+          <Avatar shape="square" size="sm" class="cursor-pointer overflow-hidden">
+            <AvatarImage v-if="record?.avatar_url" :src="record.avatar_url" :alt="record?.name ?? 'avatar'" class="h-8 w-8 object-cover" />
+            <AvatarFallback v-else>
+              {{ getUserInitials(record) }}
             </AvatarFallback>
           </Avatar>
         </div>
       </template>
     </Column>
+
 
     <!-- Nombre -->
     <Column header="Nombre" :sortable="true">

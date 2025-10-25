@@ -23,19 +23,14 @@ class ProfileController extends Controller
     public function edit(Request $request): Response
     {
         $user = $request->user();
-        $media = $user->getFirstMedia('images');
-        $avatarUrl = $media?->getUrl();
-        
-        // Get validation status from custom properties
-        $avatarStatus = $media?->getCustomProperty('status', 'approved');
-        $avatarNote = $media?->getCustomProperty('note', null);
 
         return Inertia::render('settings/Profile', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
-            'status' => $request->session()->get('status'),
-            'avatarUrl' => $avatarUrl ?: null,
-            'avatarStatus' => $avatarStatus,
-            'avatarNote' => $avatarNote,
+            'status'          => $request->session()->get('status'),
+            // 👇 ahora vienen del modelo (accessors + $appends)
+            'avatarUrl'       => $user->avatar_url,
+            'avatarStatus'    => $user->avatar_status,
+            'avatarNote'      => $user->avatar_note,
         ]);
     }
 

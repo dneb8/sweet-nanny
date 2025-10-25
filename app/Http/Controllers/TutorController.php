@@ -49,7 +49,6 @@ class TutorController extends Controller
      */
     public function show(Tutor $tutor, TutorService $tutorService): Response
     {
-        // Authorization check (if policy exists)
         // $this->authorize('view', $tutor);
 
         $tutorData = $tutorService->getShowData($tutor->ulid);
