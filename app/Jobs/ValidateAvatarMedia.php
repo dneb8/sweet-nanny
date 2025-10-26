@@ -16,6 +16,13 @@ class ValidateAvatarMedia implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
+     * The number of seconds after which the job's database transaction should be committed.
+     *
+     * @var bool
+     */
+    public $afterCommit = true;
+
+    /**
      * Create a new job instance.
      */
     public function __construct(
@@ -73,7 +80,7 @@ class ValidateAvatarMedia implements ShouldQueue
 
             if ($blocked) {
                 $media->delete(); 
-                \Illuminate\Support\Facades\Notification::sendNow($user, new AvatarProcessed(false, 'La imagen no cumple con las políticas de contenido.'));
+                $user->notify(new AvatarProcessed(false, 'La imagen no cumple con las políticas de contenido.'));
                 return;
             }
 
@@ -90,7 +97,7 @@ class ValidateAvatarMedia implements ShouldQueue
                 $message = $faceCount === 0
                     ? 'Tu imagen fue rechazada porque no se detectó ningún rostro.'
                     : 'Tu imagen fue rechazada porque se detectaron múltiples rostros. Solo debe haber uno.';
-                \Illuminate\Support\Facades\Notification::sendNow($user, new AvatarProcessed(false, $message));
+                $user->notify(new AvatarProcessed(false, $message));
                 return;
             }
 
@@ -99,12 +106,12 @@ class ValidateAvatarMedia implements ShouldQueue
             $media->setCustomProperty('note', 'Validada');
             $media->save();
 
-            \Illuminate\Support\Facades\Notification::sendNow($user, new AvatarProcessed(true, '¡Tu foto de perfil ha sido aprobada!'));
+            $user->notify(new AvatarProcessed(true, '¡Tu foto de perfil ha sido aprobada!'));
 
         } catch (\Exception $e) {
             // On error, delete the image and notify user
             $media->delete();
-            \Illuminate\Support\Facades\Notification::sendNow($user, new AvatarProcessed(false, 'Ocurrió un error al procesar tu imagen. Por favor, intenta nuevamente.'));
+            $user->notify(new AvatarProcessed(false, 'Ocurrió un error al procesar tu imagen. Por favor, intenta nuevamente.'));
             throw $e;
         }
     }
