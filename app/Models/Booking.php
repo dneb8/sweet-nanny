@@ -14,6 +14,7 @@ class Booking extends Model
         'address_id',
         'description',
         'recurrent',
+        'status',
         'qualities',
         'careers',
         'courses',

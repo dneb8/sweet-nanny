@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Booking;
 use App\Services\BookingService;
+use App\Services\BookingStatusService;
 use App\Enums\Children\KinkshipEnum;
 use App\Enums\Nanny\QualityEnum;
 use App\Enums\Career\NameCareerEnum;
@@ -45,11 +46,14 @@ class BookingController extends Controller
         ]);
     }
 
-    public function show(Booking $booking): Response
+    public function show(Booking $booking, BookingStatusService $statusService): Response
     {
         $booking = Booking::useWritePdo()
             ->with(['tutor.user','address','bookingAppointments.nanny','childrenWithTrashed', 'children'])
             ->findOrFail($booking->id);
+
+        // Actualizar estado basado en horarios de citas
+        $statusService->updateStatus($booking);
 
         return Inertia::render('Booking/Show', ['booking' => $booking]);
     }

@@ -5,6 +5,7 @@ import type { FetcherResponse } from '@/types/FetcherResponse';
 import type { Review } from '@/types/Review';
 import { ReviewTableService } from '@/services/reviewTableService';
 import ReviewFiltros from './ReviewFiltros.vue';
+import ReviewCard from './ReviewCard.vue';
 import Badge from '@/components/common/Badge.vue';
 
 defineProps<{
@@ -27,10 +28,16 @@ const getStars = (rating: number): string => {
         use-filters
         :canToggleColumnsVisibility="true"
         v-model:visibleColumns="visibleColumns"
+        :responsiveCards="'lg'"
     >
         <!-- Filtros -->
         <template #filters>
             <ReviewFiltros v-model:filtros="filtros" />
+        </template>
+
+        <!-- Card responsivo -->
+        <template #responsive-card="{ slotProps }">
+            <ReviewCard :review="slotProps" />
         </template>
 
         <!-- Columna Calificación -->
@@ -52,12 +59,18 @@ const getStars = (rating: number): string => {
             </template>
         </Column>
 
-        <!-- Columna Para (Reviewable) -->
+        <!-- Columna Para (Reviewable) con chip -->
         <Column header="Para">
             <template #body="slotProps">
-                <div class="flex flex-col">
-                    <span class="font-medium">{{ getReviewableName(slotProps.record) }}</span>
-                    <span class="text-xs text-muted-foreground">{{ getReviewableType(slotProps.record) }}</span>
+                <div class="flex flex-col gap-1">
+                    <div class="flex items-center gap-2">
+                        <Badge
+                            label="Para:"
+                            customClass="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                        />
+                        <span class="text-xs text-muted-foreground">{{ getReviewableType(slotProps.record) }}</span>
+                    </div>
+                    <span class="font-medium text-sm">{{ getReviewableName(slotProps.record) }}</span>
                 </div>
             </template>
         </Column>
@@ -85,7 +98,7 @@ const getStars = (rating: number): string => {
             </template>
         </Column>
 
-        <!-- Acciones -->
+        <!-- Acciones con iconos más grandes -->
         <Column header="Acciones" field="id">
             <template #body="slotProps">
                 <div class="flex gap-2">
@@ -99,7 +112,7 @@ const getStars = (rating: number): string => {
                         ]"
                         :title="slotProps.record.approved ? 'Marcar como no aprobado (privado)' : 'Marcar como aprobado (público)'"
                     >
-                        <Icon :icon="slotProps.record.approved ? 'mdi:earth' : 'mdi:earth-off'" :size="20" />
+                        <Icon :icon="slotProps.record.approved ? 'mdi:earth' : 'mdi:earth-off'" :size="22" />
                     </div>
                 </div>
             </template>

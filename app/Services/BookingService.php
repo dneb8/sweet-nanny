@@ -29,10 +29,18 @@ class BookingService
             ])
             ->orderBy('created_at', 'desc');
 
-        $sortables = ['created_at', 'description'];
+        $sortables = ['created_at', 'description', 'status'];
         $searchables = ['description'];
 
         return Fetcher::for($bookings)
+            ->allowFilters([
+                'recurrent' => [
+                    'using' => function ($filter) {
+                        return $filter->transform(fn($val) => filter_var($val, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE));
+                    },
+                ],
+                'status' => [],
+            ])
             ->allowSort($sortables)
             ->allowSearch($searchables)
             ->paginate(12);
