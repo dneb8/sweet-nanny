@@ -40,7 +40,6 @@ class CourseFactory extends Factory
             'name' => $this->faker->randomElement(NameEnum::values()),
             'organization' => $course['organization'],
             'date' => $this->faker->dateTimeBetween('-5 years', 'now')->format('Y-m-d'),
-            'nanny_id' => Nanny::inRandomOrder()->first()?->id,
         ];
     }
 }
