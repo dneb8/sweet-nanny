@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { User as UserIcon, X } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { Icon } from '@iconify/vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useNotify } from '@/composables/useNotify';
 
 import DeleteUser from '@/components/DeleteUser.vue';
@@ -27,7 +28,7 @@ console.log('Profile props:', props);
 
 const page = usePage();
 const user = page.props.auth.user as User;
-const { notifyInfo, notifyError } = useNotify();
+const { notifyError } = useNotify();
 
 const form = useForm({
     name: user.name,
@@ -48,9 +49,30 @@ const avatarForm = useForm({
 const previewUrl = ref<string | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const isDeleting = ref(false);
-const avatarToastShown = ref(false); // Flag to prevent duplicate toasts
 
 const currentAvatarUrl = computed(() => previewUrl.value || props.avatarUrl);
+
+// Reactive polling for avatar status when pending
+let statusPollInterval: NodeJS.Timeout | null = null;
+
+const pollAvatarStatus = () => {
+    if (props.avatarStatus === 'pending') {
+        statusPollInterval = setInterval(() => {
+            // Reload only the page data without full navigation
+            router.reload({ only: ['avatarUrl', 'avatarStatus', 'avatarNote'] });
+        }, 3000); // Poll every 3 seconds
+    }
+};
+
+onMounted(() => {
+    pollAvatarStatus();
+});
+
+onUnmounted(() => {
+    if (statusPollInterval) {
+        clearInterval(statusPollInterval);
+    }
+});
 
 const handleFileChange = (event: Event) => {
     const target = event.target as HTMLInputElement;
@@ -79,20 +101,8 @@ const submitAvatar = () => {
             if (fileInputRef.value) {
                 fileInputRef.value.value = '';
             }
-            // Show toast only once per upload session
-            if (!avatarToastShown.value) {
-                avatarToastShown.value = true;
-                notifyInfo(
-                    'Imagen subida',
-                    'Te notificaremos cuando sea aprobada',
-                    'mdi:cloud-upload',
-                    5000
-                );
-                // Reset flag after a short delay to allow future uploads
-                setTimeout(() => {
-                    avatarToastShown.value = false;
-                }, 6000);
-            }
+            // Start polling for status updates
+            pollAvatarStatus();
         },
         onError: (errors) => {
             notifyError(

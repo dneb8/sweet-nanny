@@ -73,7 +73,7 @@ class ValidateAvatarMedia implements ShouldQueue
 
             if ($blocked) {
                 $media->delete(); 
-                $user->notify(new AvatarProcessed(false, 'La imagen no cumple con las políticas de contenido.'));
+                \Illuminate\Support\Facades\Notification::sendNow($user, new AvatarProcessed(false, 'La imagen no cumple con las políticas de contenido.'));
                 return;
             }
 
@@ -90,7 +90,7 @@ class ValidateAvatarMedia implements ShouldQueue
                 $message = $faceCount === 0
                     ? 'Tu imagen fue rechazada porque no se detectó ningún rostro.'
                     : 'Tu imagen fue rechazada porque se detectaron múltiples rostros. Solo debe haber uno.';
-                $user->notify(new AvatarProcessed(false, $message));
+                \Illuminate\Support\Facades\Notification::sendNow($user, new AvatarProcessed(false, $message));
                 return;
             }
 
@@ -99,12 +99,12 @@ class ValidateAvatarMedia implements ShouldQueue
             $media->setCustomProperty('note', 'Validada');
             $media->save();
 
-            $user->notify(new AvatarProcessed(true, '¡Tu foto de perfil ha sido aprobada!'));
+            \Illuminate\Support\Facades\Notification::sendNow($user, new AvatarProcessed(true, '¡Tu foto de perfil ha sido aprobada!'));
 
         } catch (\Exception $e) {
             // On error, delete the image and notify user
             $media->delete();
-            $user->notify(new AvatarProcessed(false, 'Ocurrió un error al procesar tu imagen. Por favor, intenta nuevamente.'));
+            \Illuminate\Support\Facades\Notification::sendNow($user, new AvatarProcessed(false, 'Ocurrió un error al procesar tu imagen. Por favor, intenta nuevamente.'));
             throw $e;
         }
     }
