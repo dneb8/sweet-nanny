@@ -40,7 +40,7 @@ const getStars = (rating: number): string => {
             <ReviewCard :review="slotProps" />
         </template>
 
-        <!-- Columna Calificación -->
+        <!-- Calificación -->
         <Column header="Calificación" field="rating" :sortable="true">
             <template #body="slotProps">
                 <div class="flex items-center gap-2">
@@ -50,16 +50,29 @@ const getStars = (rating: number): string => {
             </template>
         </Column>
 
-        <!-- Columna Comentario -->
+        <!-- Comentario -->
         <Column header="Comentario">
-            <template #body="slotProps">
-                <div class="max-w-md truncate" :title="slotProps.record.comments || ''">
-                    {{ slotProps.record.comments || '—' }}
+            <template #body="{ record }">
+                <div class="max-w-sm">
+                <template v-if="record?.comments">
+                    <div
+                    class="rounded-md border bg-background/50 overflow-x-auto"
+                    :title="record.comments"
+                    >
+                    <div class="p-2 pr-3 text-sm leading-snug whitespace-nowrap inline-block min-w-max">
+                        {{ record.comments }}
+                    </div>
+                    </div>
+                </template>
+
+                <template v-else>
+                    <span class="text-muted-foreground">Sin comentarios</span>
+                </template>
                 </div>
             </template>
         </Column>
 
-        <!-- Columna Para (Reviewable) con chip -->
+        <!-- Para (Reviewable) con chip -->
         <Column header="Para">
             <template #body="slotProps">
                 <div class="flex flex-col gap-1">
@@ -75,7 +88,7 @@ const getStars = (rating: number): string => {
             </template>
         </Column>
 
-        <!-- Columna Estado (Approved) -->
+        <!-- Estado (Approved) -->
         <Column header="Estado" field="approved" :sortable="true">
             <template #body="slotProps">
                 <Badge
@@ -91,7 +104,7 @@ const getStars = (rating: number): string => {
             </template>
         </Column>
 
-        <!-- Columna Fecha -->
+        <!-- Fecha -->
         <Column header="Fecha" field="created_at" :sortable="true">
             <template #body="slotProps">
                 {{ new Date(slotProps.record.created_at).toLocaleDateString('es-ES') }}
