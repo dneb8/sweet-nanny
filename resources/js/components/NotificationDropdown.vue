@@ -20,8 +20,8 @@ const open = ref(false);
 onMounted(() => {
     fetchNotifications();
     
-    // Poll for new notifications every 30 seconds
-    const interval = setInterval(fetchNotifications, 30000);
+    // Poll for new notifications every 3 seconds
+    const interval = setInterval(fetchNotifications, 3000);
     
     return () => clearInterval(interval);
 });

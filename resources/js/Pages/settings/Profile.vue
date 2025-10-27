@@ -60,7 +60,7 @@ const pollAvatarStatus = () => {
         statusPollInterval = setInterval(() => {
             // Reload only the page data without full navigation
             router.reload({ only: ['avatarUrl', 'avatarStatus', 'avatarNote'] });
-        }, 3000); // Poll every 3 seconds
+        }, 1000); // Poll every 1 second
     }
 };
 

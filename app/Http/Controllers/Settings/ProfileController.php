@@ -22,7 +22,6 @@ class ProfileController extends Controller
     public function edit(Request $request): Response
     {
         $user = $request->user()->loadMissing([
-            // Opcional: evita N+1 si luego llamas getFirstMedia()
             'media' => fn ($q) => $q->where('collection_name', 'images'),
         ]);
 
