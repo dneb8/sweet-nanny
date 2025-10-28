@@ -61,6 +61,6 @@ class Tutor extends Model
      */
     public function avatarUrl(?int $minutes = 10): ?string
     {
-        return $this->user?->avatarUrl($minutes);
+        return $this->user?->avatarSignedOrPublicUrl($minutes);
     }
 }
