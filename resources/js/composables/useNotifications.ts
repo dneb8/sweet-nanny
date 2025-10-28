@@ -47,6 +47,12 @@ export function useNotifications() {
             unreadCount.value = Math.max(0, unreadCount.value - 1);
         } catch (error) {
             console.error('Failed to mark notification as read:', error);
+            notifyError(
+                'No se pudo marcar la notificación como leída. Intenta de nuevo.',
+                undefined,
+                'mdi:alert-circle',
+                6000
+            );
         }
     };
 
