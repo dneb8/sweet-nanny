@@ -24,8 +24,6 @@ interface Props {
 
 const props = defineProps<Props>();
 
-console.log('Profile props:', props);
-
 const page = usePage();
 const user = page.props.auth.user as User;
 const { notifyError } = useNotify();
