@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { useNotifications, type Notification } from '@/composables/useNotifications';
 import { Bell } from 'lucide-vue-next';
 import {
@@ -17,13 +17,19 @@ const { notifications, unreadCount, loading, fetchNotifications, markAllAsRead, 
 
 const open = ref(false);
 
+let pollInterval: NodeJS.Timeout | null = null;
+
 onMounted(() => {
     fetchNotifications();
     
     // Poll for new notifications every 3 seconds
-    const interval = setInterval(fetchNotifications, 3000);
-    
-    return () => clearInterval(interval);
+    pollInterval = setInterval(fetchNotifications, 3000);
+});
+
+onUnmounted(() => {
+    if (pollInterval) {
+        clearInterval(pollInterval);
+    }
 });
 
 const formatTime = (dateString: string) => {

@@ -130,7 +130,8 @@ class ProfileController extends Controller
 
         // Evita re-encolar spams (lock de 30s; ajusta a lo que prefieras)
         $lockKey = "validate-avatar:{$user->id}:{$media->id}";
-        $gotLock = Cache::lock($lockKey, 30)->get(); // true si obtiene el lock
+        $lockDurationSeconds = 30; // Prevents re-queuing validation jobs for 30 seconds
+        $gotLock = Cache::lock($lockKey, $lockDurationSeconds)->get(); // true si obtiene el lock
 
         if (!$gotLock) {
             return;
