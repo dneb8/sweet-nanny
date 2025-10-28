@@ -60,8 +60,8 @@ class UpdateAddressRequest extends FormRequest
             'type'            => ['required', 'in:' . implode(',', TypeEnum::values())],
             'other_type'      => ['nullable', 'string', 'max:255'],
             'internal_number' => ['nullable', 'string', 'max:50'],
-            'addressable_type'=> ['required', 'string'],
-            'addressable_id'  => ['required', 'integer'],
+            'addressable_type'=> ['sometimes', 'string'],
+            'addressable_id'  => ['sometimes', 'integer'],
         ];
     }
 
