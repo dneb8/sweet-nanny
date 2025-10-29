@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Enums\Booking\StatusEnum; 
 
 class BookingAppointment extends Model
 {
@@ -21,6 +22,13 @@ class BookingAppointment extends Model
         'total_cost',
     ];
 
+    // Aquí el cast a enum
+    protected $casts = [
+        'status' => StatusEnum::class,
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
+    ];
+
     public function booking()
     {
         return $this->belongsTo(Booking::class);
@@ -31,14 +39,8 @@ class BookingAppointment extends Model
         return $this->belongsTo(Nanny::class);
     }
 
-    // public function price()
-    // {
-    //     return $this->belongsTo(Price::class);
-    // }
-
     public function addresses()
     {
         return $this->belongsToMany(Address::class);
     }
-
 }
