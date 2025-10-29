@@ -6,9 +6,9 @@ use App\Classes\Fetcher\{Fetcher, Filter};
 use App\Enums\User\RoleEnum;
 use App\Http\Requests\User\CreateUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
-use App\Models\{User};
+use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\{Auth, Validator};
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class UserService
@@ -18,20 +18,28 @@ class UserService
      */
     public function indexFetch(): LengthAwarePaginator
     {
-        $user = Auth::user();
-
-        $users = User::query()->orderBy('created_at', 'desc');
-
-        $users = Fetcher::for($users->whereNot('id', $user->id)
+        $users = User::query()
             ->with([
                 'roles',
-                'tutor',
+                'nanny',
                 'nanny.qualities',
-                ]))
-            ->paginate(User::whereNot('id', Auth::id())
-            ->count());
+                'tutor',
+                'media' => fn ($q) => $q->where('collection_name', 'images'),
+            ])
+            ->orderBy('created_at', 'desc');
 
-        return $users;
+        $sortables   = ['email','name','surnames'];
+        $searchables = ['email', 'name', 'surnames'];
+
+        return Fetcher::for($users)
+            ->allowFilters([
+                'role' => [
+                    'using' => fn (Filter $filter) => $filter->usingScope('filtrarPorRole'),
+                ],
+            ])
+            ->allowSort($sortables)
+            ->allowSearch($searchables)
+            ->paginate(12);
     }
 
     /**
@@ -55,11 +63,11 @@ class UserService
 
         // Crear relación dependiendo del rol
         if ($role === RoleEnum::NANNY) {
-            $user->nanny()->create([]); 
+            $user->nanny()->create([]);
         }
 
         if ($role === RoleEnum::TUTOR) {
-            $user->tutor()->create([]); 
+            $user->tutor()->create([]);
         }
 
         return $user;
@@ -76,6 +84,6 @@ class UserService
             'number' => $validated->number,
         ]);
 
-        $user->syncRoles(RoleEnum::from($validated->roles));   
+        $user->syncRoles(RoleEnum::from($validated->roles));
     }
 }

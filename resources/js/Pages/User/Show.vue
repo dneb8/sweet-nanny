@@ -4,7 +4,7 @@ import Heading from '@/components/Heading.vue'
 import { Button } from "@/components/ui/button"
 import { Icon } from '@iconify/vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
-import { useUserService } from '@/services/UserService'
+import { UserService } from '@/services/UserService'
 
 // Props
 const props = defineProps<{
@@ -20,7 +20,7 @@ const {
   deleteUser,
   confirmDeleteUser,
   getRoleBadgeClass,
-} = useUserService(props.user)
+} = UserService(props.user)
 </script>
 
 <template>

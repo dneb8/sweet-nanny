@@ -39,16 +39,12 @@ const submit = () => {
         return;
     }
 
-    console.log('form', form);
-
     form.post(route('users.store'));
 };
 
 const cancelar = () => {
     router.get(route('users.index'));
 }; 
-
-console.log('props', props);
 
 </script>
 

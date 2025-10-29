@@ -2,46 +2,32 @@
 
 namespace App\Models;
 
+use App\Eloquent\Builders\UserBuilder;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements HasMedia, MustVerifyEmail
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, HasUlids;
+    use HasFactory, HasRoles, HasUlids, InteractsWithMedia, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = [
-        'name',
-        'surnames',
-        'email',
-        'number',
-        'password',
+    protected $fillable = ['name', 'surnames', 'email', 'number', 'password'];
+    protected $hidden = ['password', 'remember_token'];
+
+    // 👇 Estos campos aparecerán en el JSON/props enviados a Inertia
+    protected $appends = [
+        'avatar_url',
+        'avatar_status',
+        'avatar_note',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -60,24 +46,75 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(Nanny::class);
     }
 
-    public function address()
-    {
-        return $this->belongsTo(Address::class);
-    }
-
     public function uniqueIds()
     {
-        // Generación automática de ulid para la columna ulid.
-        return [
-            'ulid',
-        ];
+        return ['ulid'];
     }
 
-    /**
-     * Usar ulid para obtener los modelos en los parámetros de rutas.
-     */
     public function getRouteKeyName()
     {
         return 'ulid';
+    }
+
+    /**
+     * Registra un custom Builder.
+     */
+    public function newEloquentBuilder($query): Builder
+    {
+        return new UserBuilder($query);
+    }
+
+    // 🔹 Spatie: define colección y disco
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('images')
+            ->useDisk('s3')           // usa el disco S3
+            ->singleFile();           // una sola foto de perfil
+    }
+
+    /**
+     * Helper: URL firmada si el bucket es privado; si falla, pública.
+     * (renombrado para no colisionar con el accessor moderno)
+     */
+    public function avatarSignedOrPublicUrl(?int $minutes = 10): ?string
+    {
+        $media = $this->getFirstMedia('images');
+        if (!$media) {
+            return null;
+        }
+
+        try {
+            return $media->getTemporaryUrl(now()->addMinutes($minutes));
+        } catch (\Throwable $e) {
+            return $media->getUrl();
+        }
+    }
+
+    // =========================
+    // Accessors ($appends)
+    // =========================
+
+    protected function avatarUrl(): Attribute
+    {
+        // expone 'avatar_url'
+        return Attribute::get(fn () => $this->avatarSignedOrPublicUrl());
+    }
+
+    protected function avatarStatus(): Attribute
+    {
+        // expone 'avatar_status'
+        return Attribute::get(function () {
+            $m = $this->getFirstMedia('images');
+            return $m?->getCustomProperty('status', 'approved');
+        });
+    }
+
+    protected function avatarNote(): Attribute
+    {
+        // expone 'avatar_note'
+        return Attribute::get(function () {
+            $m = $this->getFirstMedia('images');
+            return $m?->getCustomProperty('note');
+        });
     }
 }

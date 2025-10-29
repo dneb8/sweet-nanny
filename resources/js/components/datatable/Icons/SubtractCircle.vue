@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { defineComponent } from 'vue';
+
+defineComponent({
+  name: 'FluentSubtractCircle12Regular',
+});
+</script>
+<template>
+	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12">
+		<path fill="currentColor" d="M4 5.5a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1zM6 1a5 5 0 1 0 0 10A5 5 0 0 0 6 1M2 6a4 4 0 1 1 8 0a4 4 0 0 1-8 0" />
+	</svg>
+</template>
