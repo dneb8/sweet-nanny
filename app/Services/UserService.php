@@ -24,14 +24,14 @@ class UserService
                 'nanny',
                 'nanny.qualities',
                 'tutor',
-                // 'profilePhoto',
+                'media' => fn ($q) => $q->where('collection_name', 'images'),
             ])
             ->orderBy('created_at', 'desc');
 
-        $sortables = ['email','name','surnames'];
+        $sortables   = ['email','name','surnames'];
         $searchables = ['email', 'name', 'surnames'];
 
-        $users = Fetcher::for($users)
+        return Fetcher::for($users)
             ->allowFilters([
                 'role' => [
                     'using' => fn (Filter $filter) => $filter->usingScope('filtrarPorRole'),
@@ -40,8 +40,6 @@ class UserService
             ->allowSort($sortables)
             ->allowSearch($searchables)
             ->paginate(12);
-
-        return $users;
     }
 
     /**

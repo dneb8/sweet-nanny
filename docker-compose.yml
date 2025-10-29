@@ -32,7 +32,7 @@ services:
     expose:
       - "80"
     ports:
-      - '${DOCKER_WEB_PORT:-8086}:80'
+      - '${DOCKER_WEB_PORT:-8085}:80'
     environment:
       - VIRTUAL_HOST=${DOCKER_PROXY_DOMAIN}
       - LETSENCRYPT_HOST=${DOCKER_PROXY_DOMAIN}

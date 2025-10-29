@@ -6,9 +6,9 @@
 export function isDarkColor (hexColor: string) {
     // Convierte color de hex a RGB
     hexColor = hexColor.replace('#', '');
-    let r = parseInt(hexColor.substring(0, 2), 16);
-    let g = parseInt(hexColor.substring(2, 4), 16);
-    let b = parseInt(hexColor.substring(4, 6), 16);
+    const r = parseInt(hexColor.substring(0, 2), 16);
+    const g = parseInt(hexColor.substring(2, 4), 16);
+    const b = parseInt(hexColor.substring(4, 6), 16);
 
     // Normaliza los valores RGB de [0, 1]
     const normalizedR = r / 255;

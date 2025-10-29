@@ -32,11 +32,11 @@ const nestedMenu = (menu, currentRoute) => {
     return menu;
 }
 
-const enter = (el, done) => {
+const enter = (el) => {
     dom(el).slideDown(300);
 };
 
-const leave = (el, done) => {
+const leave = (el) => {
     dom(el).slideUp(300);
 };
 

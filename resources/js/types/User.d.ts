@@ -10,5 +10,6 @@ export interface User {
   roles: Array<Rol>;
   tutor?: Tutor; 
   nanny?: Nanny;
+  avatar_url?: string;
   created_at: string;
 }

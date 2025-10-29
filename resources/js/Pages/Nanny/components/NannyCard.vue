@@ -15,7 +15,7 @@ import { MoreVertical } from 'lucide-vue-next'
 import { Icon } from '@iconify/vue'
 
 import type { User } from '@/types/User'
-import { useUserService } from '@/services/UserService'
+import { UserService } from '@/services/UserService'
 
 const props = defineProps<{
   user: User
@@ -31,7 +31,7 @@ const {
   confirmDeleteUser,
   getRoleBadgeClass,
   scrollContainer,
-} = useUserService(props.user)
+} = UserService(props.user)
 </script>
 
 <template>
