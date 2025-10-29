@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-const { notifications, unreadCount, loading, fetchNotifications, markAllAsRead, handleNotificationClick } = useNotifications();
+const { notifications, unreadCount, fetchNotifications, markAllAsRead, handleNotificationClick } = useNotifications();
 
 const open = ref(false);
 
