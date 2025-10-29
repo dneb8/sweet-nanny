@@ -56,4 +56,11 @@ class Tutor extends Model
         return 'ulid';
     }
 
+    /**
+     * Get avatar URL from related User
+     */
+    public function avatarUrl(?int $minutes = 10): ?string
+    {
+        return $this->user?->avatarSignedOrPublicUrl($minutes);
+    }
 }
