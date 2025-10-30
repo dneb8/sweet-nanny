@@ -4,7 +4,7 @@ import type { Booking } from '@/types/Booking'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useBookingView } from '@/services/BookingService'
-import AwsMap from '@/components/AwsMap.vue'
+import GoogleMap from '@/components/GoogleMap.vue'
 const props = defineProps<{ booking: Booking }>()
 const v = useBookingView(props.booking)
 
@@ -234,13 +234,15 @@ const label =
               </div>
               
               <!-- Map -->
-              <AwsMap 
-                v-if="props.booking.address.latitude && props.booking.address.longitude"
-                :latitude="props.booking.address.latitude"
-                :longitude="props.booking.address.longitude"
-                height="200px"
+               <GoogleMap
+                :latitude="+(props.booking?.address?.latitude ?? 19.704)"
+                :longitude="+(props.booking?.address?.longitude ?? -103.344)"
                 :zoom="16"
+                height="320px"
+                :showMarker="true"
+                apiKey="AIzaSyAGsvUiKV_DFO5aXrswzvK_2X6NCQ7bsT0"
               />
+
             </div>
           </div>
 

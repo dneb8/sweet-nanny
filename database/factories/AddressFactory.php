@@ -54,8 +54,8 @@ class AddressFactory extends Factory
             'neighborhood' => $this->faker->citySuffix(),
             'zone' => $zone,
             'type' => $type,
-            'other_type' => $type === 'other' ? $this->faker->word() : null,
             'internal_number' => $this->faker->optional()->buildingNumber(),
+            'external_number' => $this->faker->buildingNumber(),
         ];
     }
 
