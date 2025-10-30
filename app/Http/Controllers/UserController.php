@@ -20,13 +20,13 @@ class UserController extends Controller
     {
         \Illuminate\Support\Facades\Gate::authorize('viewAny', User::class);
 
-        $roles = array_map(fn ($role) => $role->value, RoleEnum::cases());
+        $availableRoles = array_map(fn ($role) => $role->value, RoleEnum::cases());
 
         $users = $userService->indexFetch();
 
         return Inertia::render('User/Index', [
             'users' => $users,
-            'roles' => array_values($roles),
+            'roles' => array_values($availableRoles),
         ]);
     }
 
