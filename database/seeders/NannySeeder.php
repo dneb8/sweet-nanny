@@ -126,14 +126,19 @@ class NannySeeder extends Seeder
                 'start_date' => $data['start_date'],
             ]);
 
+            // Extraer número exterior del string de calle (ej: "Calle 8 de Julio #900" -> "900")
+            $streetParts = explode('#', $data['street']);
+            $externalNumber = count($streetParts) > 1 ? trim($streetParts[1]) : fake()->buildingNumber();
+            $streetName = trim($streetParts[0]);
+
             // Crear su dirección asociada (sin type, se genera aleatorio en el factory)
             Address::factory()->state([
                 'postal_code' => $data['postal_code'],
-                'street' => $data['street'],
+                'street' => $streetName,
                 'neighborhood' => $data['neighborhood'],
                 'zone' => $data['other_type'],
                 'internal_number' => $data['internal_number'],
-                'external_number' => $data['internal_number'],
+                'external_number' => $externalNumber,
             ])->forNanny($nanny)->create();
         }
     }
