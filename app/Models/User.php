@@ -19,6 +19,7 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
     use HasFactory, HasRoles, HasUlids, InteractsWithMedia, Notifiable;
 
     protected $fillable = ['name', 'surnames', 'email', 'number', 'password'];
+
     protected $hidden = ['password', 'remember_token'];
 
     // 👇 Estos campos aparecerán en el JSON/props enviados a Inertia
@@ -79,7 +80,7 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
     public function avatarSignedOrPublicUrl(?int $minutes = 10): ?string
     {
         $media = $this->getFirstMedia('images');
-        if (!$media) {
+        if (! $media) {
             return null;
         }
 
@@ -105,6 +106,7 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
         // expone 'avatar_status'
         return Attribute::get(function () {
             $m = $this->getFirstMedia('images');
+
             return $m?->getCustomProperty('status', 'approved');
         });
     }
@@ -114,6 +116,7 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
         // expone 'avatar_note'
         return Attribute::get(function () {
             $m = $this->getFirstMedia('images');
+
             return $m?->getCustomProperty('note');
         });
     }

@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('other_type')->nullable();
             $table->string('internal_number')->nullable();
 
-            $table->morphs('addressable'); 
+            $table->morphs('addressable');
 
             $table->softDeletes();
             $table->timestamps();

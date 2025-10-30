@@ -11,18 +11,18 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-{
-    Schema::create('children', function (Blueprint $table) {
-        $table->id();
-        $table->ulid('ulid')->unique();
-        $table->foreignId('tutor_id')->constrained('tutors')->onDelete('cascade');
-        $table->string('name', 100);
-        $table->date('birthdate');
-        $table->enum('kinkship', KinkshipEnum::values());
-        $table->softDeletes();
-        $table->timestamps();
-    });
-}
+    {
+        Schema::create('children', function (Blueprint $table) {
+            $table->id();
+            $table->ulid('ulid')->unique();
+            $table->foreignId('tutor_id')->constrained('tutors')->onDelete('cascade');
+            $table->string('name', 100);
+            $table->date('birthdate');
+            $table->enum('kinkship', KinkshipEnum::values());
+            $table->softDeletes();
+            $table->timestamps();
+        });
+    }
 
     /**
      * Reverse the migrations.

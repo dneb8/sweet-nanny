@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Review;
+use Illuminate\Database\Seeder;
 
 class ReviewSeeder extends Seeder
 {

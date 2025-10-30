@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
+use App\Enums\Address\ZoneEnum;
 use App\Http\Requests\Address\CreateAddressRequest;
 use App\Http\Requests\Address\UpdateAddressRequest;
 use App\Models\Address;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
-use App\Enums\Address\ZoneEnum;
 
 class AddressService
 {
@@ -20,26 +20,25 @@ class AddressService
         if (str_contains($type, '\\')) {
             return $type;
         }
-        return 'App\\Models\\' . Str::studly($type);
+
+        return 'App\\Models\\'.Str::studly($type);
     }
 
     /**
      * Resuelve el owner desde el request validado.
-     *
-     * @return \Illuminate\Database\Eloquent\Model|null
      */
     private function resolveOwner(array $data): ?Model
     {
         $type = $data['addressable_type'] ?? null;
-        $id   = $data['addressable_id']   ?? null;
+        $id = $data['addressable_id'] ?? null;
 
-        if (!$type || !$id) {
+        if (! $type || ! $id) {
             return null;
         }
 
         $fqcn = $this->normalizeOwnerFqcn($type);
 
-        if (!class_exists($fqcn)) {
+        if (! class_exists($fqcn)) {
             return null;
         }
 
@@ -77,15 +76,15 @@ class AddressService
         $zone = $this->determineZoneFromPostalCode($cp);
 
         $data = [
-            'postal_code'     => $validated['postal_code'],
-            'street'          => $validated['street'],
-            'neighborhood'    => $validated['neighborhood'],
-            'latitude'        => $validated['latitude']        ?? null,
-            'longitude'       => $validated['longitude']       ?? null,
-            'type'            => $validated['type'],
-            'other_type'      => $validated['other_type']      ?? null,
+            'postal_code' => $validated['postal_code'],
+            'street' => $validated['street'],
+            'neighborhood' => $validated['neighborhood'],
+            'latitude' => $validated['latitude'] ?? null,
+            'longitude' => $validated['longitude'] ?? null,
+            'type' => $validated['type'],
+            'other_type' => $validated['other_type'] ?? null,
             'internal_number' => $validated['internal_number'] ?? null,
-            'zone'            => $zone?->value, // se asigna automáticamente si está en rango
+            'zone' => $zone?->value, // se asigna automáticamente si está en rango
         ];
 
         // Intentamos crear por la relación morphMany addresses()
@@ -93,6 +92,7 @@ class AddressService
             if (method_exists($owner, 'addresses')) {
                 /** @var Address $address */
                 $address = $owner->addresses()->create($data);
+
                 return $address->fresh();
             }
         }
@@ -101,7 +101,7 @@ class AddressService
         /** @var Address $address */
         $address = Address::create(array_merge($data, [
             'addressable_type' => $this->normalizeOwnerFqcn($validated['addressable_type']),
-            'addressable_id'   => $validated['addressable_id'],
+            'addressable_id' => $validated['addressable_id'],
         ]));
 
         return $address->fresh();
@@ -115,26 +115,26 @@ class AddressService
         $validated = $request->validated();
 
         $payload = [
-            'postal_code'     => $validated['postal_code']     ?? $address->postal_code,
-            'street'          => $validated['street']          ?? $address->street,
-            'neighborhood'    => $validated['neighborhood']    ?? $address->neighborhood,
-            'latitude'        => array_key_exists('latitude', $validated) ? $validated['latitude'] : $address->latitude,
-            'longitude'       => array_key_exists('longitude', $validated) ? $validated['longitude'] : $address->longitude,
-            'type'            => $validated['type']            ?? $address->type,
-            'other_type'      => array_key_exists('other_type', $validated) ? $validated['other_type'] : $address->other_type,
+            'postal_code' => $validated['postal_code'] ?? $address->postal_code,
+            'street' => $validated['street'] ?? $address->street,
+            'neighborhood' => $validated['neighborhood'] ?? $address->neighborhood,
+            'latitude' => array_key_exists('latitude', $validated) ? $validated['latitude'] : $address->latitude,
+            'longitude' => array_key_exists('longitude', $validated) ? $validated['longitude'] : $address->longitude,
+            'type' => $validated['type'] ?? $address->type,
+            'other_type' => array_key_exists('other_type', $validated) ? $validated['other_type'] : $address->other_type,
             'internal_number' => array_key_exists('internal_number', $validated) ? $validated['internal_number'] : $address->internal_number,
         ];
 
         // Si cambia el CP, recalculamos la zona
-        if (!empty($validated['postal_code'])) {
+        if (! empty($validated['postal_code'])) {
             $cp = (int) $validated['postal_code'];
             $zone = $this->determineZoneFromPostalCode($cp);
             $payload['zone'] = $zone?->value;
         }
 
         // Si quieren cambiar el owner, permitimos reasociación
-        $hasOwnerType = !empty($validated['addressable_type']);
-        $hasOwnerId   = !empty($validated['addressable_id']);
+        $hasOwnerType = ! empty($validated['addressable_type']);
+        $hasOwnerId = ! empty($validated['addressable_id']);
 
         if ($hasOwnerType && $hasOwnerId) {
             $newOwner = $this->resolveOwner($validated);

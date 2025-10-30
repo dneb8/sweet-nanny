@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 class Filter
 {
     public function __construct(
-        private Builder $query, 
+        private Builder $query,
         private ?string $field,
         private mixed $value
     ) {
@@ -22,7 +22,7 @@ class Filter
     /**
      * Las relaciones, en caso de existir, necesarias para llegar al campo a filtrar desde el query dado.
      */
-    private null|string $relationships;
+    private ?string $relationships;
 
     /**
      * Determina si el filtro por default es estricta o no (WHERE $search vs WHERE LIKE %$search%).
@@ -32,12 +32,12 @@ class Filter
     /**
      * Determina el scope/s que se debe de aplicar, en caso de necesitarlo.
      */
-    private null|array $scopes = null;
+    private ?array $scopes = null;
 
     /**
      * Es posible aplicar una custom closure que recibe el término de búsqueda/filtro y lo transforma.
      */
-    private null|Closure $transformFilterValue = null;
+    private ?Closure $transformFilterValue = null;
 
     /**
      * Cambia el estatus de si el filtro debería de ser estricto o no.
@@ -59,7 +59,7 @@ class Filter
 
         } else {
             $this->scopes[] = $scope;
-        } 
+        }
 
         return $this;
     }
@@ -81,21 +81,23 @@ class Filter
     {
         $transformCallable = $this->transformFilterValue;
 
-        $filterValue = $this->transformFilterValue 
+        $filterValue = $this->transformFilterValue
             ? $transformCallable($this->value)
             : $this->value;
 
-        if ( !empty($this->scopes) ) {
+        if (! empty($this->scopes)) {
             collect($this->scopes)->each(fn ($scope) => $this->query->$scope($filterValue));
 
             return $this->query;
         }
 
-        if ($filterValue === null) return $this->query;
+        if ($filterValue === null) {
+            return $this->query;
+        }
 
         $clause = is_array($filterValue) ? 'whereIn' : 'where';
         $operator = (is_array($filterValue) || $this->strict) ? '=' : 'LIKE';
-        $search = (is_array($filterValue) || $this->strict) 
+        $search = (is_array($filterValue) || $this->strict)
             ? $filterValue
             : "%$filterValue%";
 
@@ -106,10 +108,10 @@ class Filter
                 if ($clause === 'whereIn') {
                     $query->$clause("$relatedTableName.{$this->field}", $search);
                 } else {
-                    $query->$clause("$relatedTableName.{$this->field}", $operator ,$search);
+                    $query->$clause("$relatedTableName.{$this->field}", $operator, $search);
                 }
             });
-            
+
         } else {
             if ($clause === 'whereIn') {
                 return $this->query->$clause($this->field, $search);

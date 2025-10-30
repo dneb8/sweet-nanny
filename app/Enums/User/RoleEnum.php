@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Enums\User;
 
@@ -11,9 +11,9 @@ enum RoleEnum: string
     public function label(): string
     {
         return match ($this) {
-            static::ADMIN => 'Administrator',
-            static::TUTOR => 'Tutor',
-            static::NANNY => 'Nanny'
+            self::ADMIN => 'Administrator',
+            self::TUTOR => 'Tutor',
+            self::NANNY => 'Nanny'
         };
     }
 }

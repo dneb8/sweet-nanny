@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Booking extends Model
 {
@@ -44,7 +44,7 @@ class Booking extends Model
     {
         return $this->belongsTo(Address::class);
     }
-    
+
     // Deprecated: Polymorphic relation (kept for migration)
     public function addressPolymorphic()
     {
@@ -55,7 +55,7 @@ class Booking extends Model
     public function children()
     {
         return $this->belongsToMany(Child::class, 'booking_child', 'booking_id', 'child_id')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     // Incluye soft-deleted para vistas históricas

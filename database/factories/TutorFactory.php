@@ -2,9 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Address;
-use App\Models\User;
 use App\Models\Tutor;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -22,7 +21,7 @@ class TutorFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(), 
+            'user_id' => User::factory(),
             'emergency_contact' => $this->faker->optional()->name(),
             'emergency_number' => $this->faker->optional()->phoneNumber(),
         ];
@@ -31,7 +30,7 @@ class TutorFactory extends Factory
     public function configure()
     {
         return $this->afterCreating(function (Tutor $tutor) {
-            $tutor->user->assignRole('tutor'); 
+            $tutor->user->assignRole('tutor');
         });
     }
 }

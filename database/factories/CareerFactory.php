@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Enums\Career\NameCareerEnum;
 use App\Models\Career;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Enums\Career\NameCareerEnum; 
 
 class CareerFactory extends Factory
 {
@@ -14,6 +14,7 @@ class CareerFactory extends Factory
     {
         $allCareerEnums = NameCareerEnum::cases();
         $randomCareer = $this->faker->randomElement($allCareerEnums);
+
         return [
             'name' => $randomCareer->value,
         ];

@@ -2,7 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\{BookingAppointment, Nanny};
+use App\Models\BookingAppointment;
+use App\Models\Nanny;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class BookingAppointmentFactory extends Factory

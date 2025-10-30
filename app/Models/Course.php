@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\Course\NameEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Enums\Course\NameEnum;
 
 class Course extends Model
 {
@@ -17,7 +17,7 @@ class Course extends Model
         'nanny_id',
     ];
 
-     protected $casts = [
+    protected $casts = [
         'name' => NameEnum::class,
     ];
 

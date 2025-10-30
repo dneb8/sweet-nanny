@@ -5,9 +5,9 @@ namespace Database\Factories;
 use App\Enums\Address\TypeEnum;
 use App\Enums\Address\ZoneEnum;
 use App\Models\Address;
-use App\Models\Tutor;
-use App\Models\Nanny;
 use App\Models\Booking;
+use App\Models\Nanny;
+use App\Models\Tutor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -22,11 +22,11 @@ class AddressFactory extends Factory
     {
         // Rangos de códigos postales por zona (usar string como clave)
         $zones = [
-            ZoneEnum::GUADALAJARA->value  => [44000, 45000],
-            ZoneEnum::ZAPOPAN->value      => [45000, 45246],
-            ZoneEnum::TONALA->value      => [45400, 45430],
-            ZoneEnum::TLAQUEPAQUE->value  => [45500, 45640],
-            ZoneEnum::TLAJOMULCO->value   => [45640, 45680],
+            ZoneEnum::GUADALAJARA->value => [44000, 45000],
+            ZoneEnum::ZAPOPAN->value => [45000, 45246],
+            ZoneEnum::TONALA->value => [45400, 45430],
+            ZoneEnum::TLAQUEPAQUE->value => [45500, 45640],
+            ZoneEnum::TLAJOMULCO->value => [45640, 45680],
         ];
 
         // Usar el postal_code si viene por state(), si no, generar aleatorio
@@ -42,19 +42,19 @@ class AddressFactory extends Factory
         }
 
         // Si el CP no entra en ningún rango, asignar Guadalajara por default
-        if (!$zone) {
+        if (! $zone) {
             $zone = ZoneEnum::GUADALAJARA->value;
         }
 
         $type = $this->faker->randomElement(TypeEnum::values());
 
         return [
-            'postal_code'     => (string) $postalCode,
-            'street'          => $this->faker->streetName(),
-            'neighborhood'    => $this->faker->citySuffix(),
-            'zone'            => $zone,
-            'type'            => $type,
-            'other_type'      => $type === 'other' ? $this->faker->word() : null,
+            'postal_code' => (string) $postalCode,
+            'street' => $this->faker->streetName(),
+            'neighborhood' => $this->faker->citySuffix(),
+            'zone' => $zone,
+            'type' => $type,
+            'other_type' => $type === 'other' ? $this->faker->word() : null,
             'internal_number' => $this->faker->optional()->buildingNumber(),
         ];
     }

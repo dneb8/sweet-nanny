@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\{Course, Nanny};
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Enums\Course\NameEnum;
+use App\Models\Course;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CourseFactory extends Factory
 {
@@ -43,4 +43,3 @@ class CourseFactory extends Factory
         ];
     }
 }
-

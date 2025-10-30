@@ -17,7 +17,7 @@ enum NameCareerEnum: string
 
     public function label(): string
     {
-        return match($this){
+        return match ($this) {
             self::PEDAGOGIA => 'Pedagogía',
             self::PSICOLOGIA => 'Psicología',
             self::ENFERMERIA => 'Enfermería',
@@ -40,7 +40,7 @@ enum NameCareerEnum: string
     {
         return array_combine(
             self::values(),
-            array_map(fn($case) => $case->label(), self::cases())
+            array_map(fn ($case) => $case->label(), self::cases())
         );
     }
 }

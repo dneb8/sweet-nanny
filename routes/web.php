@@ -1,4 +1,5 @@
 <?php
+
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -33,4 +34,3 @@ require __DIR__.'/bookings.php';
 require __DIR__.'/addresses.php';
 require __DIR__.'/children.php';
 require __DIR__.'/enums.php';
-

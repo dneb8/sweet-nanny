@@ -12,21 +12,18 @@ return new class extends Migration
     public function up(): void
     {
 
-
         Schema::create('nanny_qualities', function (Blueprint $table) {
-         //$table->id();
+            // $table->id();
 
-             $table->unsignedBigInteger('nanny_id');
-             $table->unsignedBigInteger('quality_id');
+            $table->unsignedBigInteger('nanny_id');
+            $table->unsignedBigInteger('quality_id');
 
-             // $table->foreign('nanny_id')->references('id')->on('nannies')->onDelete('cascade');
-             // $table->foreign('quality_id')->references('id')->on('qualities')->onDelete('cascade');
+            // $table->foreign('nanny_id')->references('id')->on('nannies')->onDelete('cascade');
+            // $table->foreign('quality_id')->references('id')->on('qualities')->onDelete('cascade');
 
-             $table->timestamps();
+            $table->timestamps();
         });
-        
-    
-         
+
     }
 
     /**

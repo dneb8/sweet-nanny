@@ -2,13 +2,12 @@
 
 namespace App\Services;
 
-use App\Classes\Fetcher\{Fetcher, Filter};
+use App\Classes\Fetcher\Fetcher;
 use App\Enums\User\RoleEnum;
 use App\Http\Requests\Tutor\CreateTutorRequest;
 use App\Http\Requests\Tutor\UpdateTutorRequest;
-use App\Models\{Tutor};
+use App\Models\Tutor;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\{Auth, Validator};
 use Illuminate\Support\Str;
 
 class TutorService
@@ -43,7 +42,7 @@ class TutorService
             'password' => bcrypt(Str::random(10)),
         ]);
 
-    $tutor->assignRole(RoleEnum::from($validated->roles));
+        $tutor->assignRole(RoleEnum::from($validated->roles));
 
     }
 
@@ -58,7 +57,7 @@ class TutorService
             'number' => $validated->number,
         ]);
 
-        $tutor->syncRoles(RoleEnum::from($validated->roles));   
+        $tutor->syncRoles(RoleEnum::from($validated->roles));
     }
 
     /**
