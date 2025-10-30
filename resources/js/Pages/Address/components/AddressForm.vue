@@ -11,7 +11,7 @@ import { route } from 'ziggy-js';
 import { AddressFormService } from '@/services/AddressFormService';
 import type { Address } from '@/types/Address';
 import { TypeEnum } from '@/enums/addresses/type.enum';
-import { useAwsLocation, type AddressSuggestion } from '@/composables/useAwsLocation';
+import { useGooglePlaces, type AddressSuggestion } from '@/composables/useGooglePlaces';
 
 // 🔸 Props polimórficas (REQUIRED)
 const props = defineProps<{
@@ -36,8 +36,8 @@ const { errors, loading, saved, values, setFieldValue } = formService;
 // Two-flow toggle: 'search' or 'manual'
 const activeFlow = ref<'search' | 'manual'>('search');
 
-// AWS Location autocomplete
-const { loading: searchLoading, suggestions, searchPlaces, clearSuggestions } = useAwsLocation();
+// Google Places autocomplete
+const { loading: searchLoading, suggestions, searchPlaces, clearSuggestions } = useGooglePlaces();
 const searchQuery = ref('');
 const showSuggestions = ref(false);
 
@@ -182,10 +182,10 @@ const submit = async () => {
             </div>
         </div>
 
-        <!-- AWS Search Flow -->
+        <!-- Google Places Search Flow -->
         <div v-if="activeFlow === 'search'" class="mb-6">
             <div class="relative">
-                <Label>Buscar dirección</Label>
+                <Label>Buscar dirección (Google Maps)</Label>
                 <Input :model-value="searchQuery" @input="onSearchInput" placeholder="Ej. Av. Vallarta 1234, Guadalajara" class="mt-1" />
 
                 <!-- Loading indicator -->
@@ -210,7 +210,7 @@ const submit = async () => {
                     </div>
                 </div>
             </div>
-            <p class="mt-2 text-xs text-muted-foreground">Escribe al menos 3 caracteres para buscar direcciones en México</p>
+            <p class="mt-2 text-xs text-muted-foreground">Escribe al menos 3 caracteres para buscar direcciones con Google Maps</p>
         </div>
 
         <!-- Manual Flow -->
