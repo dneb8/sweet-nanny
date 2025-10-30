@@ -9,7 +9,7 @@ enum UserPermission: string
 {
     use HasPermissions;
 
-    case Index  = 'user.index';
+    case Index = 'user.index';
     case Create = 'user.create';
     case Update = 'user.update';
     case Delete = 'user.delete';
@@ -17,7 +17,7 @@ enum UserPermission: string
     public static function map(): array
     {
         return [
-            self::Index->value  => [RoleEnum::ADMIN],
+            self::Index->value => [RoleEnum::ADMIN],
             self::Create->value => [RoleEnum::ADMIN],
             self::Update->value => [RoleEnum::ADMIN],
             self::Delete->value => [RoleEnum::ADMIN],

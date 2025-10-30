@@ -19,48 +19,48 @@ class CreateAddressRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $type = $this->input('addressable_type', $this->input('owner_type'));
-        $id   = $this->input('addressable_id',   $this->input('owner_id'));
+        $id = $this->input('addressable_id', $this->input('owner_id'));
 
         if ($type) {
             $type = str_replace('/', '\\', trim($type));
-            if (!str_contains($type, '\\')) {
-                $type = 'App\\Models\\' . Str::studly($type);
+            if (! str_contains($type, '\\')) {
+                $type = 'App\\Models\\'.Str::studly($type);
             }
         }
 
         $this->merge([
             'addressable_type' => $type,
-            'addressable_id'   => $id,
+            'addressable_id' => $id,
         ]);
     }
 
     public function rules(): array
     {
         return [
-            'postal_code'     => ['required', 'string', 'max:10'],
-            'street'          => ['required', 'string', 'max:255'],
-            'neighborhood'    => ['required', 'string', 'max:255'],
-            'type'            => ['required', 'in:' . implode(',', TypeEnum::values())],
-            'other_type'      => ['nullable', 'string', 'max:255'],
+            'postal_code' => ['required', 'string', 'max:10'],
+            'street' => ['required', 'string', 'max:255'],
+            'neighborhood' => ['required', 'string', 'max:255'],
+            'type' => ['required', 'in:'.implode(',', TypeEnum::values())],
+            'other_type' => ['nullable', 'string', 'max:255'],
             'internal_number' => ['nullable', 'string', 'max:50'],
 
             // polimórfico (REQUIRED al crear)
             'addressable_type' => ['required', 'string'],
-            'addressable_id'   => ['required', 'integer'],
+            'addressable_id' => ['required', 'integer'],
         ];
     }
 
     public function attributes(): array
     {
         return [
-            'postal_code'     => 'código postal',
-            'street'          => 'calle',
-            'neighborhood'    => 'colonia',
-            'type'            => 'tipo de dirección',
-            'other_type'      => 'otro tipo de dirección',
+            'postal_code' => 'código postal',
+            'street' => 'calle',
+            'neighborhood' => 'colonia',
+            'type' => 'tipo de dirección',
+            'other_type' => 'otro tipo de dirección',
             'internal_number' => 'número interno',
-            'addressable_type'=> 'tipo de propietario',
-            'addressable_id'  => 'propietario',
+            'addressable_type' => 'tipo de propietario',
+            'addressable_id' => 'propietario',
         ];
     }
 }

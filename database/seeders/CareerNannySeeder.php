@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Career;
-use App\Enums\Career\StatusEnum;
 use App\Enums\Career\DegreeEnum;
+use App\Enums\Career\StatusEnum;
+use App\Models\Career;
 use App\Models\Nanny;
+use Illuminate\Database\Seeder;
 
 class CareerNannySeeder extends Seeder
 {
@@ -21,6 +21,7 @@ class CareerNannySeeder extends Seeder
         // Asegúrate de que haya datos previos
         if ($nannies->isEmpty() || $careers->isEmpty()) {
             $this->command->warn('No hay nannies o careers en la BD. Seedéalos primero.');
+
             return;
         }
 
@@ -33,7 +34,7 @@ class CareerNannySeeder extends Seeder
             foreach ($selectedCareers as $career) {
                 $nanny->careers()->attach($career->id, [
                     'status' => $randomStatus->value,
-                    'degree' => $randomDegree->value,  
+                    'degree' => $randomDegree->value,
                     'institution' => fake()->company(),
                 ]);
             }

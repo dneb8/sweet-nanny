@@ -25,7 +25,7 @@ class CreateCourseRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'organization' => ['nullable', 'string', 'max:255'],
             'date' => ['required', 'date'],
-            'nanny_id' => ['nullable', 'integer', 'exists:nannies,id'], 
+            'nanny_id' => ['nullable', 'integer', 'exists:nannies,id'],
         ];
     }
 

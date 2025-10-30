@@ -23,13 +23,13 @@ class BookingFactory extends Factory
         $address = $tutor->addresses()->inRandomOrder()->first();
 
         return [
-            'tutor_id'   => $tutor->id,
+            'tutor_id' => $tutor->id,
             'address_id' => $address?->id,
             'description' => $this->faker->sentence(),
-            'recurrent'   => $this->faker->boolean(),
-            'qualities'   => [],
-            'careers'     => [],
-            'courses'     => [],
+            'recurrent' => $this->faker->boolean(),
+            'qualities' => [],
+            'careers' => [],
+            'courses' => [],
         ];
     }
 }

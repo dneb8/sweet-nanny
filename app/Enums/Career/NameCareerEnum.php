@@ -9,9 +9,9 @@ enum NameCareerEnum: string
     case ENFERMERIA = 'enfermeria';
     case ARTES = 'artes';
     case EDUCACION_ESPECIAL = 'educacion_especial';
-    case TRABAJO_SOCIAL = 'trabajo_social'; 
-    case PSICOPEDAGOGIA = 'psicopedagogia'; 
-    case EDUCACION_INFANTIL = 'educacion_infantil'; 
+    case TRABAJO_SOCIAL = 'trabajo_social';
+    case PSICOPEDAGOGIA = 'psicopedagogia';
+    case EDUCACION_INFANTIL = 'educacion_infantil';
     case NUTRICION = 'nutricion';
     case EDUCACION_PREESCOLAR = 'educacion_preescolar';
     case PSICOLOGIA_INFANTIL = 'psicologia_infantil';
@@ -22,7 +22,7 @@ enum NameCareerEnum: string
 
     public function label(): string
     {
-        return match($this){
+        return match ($this) {
             self::PEDAGOGIA => 'Pedagogía',
             self::PSICOLOGIA => 'Psicología',
             self::ENFERMERIA => 'Enfermería',
@@ -50,7 +50,7 @@ enum NameCareerEnum: string
     {
         return array_combine(
             self::values(),
-            array_map(fn($case) => $case->label(), self::cases())
+            array_map(fn ($case) => $case->label(), self::cases())
         );
     }
 }

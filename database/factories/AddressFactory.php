@@ -4,9 +4,9 @@ namespace Database\Factories;
 
 use App\Enums\Address\TypeEnum;
 use App\Models\Address;
-use App\Models\Tutor;
-use App\Models\Nanny;
 use App\Models\Booking;
+use App\Models\Nanny;
+use App\Models\Tutor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -31,11 +31,11 @@ class AddressFactory extends Factory
         $type = $this->faker->randomElement(TypeEnum::values());
 
         return [
-            'postal_code'     => $this->faker->postcode(),
-            'street'          => $this->faker->streetName(),
-            'neighborhood'    => $this->faker->citySuffix(),
-            'type'            => $type = $this->faker->randomElement(\App\Enums\Address\TypeEnum::values()),
-            'other_type'      => $type === 'other' ? $this->faker->word() : null,
+            'postal_code' => $this->faker->postcode(),
+            'street' => $this->faker->streetName(),
+            'neighborhood' => $this->faker->citySuffix(),
+            'type' => $type = $this->faker->randomElement(\App\Enums\Address\TypeEnum::values()),
+            'other_type' => $type === 'other' ? $this->faker->word() : null,
             'internal_number' => $this->faker->optional()->buildingNumber(),
         ];
     }

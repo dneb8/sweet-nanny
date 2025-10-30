@@ -2,7 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\{Course, Nanny};
+use App\Models\Course;
+use App\Models\Nanny;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CourseFactory extends Factory

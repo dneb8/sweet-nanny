@@ -9,18 +9,18 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-  public function up(): void
-{
-    Schema::create('prices', function (Blueprint $table) {
-        $table->id();
-        $table->string('type');                         
-        $table->decimal('cost', 8, 2);                  
-        $table->decimal('extra_hours', 8, 2);  
-        $table->decimal('night_shift', 8, 2);          
-        $table->decimal('special_care', 8, 2);  
-        $table->timestamps();
-    });
-}
+    public function up(): void
+    {
+        Schema::create('prices', function (Blueprint $table) {
+            $table->id();
+            $table->string('type');
+            $table->decimal('cost', 8, 2);
+            $table->decimal('extra_hours', 8, 2);
+            $table->decimal('night_shift', 8, 2);
+            $table->decimal('special_care', 8, 2);
+            $table->timestamps();
+        });
+    }
 
     /**
      * Reverse the migrations.

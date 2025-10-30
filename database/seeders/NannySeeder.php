@@ -12,7 +12,7 @@ class NannySeeder extends Seeder
         Nanny::factory()
             ->count(5)
             ->has(\App\Models\Address::factory()->count(1), 'addresses') // morphMany relation
-            ->create() 
-            ->each(fn($nanny) => $nanny->user->assignRole('nanny'));
+            ->create()
+            ->each(fn ($nanny) => $nanny->user->assignRole('nanny'));
     }
 }

@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Career\{CreateCareerRequest, UpdateCareerRequest};
+use App\Http\Requests\Career\CreateCareerRequest;
+use App\Http\Requests\Career\UpdateCareerRequest;
 use App\Models\Career;
 use App\Services\CareerService;
 use Illuminate\Http\RedirectResponse;

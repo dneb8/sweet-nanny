@@ -38,6 +38,7 @@ trait HasPermissions
     public static function allows(string $permission, \App\Enums\User\RoleEnum $role): bool
     {
         $allowedRoles = static::rolesFor($permission);
+
         return in_array($role, $allowedRoles, true);
     }
 }
