@@ -41,14 +41,16 @@ export class AddressFormService {
     // ✅ Validación: incluye addressable_* requeridos
     this.formSchema = toTypedSchema(
       z.object({
-        postal_code: z.string().nonempty("El código postal es obligatorio").max(10),
+        postal_code: z.string().nonempty("El código postal es obligatorio").length(5, "El código postal debe tener 5 dígitos").regex(/^\d{5}$/, "El código postal debe ser numérico"),
         street: z.string().nonempty("La calle es obligatoria").max(255),
         neighborhood: z.string().nonempty("La colonia es obligatoria").max(255),
+        external_number: z.string().nonempty("El número exterior es obligatorio").max(50),
+        internal_number: z.string().max(50).nullable().optional(),
+        municipality: z.string().max(255).nullable().optional(),
+        state: z.string().max(255).nullable().optional(),
         latitude: z.number().nullable().optional(),
         longitude: z.number().nullable().optional(),
         type: z.string().nonempty("El tipo de dirección es obligatorio"),
-        other_type: z.string().max(255).nullable().optional(),
-        internal_number: z.string().max(50).nullable().optional(),
         addressable_id: z.number().int().positive(),      // 🔸 polimórfico
         addressable_type: z.string().nonempty(),          // 🔸 polimórfico (FQCN)
       })
@@ -60,11 +62,13 @@ export class AddressFormService {
         postal_code: address?.postal_code ?? "",
         street: address?.street ?? "",
         neighborhood: address?.neighborhood ?? "",
+        external_number: address?.external_number ?? "",
+        internal_number: address?.internal_number ?? "",
+        municipality: address?.municipality ?? "",
+        state: address?.state ?? "",
         latitude: address?.latitude ?? null,
         longitude: address?.longitude ?? null,
         type: address?.type ?? "",
-        other_type: address?.other_type ?? "",
-        internal_number: address?.internal_number ?? "",
         addressable_id: ownerId,
         addressable_type: ownerType,
       },

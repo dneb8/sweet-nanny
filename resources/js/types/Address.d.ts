@@ -5,11 +5,13 @@ export interface Address
   postal_code: string
   street: string
   neighborhood: string
+  external_number: string
+  internal_number?: string | null
+  municipality?: string | null
+  state?: string | null
   latitude?: number | null
   longitude?: number | null
   type: string
-  other_type: string
-  internal_number: string
   nanny_id?: number  
   user?: User
 }

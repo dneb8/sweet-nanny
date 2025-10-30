@@ -25,6 +25,12 @@ Route::middleware('auth')->group(function () {
     Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unreadCount');
 });
 
+// Postal code API for SEPOMEX integration
+use App\Http\Controllers\PostalCodeController;
+
+Route::get('api/postal-code/{postalCode}', [PostalCodeController::class, 'show'])
+    ->name('postalcode.show');
+
 require __DIR__.'/users.php';
 require __DIR__.'/nannies.php';
 require __DIR__.'/tutors.php';

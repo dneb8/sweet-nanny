@@ -4,9 +4,10 @@ import { ref, type Ref } from 'vue';
 export interface AddressSuggestion {
     label: string;
     street: string;
+    external_number: string;
     neighborhood: string;
-    city?: string;
-    state?: string;
+    municipality: string;
+    state: string;
     postalCode: string;
     latitude: number;
     longitude: number;
@@ -44,18 +45,16 @@ export function useAwsLocation() {
         const addressNumber = place.AddressNumber || '';
         const street = place.Street || '';
         const neighborhood = place.Neighborhood || place.SubRegion || '';
-        const city = place.Municipality || '';
+        const municipality = place.Municipality || '';
         const state = place.Region || '';
         const postalCode = place.PostalCode || '';
 
-        // Build full street with number
-        const fullStreet = addressNumber ? `${street} ${addressNumber}` : street;
-
         return {
             label: place.Label,
-            street: fullStreet,
+            street: street,
+            external_number: addressNumber,
             neighborhood,
-            city,
+            municipality,
             state,
             postalCode,
             latitude,

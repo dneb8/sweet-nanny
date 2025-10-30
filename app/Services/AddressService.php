@@ -79,11 +79,13 @@ class AddressService
             'postal_code' => $validated['postal_code'],
             'street' => $validated['street'],
             'neighborhood' => $validated['neighborhood'],
+            'external_number' => $validated['external_number'],
+            'internal_number' => $validated['internal_number'] ?? null,
+            'municipality' => $validated['municipality'] ?? null,
+            'state' => $validated['state'] ?? null,
             'latitude' => $validated['latitude'] ?? null,
             'longitude' => $validated['longitude'] ?? null,
             'type' => $validated['type'],
-            'other_type' => $validated['other_type'] ?? null,
-            'internal_number' => $validated['internal_number'] ?? null,
             'zone' => $zone?->value, // se asigna automáticamente si está en rango
         ];
 
@@ -118,11 +120,13 @@ class AddressService
             'postal_code' => $validated['postal_code'] ?? $address->postal_code,
             'street' => $validated['street'] ?? $address->street,
             'neighborhood' => $validated['neighborhood'] ?? $address->neighborhood,
+            'external_number' => $validated['external_number'] ?? $address->external_number,
+            'internal_number' => array_key_exists('internal_number', $validated) ? $validated['internal_number'] : $address->internal_number,
+            'municipality' => array_key_exists('municipality', $validated) ? $validated['municipality'] : $address->municipality,
+            'state' => array_key_exists('state', $validated) ? $validated['state'] : $address->state,
             'latitude' => array_key_exists('latitude', $validated) ? $validated['latitude'] : $address->latitude,
             'longitude' => array_key_exists('longitude', $validated) ? $validated['longitude'] : $address->longitude,
             'type' => $validated['type'] ?? $address->type,
-            'other_type' => array_key_exists('other_type', $validated) ? $validated['other_type'] : $address->other_type,
-            'internal_number' => array_key_exists('internal_number', $validated) ? $validated['internal_number'] : $address->internal_number,
         ];
 
         // Si cambia el CP, recalculamos la zona
