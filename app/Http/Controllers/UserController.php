@@ -21,7 +21,7 @@ class UserController extends Controller
 
     public function index(UserService $userService): Response
     {
-        // Gate::authorize('viewAny', User::class);
+        \Illuminate\Support\Facades\Gate::authorize('viewAny', User::class);
 
         $roles = array_map(fn($role) => $role->value, RoleEnum::cases());
 
@@ -39,7 +39,7 @@ class UserController extends Controller
      */
     public function create(): Response
     {
-        // Gate::authorize('create', User::class);
+        \Illuminate\Support\Facades\Gate::authorize('create', User::class);
         $roles = RoleEnum::cases();
         return Inertia::render('User/Create', [
             'roles' => $roles,
@@ -82,7 +82,7 @@ class UserController extends Controller
      */
     public function edit(User $user): Response
     {
-        // Gate::authorize('update', $user);
+        \Illuminate\Support\Facades\Gate::authorize('update', $user);
         
         return Inertia::render('User/Edit', [
             'user' => $user->load(['roles']),
@@ -95,7 +95,7 @@ class UserController extends Controller
      */
     public function update(UserService $userService, UpdateUserRequest $request, User $user): RedirectResponse
     {
-        // Gate::authorize('update', $user);
+        \Illuminate\Support\Facades\Gate::authorize('update', $user);
 
         $userService->updateUser($user, $request);
 
@@ -131,7 +131,7 @@ class UserController extends Controller
      */
     public function destroy(User $user): RedirectResponse
     {
-        // Gate::authorize('delete', $user);
+        \Illuminate\Support\Facades\Gate::authorize('delete', $user);
 
         User::destroy($user->id);
 

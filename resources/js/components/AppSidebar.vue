@@ -4,7 +4,11 @@ import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
+import { usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
+
+const page = usePage();
 
 const mainNavItems: NavItem[] = [
     {
@@ -20,6 +24,11 @@ const adminNavItems: NavItem[] = [
         href: '/users',
         icon: 'proicons:person-multiple',
     },
+    {
+        title: 'Reviews',
+        href: '/admin/reviews',
+        icon: 'proicons:star',
+    },
     // {
     //     title: 'Niñeras',
     //     href: '/nannies',
@@ -31,6 +40,12 @@ const adminNavItems: NavItem[] = [
     //     icon: 'fluent-mdl2:family',
     // },
 ];
+
+// Check if user has ADMIN role
+const isAdmin = computed(() => {
+    const user = page.props.auth?.user as { roles?: string[] } | null;
+    return user?.roles?.includes('admin') ?? false;
+});
 
 const bookingsNavItems: NavItem[] = [
   {
@@ -70,7 +85,7 @@ const footerNavItems: NavItem[] = [
         <SidebarContent>
             <NavMain 
                 :items="mainNavItems" 
-                :adminItems="adminNavItems"
+                :adminItems="isAdmin ? adminNavItems : undefined"
                 :bookingsItems="bookingsNavItems"
             />
         </SidebarContent>
