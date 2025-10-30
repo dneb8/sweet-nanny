@@ -5,6 +5,8 @@ export interface Address
   postal_code: string
   street: string
   neighborhood: string
+  latitude?: number | null
+  longitude?: number | null
   type: string
   other_type: string
   internal_number: string

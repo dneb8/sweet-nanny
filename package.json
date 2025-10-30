@@ -24,7 +24,9 @@
         "vue-tsc": "^2.2.4"
     },
     "dependencies": {
+        "@aws-sdk/client-location": "^3.716.0",
         "@inertiajs/vue3": "^2.0.0",
+        "maplibre-gl": "^4.7.1",
         "@left4code/tw-starter": "^5.0.3",
         "@tailwindcss/vite": "^4.1.1",
         "@tanstack/vue-table": "^8.21.3",

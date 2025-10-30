@@ -22,6 +22,7 @@ export class AddressFormService {
   public formSchema
   public values
   public isFieldDirty
+  public setFieldValue: (field: string, value: any) => void
 
   public loading = ref<boolean>(false)
   public saved = ref<boolean>(false)
@@ -43,6 +44,8 @@ export class AddressFormService {
         postal_code: z.string().nonempty("El código postal es obligatorio").max(10),
         street: z.string().nonempty("La calle es obligatoria").max(255),
         neighborhood: z.string().nonempty("La colonia es obligatoria").max(255),
+        latitude: z.number().nullable().optional(),
+        longitude: z.number().nullable().optional(),
         type: z.string().nonempty("El tipo de dirección es obligatorio"),
         other_type: z.string().max(255).nullable().optional(),
         internal_number: z.string().max(50).nullable().optional(),
@@ -51,12 +54,14 @@ export class AddressFormService {
       })
     )
 
-    const { values, isFieldDirty, handleSubmit /*, setValues*/ } = useForm({
+    const { values, isFieldDirty, handleSubmit, setFieldValue } = useForm({
       validationSchema: this.formSchema,
       initialValues: {
         postal_code: address?.postal_code ?? "",
         street: address?.street ?? "",
         neighborhood: address?.neighborhood ?? "",
+        latitude: address?.latitude ?? null,
+        longitude: address?.longitude ?? null,
         type: address?.type ?? "",
         other_type: address?.other_type ?? "",
         internal_number: address?.internal_number ?? "",
@@ -67,6 +72,7 @@ export class AddressFormService {
 
     this.values = values
     this.isFieldDirty = isFieldDirty
+    this.setFieldValue = setFieldValue
 
     // Crear
     this.saveAddress = handleSubmit(async (vals) => {

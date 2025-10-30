@@ -4,6 +4,7 @@ import type { Booking } from '@/types/Booking'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useBookingView } from '@/services/BookingService'
+import AwsMap from '@/components/AwsMap.vue'
 const props = defineProps<{ booking: Booking }>()
 const v = useBookingView(props.booking)
 
@@ -219,16 +220,27 @@ const label =
               <Icon icon="lucide:map-pin" class="h-4 w-4" /> Dirección
             </h3>
             <div v-if="!props.booking.address" class="text-[13px] text-muted-foreground">No especificada</div>
-            <div v-else class="space-y-1.5 text-[13px]">
-              <p class="font-medium">
-                {{ props.booking.address.street }} {{ props.booking.address.ext_number }}
-                <span v-if="props.booking.address.int_number">, Int. {{ props.booking.address.int_number }}</span>
-              </p>
-              <p class="text-muted-foreground">{{ props.booking.address.neighborhood }}, {{ props.booking.address.city }}</p>
-              <p class="text-muted-foreground">{{ props.booking.address.state }}, {{ props.booking.address.postal_code }}</p>
-              <Badge v-if="props.booking.address.type" variant="secondary" class="mt-1 px-2 py-0.5 text-[11px]">
-                {{ props.booking.address.type }}
-              </Badge>
+            <div v-else class="space-y-3 text-[13px]">
+              <div class="space-y-1.5">
+                <p class="font-medium">
+                  {{ props.booking.address.street }}
+                  <span v-if="props.booking.address.internal_number">, Int. {{ props.booking.address.internal_number }}</span>
+                </p>
+                <p class="text-muted-foreground">{{ props.booking.address.neighborhood }}</p>
+                <p class="text-muted-foreground">{{ props.booking.address.postal_code }}</p>
+                <Badge v-if="props.booking.address.type" variant="secondary" class="mt-1 px-2 py-0.5 text-[11px]">
+                  {{ props.booking.address.type }}
+                </Badge>
+              </div>
+              
+              <!-- Map -->
+              <AwsMap 
+                v-if="props.booking.address.latitude && props.booking.address.longitude"
+                :latitude="props.booking.address.latitude"
+                :longitude="props.booking.address.longitude"
+                height="200px"
+                :zoom="16"
+              />
             </div>
           </div>
 
