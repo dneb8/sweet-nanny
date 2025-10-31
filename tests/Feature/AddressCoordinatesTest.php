@@ -16,7 +16,9 @@ test('address can be created with coordinates', function () {
 
     $addressData = [
         'postal_code' => '44100',
-        'street' => 'Av. Vallarta 1234',
+        'street' => 'Av. Vallarta',
+        'name' => 'Casa en Av. Vallarta 1234',
+        'external_number' => '1234',
         'neighborhood' => 'Americana',
         'latitude' => 20.676176,
         'longitude' => -103.347890,
@@ -31,7 +33,8 @@ test('address can be created with coordinates', function () {
 
     $this->assertDatabaseHas('addresses', [
         'postal_code' => '44100',
-        'street' => 'Av. Vallarta 1234',
+        'street' => 'Av. Vallarta',
+        'external_number' => '1234',
         'neighborhood' => 'Americana',
         'addressable_type' => 'App\\Models\\Tutor',
         'addressable_id' => $tutor->id,
@@ -48,7 +51,9 @@ test('address can be created without coordinates', function () {
 
     $addressData = [
         'postal_code' => '44100',
-        'street' => 'Av. Vallarta 1234',
+        'street' => 'Av. Vallarta',
+        'name' => 'Casa en Av. Vallarta 1234',
+        'external_number' => '1234',
         'neighborhood' => 'Americana',
         'type' => 'casa',
         'addressable_type' => 'App\\Models\\Tutor',
@@ -70,7 +75,9 @@ test('address coordinates are validated within valid ranges', function () {
 
     $addressData = [
         'postal_code' => '44100',
-        'street' => 'Av. Vallarta 1234',
+        'street' => 'Av. Vallarta',
+        'name' => 'Casa en Av. Vallarta 1234',
+        'external_number' => '1234',
         'neighborhood' => 'Americana',
         'latitude' => 91, // Invalid latitude
         'longitude' => -103.347890,

@@ -78,6 +78,7 @@ class AddressService
         $data = [
             'postal_code' => $validated['postal_code'],
             'street' => $validated['street'],
+            'name' => $validated['name'],
             'neighborhood' => $validated['neighborhood'],
             'external_number' => $validated['external_number'],
             'internal_number' => $validated['internal_number'] ?? null,
@@ -119,6 +120,7 @@ class AddressService
         $payload = [
             'postal_code' => $validated['postal_code'] ?? $address->postal_code,
             'street' => $validated['street'] ?? $address->street,
+            'name' => $validated['name'] ?? $address->name,
             'neighborhood' => $validated['neighborhood'] ?? $address->neighborhood,
             'external_number' => $validated['external_number'] ?? $address->external_number,
             'internal_number' => array_key_exists('internal_number', $validated) ? $validated['internal_number'] : $address->internal_number,

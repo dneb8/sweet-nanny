@@ -27,6 +27,7 @@ test('address can be updated with external_number', function () {
     $updateData = [
         'postal_code' => '44160',
         'street' => 'Av. Patria',
+        'name' => 'Departamento en Av. Patria 2500',
         'external_number' => '2500',
         'neighborhood' => 'Jardines del Bosque',
         'type' => 'departamento',
@@ -98,6 +99,7 @@ test('address update persists coordinates', function () {
     $updateData = [
         'postal_code' => '44160',
         'street' => 'Av. Patria',
+        'name' => 'Departamento en Av. Patria 2500',
         'external_number' => '2500',
         'neighborhood' => 'Jardines del Bosque',
         'type' => 'departamento',
