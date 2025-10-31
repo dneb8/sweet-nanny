@@ -103,12 +103,9 @@ class Nanny extends Model
     public function scopeAvailableBetween($query, $startDate, $endDate)
     {
         return $query->whereDoesntHave('bookingAppointments', function ($q) use ($startDate, $endDate) {
-            $q->where('nanny_id', '!=', null)
-                ->where(function ($q) use ($startDate, $endDate) {
-                    // Check for overlap: existing.start < new.end AND existing.end > new.start
-                    $q->where('start_date', '<', $endDate)
-                        ->where('end_date', '>', $startDate);
-                });
+            // Check for overlap: existing.start < new.end AND existing.end > new.start
+            $q->where('start_date', '<', $endDate)
+                ->where('end_date', '>', $startDate);
         });
     }
 }

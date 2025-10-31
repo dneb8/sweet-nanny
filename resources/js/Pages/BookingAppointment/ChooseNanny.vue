@@ -125,7 +125,7 @@ const filteredNannies = computed(() => {
                         Cita: {{ formatDate(props.appointment.start_date) }} - {{ formatDate(props.appointment.end_date) }}
                     </p>
                 </div>
-                <Button variant="outline" size="sm" @click="$inertia.get(route('bookings.show', props.booking.id))">
+                <Button variant="outline" size="sm" @click="router.get(route('bookings.show', props.booking.id))">
                     <Icon icon="lucide:arrow-left" class="mr-2 h-4 w-4" />
                     Volver
                 </Button>
