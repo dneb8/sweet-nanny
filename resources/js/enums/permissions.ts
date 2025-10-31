@@ -10,6 +10,9 @@ export const Permissions = {
         update: ['admin'],
         delete: ['admin'],
     },
+    booking_appointment: {
+        choose_nanny: ['admin', 'tutor'],
+    },
 } as const;
 
 export type PermissionMap = typeof Permissions;

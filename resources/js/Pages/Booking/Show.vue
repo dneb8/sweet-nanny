@@ -4,6 +4,7 @@ import type { Booking } from '@/types/Booking'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useBookingView } from '@/services/BookingService'
+import { bookingAppointmentPolicy } from '@/policies/bookingAppointmentPolicy'
 const props = defineProps<{ booking: Booking }>()
 const v = useBookingView(props.booking)
 
@@ -149,6 +150,17 @@ const label =
                 </div>
                 <div v-if="a.nanny" class="text-[12px] text-muted-foreground">
                   Niñera: <span class="text-foreground font-medium">{{ a.nanny.name }}</span>
+                </div>
+                <div v-else-if="bookingAppointmentPolicy.canChooseNanny(a, props.booking)" class="pt-2">
+                  <Button
+                    size="sm"
+                    variant="default"
+                    class="w-full text-[11px] h-7"
+                    @click="$inertia.get(route('bookings.appointments.nannies.choose', { booking: props.booking.id, appointment: a.id }))"
+                  >
+                    <Icon icon="lucide:user-plus" class="mr-1.5 h-3.5 w-3.5" />
+                    Elegir niñera
+                  </Button>
                 </div>
                 <div v-if="a.notes" class="text-[12px] leading-snug pt-2 border-t border-white/20">
                   {{ a.notes }}
