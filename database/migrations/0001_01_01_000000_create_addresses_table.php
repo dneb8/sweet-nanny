@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\Address\TypeEnum;
+use App\Enums\Address\ZoneEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -20,10 +21,11 @@ return new class extends Migration
             $table->string('street');
             $table->string('neighborhood');
             $table->enum('type', TypeEnum::values());
+            $table->enum('zone', ZoneEnum::values())->nullable();
             $table->string('other_type')->nullable();
             $table->string('internal_number')->nullable();
 
-            $table->morphs('addressable'); 
+            $table->morphs('addressable');
 
             $table->softDeletes();
             $table->timestamps();

@@ -3,7 +3,8 @@
 namespace Database\Seeders;
 
 use App\Enums\User\RoleEnum;
-use App\Models\{Nanny, Tutor};
+use App\Models\Nanny;
+use App\Models\Tutor;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -18,7 +19,7 @@ class UserSeeder extends Seeder
         foreach (RoleEnum::cases() as $role) {
             $user = User::factory()->state([
                 'name' => $role->label(),
-                'email' => strtolower($role->value) . '@test.com',
+                'email' => strtolower($role->value).'@test.com',
                 'password' => Hash::make('password'),
             ])->create();
 
@@ -36,5 +37,4 @@ class UserSeeder extends Seeder
             };
         }
     }
-
 }

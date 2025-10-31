@@ -4,20 +4,20 @@ namespace App\Enums\Children;
 
 enum KinkshipEnum: string
 {
-    case HIJO     = 'hijo';
-    case SOBRINO  = 'sobrino';
-    case PRIMO    = 'primo';
-    case HERMANO  = 'hermano';
-    case OTRO     = 'otro';
+    case HIJO = 'hijo';
+    case SOBRINO = 'sobrino';
+    case PRIMO = 'primo';
+    case HERMANO = 'hermano';
+    case OTRO = 'otro';
 
     public function label(): string
     {
         return match ($this) {
-            self::HIJO     => 'Hijo(a)',
-            self::SOBRINO  => 'Sobrino(a)',
-            self::PRIMO    => 'Primo(a)',
-            self::HERMANO  => 'Hermano(a)',
-            self::OTRO     => 'Otro',
+            self::HIJO => 'Hijo(a)',
+            self::SOBRINO => 'Sobrino(a)',
+            self::PRIMO => 'Primo(a)',
+            self::HERMANO => 'Hermano(a)',
+            self::OTRO => 'Otro',
         };
     }
 

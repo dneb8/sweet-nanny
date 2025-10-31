@@ -30,10 +30,10 @@ class ProfileController extends Controller
 
         return Inertia::render('settings/Profile', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
-            'status'          => $request->session()->get('status'),
-            'avatarUrl'       => $user->avatar_url,     // accessor
-            'avatarStatus'    => $user->avatar_status,  // accessor
-            'avatarNote'      => $user->avatar_note,    // accessor
+            'status' => $request->session()->get('status'),
+            'avatarUrl' => $user->avatar_url,     // accessor
+            'avatarStatus' => $user->avatar_status,  // accessor
+            'avatarNote' => $user->avatar_note,    // accessor
         ]);
     }
 
@@ -70,10 +70,9 @@ class ProfileController extends Controller
         $user->addMediaFromRequest('avatar')
             ->withCustomProperties([
                 'status' => 'pending',
-                'note'   => 'En validación',
+                'note' => 'En validación',
             ])
             ->toMediaCollection('images', 's3');
-
 
         return to_route('profile.edit')->with('info', 'Tu imagen se subió. Te notificaremos cuando esté validada.');
     }
@@ -119,7 +118,7 @@ class ProfileController extends Controller
     private function kickoffAvatarValidationIfNeeded($user): void
     {
         $media = $user->getFirstMedia('images');
-        if (!$media) {
+        if (! $media) {
             return;
         }
 
@@ -133,7 +132,7 @@ class ProfileController extends Controller
         $lockDurationSeconds = 30; // Prevents re-queuing validation jobs for 30 seconds
         $gotLock = Cache::lock($lockKey, $lockDurationSeconds)->get(); // true si obtiene el lock
 
-        if (!$gotLock) {
+        if (! $gotLock) {
             return;
         }
 

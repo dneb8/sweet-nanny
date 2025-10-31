@@ -2,33 +2,33 @@
 
 namespace App\Classes\Fetcher;
 
-use Illuminate\Http\Request;
-use Illuminate\Contracts\Database\Eloquent\Builder;
 use App\Classes\QueryHelpers;
 use Closure;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class Fetcher
 {
     /**
      * Constructor de la clase. Se constituye de un $query y de un $request.
      */
-    public function __construct (
-        public Builder $query, 
+    public function __construct(
+        public Builder $query,
         public Request $request,
         public $sortDefaultField = null,
         public $sortDefaultDirection = 'desc',
     ) {}
 
     /**
-     * Método estático que permite instanciar la clase de una forma más 
-     * legible ~Fetcher::for($query)~, retorna una nueva instancia de la clase. 
+     * Método estático que permite instanciar la clase de una forma más
+     * legible ~Fetcher::for($query)~, retorna una nueva instancia de la clase.
      */
     public static function for(Builder $query)
     {
         return new static(
-            query: $query, 
+            query: $query,
             request: request()
         );
     }
@@ -37,11 +37,11 @@ class Fetcher
      * Extrae el valor de búsqueda del request y discrimina los resultados en función
      * de dicho valor. Solamente busca en los campos recibidos "$enabledField", que pueden
      * llegar a incluir campos anidados.
-     * 
-     * @var array<string> $enabledFields, arreglo de campos permitidos para buscar.
-     * @var string $fromQuerystringAs parámetro del cuál extraer el término de búsqueda desde el querystring.
+     *
+     * @var array<string>, arreglo de campos permitidos para buscar.
+     * @var string parámetro del cuál extraer el término de búsqueda desde el querystring.
      */
-    public function allowSearch (array $enabledFields, string $fromQuerystringAs = 'searchTerm'): self
+    public function allowSearch(array $enabledFields, string $fromQuerystringAs = 'searchTerm'): self
     {
         $this->query = QueryHelpers::search(
             query: $this->query,
@@ -50,13 +50,13 @@ class Fetcher
         );
 
         return $this;
-    } 
+    }
 
     /**
      * Permite filtrar mediante ciertos campos. Permitiendo filtrado estricto o no.
-     * 
-     * @var array<string, array> $enabledFilters, arreglo de filtros permitidos.
-     * @var string $fromQuerystringAs parámetro del cuál extraer los filtros desde el querystring.
+     *
+     * @var array<string, array>, arreglo de filtros permitidos.
+     * @var string parámetro del cuál extraer los filtros desde el querystring.
      */
     public function allowFilters(array $enabledFields, string $fromQuerystringAs = 'filters'): self
     {
@@ -66,13 +66,15 @@ class Fetcher
             $field = $options['as'] ?? '';
             $filterCallback = $options['using'] ?? null;
 
-            if ( !array_key_exists($filterName, $activeFilters) ) return;
+            if (! array_key_exists($filterName, $activeFilters)) {
+                return;
+            }
 
             $filter = new Filter($this->query, $field, $activeFilters[$filterName]);
 
             if ($filterCallback) {
                 $filterCallback($filter);
-            } 
+            }
 
             $filter->apply();
         });
@@ -83,33 +85,31 @@ class Fetcher
     /**
      * Se encarga de extraer el método de ordenamiento del request y ejecutarlo en la query dada.
      * Sólo se podrá ordenar pos los campos "$enabledSorts"
-     * 
-     * @var array<string> $enabledFields, arreglo de campos permitidos para ordenar.
-     * @var string $columnFromQuerystringAs parámetro del cuál extraer la columna a ordenar desde el querystring.
-     * @var string $directionFromQuerystringAs parámetro del cuál extraer la dirección de ordenamiento desde el querystring.
+     *
+     * @var array<string>, arreglo de campos permitidos para ordenar.
+     * @var string parámetro del cuál extraer la columna a ordenar desde el querystring.
+     * @var string parámetro del cuál extraer la dirección de ordenamiento desde el querystring.
      */
-    public function allowSort (array $enabledSorts, string $columnFromQuerystringAs = 'sortBy', string $directionFromQuerystringAs = 'sortDirection'): self
+    public function allowSort(array $enabledSorts, string $columnFromQuerystringAs = 'sortBy', string $directionFromQuerystringAs = 'sortDirection'): self
     {
         $sortField = $this->request->has($columnFromQuerystringAs) ? $this->request->get($columnFromQuerystringAs) : '';
         $sortDirection = $this->request->get($directionFromQuerystringAs);
 
-        if ( in_array($sortField, $enabledSorts) && $sortDirection ) {
+        if (in_array($sortField, $enabledSorts) && $sortDirection) {
             QueryHelpers::sort(
                 query: $this->query,
-                fields: [$sortField], 
+                fields: [$sortField],
                 sortDirection: $sortDirection
             );
-        }
-        else if($this->sortDefaultField) {
+        } elseif ($this->sortDefaultField) {
 
             QueryHelpers::sort(
                 query: $this->query,
-                fields: $this->sortDefaultField, 
+                fields: $this->sortDefaultField,
                 sortDirection: $this->sortDefaultDirection
             );
-            dd( 'enableSort', $this->request->all() );
+            dd('enableSort', $this->request->all());
         }
-        
 
         return $this;
     }
@@ -117,19 +117,19 @@ class Fetcher
     /**
      * Extra los parámetros de paginación del request y los aplica a la instancia de la query.
      * Recibe un $defaultOfsset para aplicar en caso de que no existan parámetros en  el request.
-     * 
-     * @var int $defaultOffset cantidad de elementos para paginar por default.
-     * @var string $pageName nombre de la página a paginar.
-     * @var string $fromQuerystringAs parámetro del cuál extraer la cantidad de elementos desde el querystring.
+     *
+     * @var int cantidad de elementos para paginar por default.
+     * @var string nombre de la página a paginar.
+     * @var string parámetro del cuál extraer la cantidad de elementos desde el querystring.
      */
-    public function paginate (int $defaultOffset = 10, string $pageName = "page", string $fromQuerystringAs = 'per_page'): LengthAwarePaginator
+    public function paginate(int $defaultOffset = 10, string $pageName = 'page', string $fromQuerystringAs = 'per_page'): LengthAwarePaginator
     {
         $offset = $this->request->get($fromQuerystringAs);
 
         if ($offset === 'all') {
             $offset = $this->query->count();
 
-        } else if ( !isset($offset) ) {
+        } elseif (! isset($offset)) {
             $offset = $defaultOffset;
         }
 

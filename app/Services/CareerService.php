@@ -51,7 +51,7 @@ class CareerService
 
             $nanny = \App\Models\Nanny::findOrFail($validated->nanny_id);
             $nanny->careers()->updateExistingPivot(
-                $career->id, 
+                $career->id,
                 [
                     'degree' => $validated->degree ?? null,
                     'status' => $validated->status ?? null,

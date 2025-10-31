@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Enums\Career;
+
 enum StatusEnum: string
 {
     // Valores que se guardarán en la base de datos (clave interna)
@@ -15,13 +16,13 @@ enum StatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            static::EN_CURSO   => 'En Curso',
-            static::FINALIZADO => 'Finalizado (Egresado)',
-            static::TITULADO   => 'Titulado(a)',
-            static::TRUNCA => 'Trunca (Abandonada)',
+            self::EN_CURSO => 'En Curso',
+            self::FINALIZADO => 'Finalizado (Egresado)',
+            self::TITULADO => 'Titulado(a)',
+            self::TRUNCA => 'Trunca (Abandonada)',
         };
     }
-    
+
     public static function toArray(): array
     {
         return array_column(self::cases(), 'label', 'value');

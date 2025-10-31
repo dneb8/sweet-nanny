@@ -1,4 +1,5 @@
 <?php
+
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -24,6 +25,12 @@ Route::middleware('auth')->group(function () {
     Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unreadCount');
 });
 
+// Postal code API for SEPOMEX integration
+use App\Http\Controllers\PostalCodeController;
+
+Route::get('api/postal-code/{postalCode}', [PostalCodeController::class, 'show'])
+    ->name('postalcode.show');
+
 require __DIR__.'/users.php';
 require __DIR__.'/nannies.php';
 require __DIR__.'/tutors.php';
@@ -33,4 +40,3 @@ require __DIR__.'/bookings.php';
 require __DIR__.'/addresses.php';
 require __DIR__.'/children.php';
 require __DIR__.'/enums.php';
-

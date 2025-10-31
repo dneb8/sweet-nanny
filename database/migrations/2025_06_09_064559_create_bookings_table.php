@@ -9,27 +9,27 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-   public function up()
-{
-    Schema::create('bookings', function (Blueprint $table) {
-        $table->id();
+    public function up()
+    {
+        Schema::create('bookings', function (Blueprint $table) {
+            $table->id();
 
-        $table->text('description')->nullable();
-        $table->boolean('recurrent')->default(false);
-        
-        // Address reference (Tutor owns addresses, booking references by ID)
-        $table->foreignId('address_id')->nullable()->constrained('addresses')->onDelete('set null');
-        
-        // Nanny requirements (all as JSON arrays)
-        $table->json('qualities')->nullable();
-        $table->json('careers')->nullable();
-        $table->json('courses')->nullable();
-        
-        $table->timestamps();
+            $table->text('description')->nullable();
+            $table->boolean('recurrent')->default(false);
 
-        $table->foreignId('tutor_id')->constrained()->onDelete('cascade')->nullable();
-    });
-}
+            // Address reference (Tutor owns addresses, booking references by ID)
+            $table->foreignId('address_id')->nullable()->constrained('addresses')->onDelete('set null');
+
+            // Nanny requirements (all as JSON arrays)
+            $table->json('qualities')->nullable();
+            $table->json('careers')->nullable();
+            $table->json('courses')->nullable();
+
+            $table->timestamps();
+
+            $table->foreignId('tutor_id')->constrained()->onDelete('cascade')->nullable();
+        });
+    }
 
     /**
      * Reverse the migrations.

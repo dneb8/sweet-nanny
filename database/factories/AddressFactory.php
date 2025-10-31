@@ -3,10 +3,11 @@
 namespace Database\Factories;
 
 use App\Enums\Address\TypeEnum;
+use App\Enums\Address\ZoneEnum;
 use App\Models\Address;
-use App\Models\Tutor;
-use App\Models\Nanny;
 use App\Models\Booking;
+use App\Models\Nanny;
+use App\Models\Tutor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,48 +18,62 @@ class AddressFactory extends Factory
     /** @var class-string<\App\Models\Address> */
     protected $model = Address::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * Nota: NO seteamos addressable_* por defecto; se deben crear
-     * SIEMPRE a través de la relación polimórfica o usando los helpers forX().
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
-        // Selecciona un tipo válido del enum (string backeado)
+        // Rangos de códigos postales por zona (usar string como clave)
+        $zones = [
+            ZoneEnum::GUADALAJARA->value => [44000, 44999],
+            ZoneEnum::ZAPOPAN->value => [45000, 45246],
+            ZoneEnum::TONALA->value => [45400, 45430],
+            ZoneEnum::TLAQUEPAQUE->value => [45500, 45639],
+            ZoneEnum::TLAJOMULCO->value => [45640, 45680],
+        ];
+
+        // Usar el postal_code si viene por state(), si no, generar aleatorio
+        $postalCode = $this->attributes['postal_code'] ?? $this->faker->numberBetween(44100, 45899);
+
+        // Determinar la zona según el CP
+        $zone = null;
+        foreach ($zones as $zoneValue => [$min, $max]) {
+            if ($postalCode >= $min && $postalCode <= $max) {
+                $zone = $zoneValue; // ahora es string ('guadalajara', 'zapopan', etc)
+                break;
+            }
+        }
+
+        // Si el CP no entra en ningún rango, asignar Guadalajara por default
+        if (! $zone) {
+            $zone = ZoneEnum::GUADALAJARA->value;
+        }
+
         $type = $this->faker->randomElement(TypeEnum::values());
 
+        $street = $this->faker->streetName();
+        $externalNumber = $this->faker->buildingNumber();
+        $neighborhood = $this->faker->citySuffix();
+
         return [
-            'postal_code'     => $this->faker->postcode(),
-            'street'          => $this->faker->streetName(),
-            'neighborhood'    => $this->faker->citySuffix(),
-            'type'            => $type = $this->faker->randomElement(\App\Enums\Address\TypeEnum::values()),
-            'other_type'      => $type === 'other' ? $this->faker->word() : null,
+            'postal_code' => (string) $postalCode,
+            'street' => $street,
+            'name' => $street.' #'.$externalNumber.' — '.$neighborhood,
+            'neighborhood' => $neighborhood,
+            'zone' => $zone,
+            'type' => $type,
             'internal_number' => $this->faker->optional()->buildingNumber(),
+            'external_number' => $externalNumber,
         ];
     }
 
-    /**
-     * Helper: asociar a un Tutor via relación polimórfica.
-     */
     public function forTutor(Tutor $tutor): static
     {
         return $this->for($tutor, 'addressable');
     }
 
-    /**
-     * Helper: asociar a una Nanny via relación polimórfica.
-     */
     public function forNanny(Nanny $nanny): static
     {
         return $this->for($nanny, 'addressable');
     }
 
-    /**
-     * Helper: asociar a una Booking (morphOne).
-     */
     public function forBooking(Booking $booking): static
     {
         return $this->for($booking, 'addressable');

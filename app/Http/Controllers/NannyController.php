@@ -1,14 +1,14 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Http\Request;
+
+use App\Enums\Nanny\QualityEnum;
+use App\Http\Requests\Nanny\CreateNannyRequest;
+use App\Http\Requests\Nanny\UpdateNannyRequest;
 use App\Models\Nanny;
 use App\Models\Quality;
-use App\Http\Requests\Nanny\{CreateNannyRequest, UpdateNannyRequest};
-use App\Services\NannyService;
-use Inertia\{Inertia, Response};
-use App\Enums\Nanny\QualityEnum;
-
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class NannyController extends Controller
 {
@@ -35,16 +35,16 @@ class NannyController extends Controller
     {
         return Inertia::render('Nanny/Show', [
             'nanny' => $nanny->load([
+                'user',
                 'addresses',
                 'courses',
-                'careers',         
+                'careers',
                 'qualities',
                 'reviews',
-                'bookingAppointments.booking', 
+                'bookingAppointments.booking',
             ]),
         ]);
     }
-
 
     /**
      * Show the form for editing the specified resource.
@@ -74,7 +74,7 @@ class NannyController extends Controller
     {
         $validated = $request->validate([
             'qualities' => 'array',
-            'qualities.*' => 'string|in:' . implode(',', QualityEnum::values()),
+            'qualities.*' => 'string|in:'.implode(',', QualityEnum::values()),
         ]);
 
         $qualityIds = Quality::whereIn('name', $validated['qualities'])->pluck('id');
@@ -85,5 +85,4 @@ class NannyController extends Controller
             'qualities' => $nanny->qualities()->get(['id', 'name']),
         ]);
     }
-
 }

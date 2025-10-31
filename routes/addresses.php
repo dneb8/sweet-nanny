@@ -8,5 +8,5 @@ Route::middleware(['auth', 'verified'])->prefix('addresses')->name('addresses.')
     Route::post('/', [AddressController::class, 'store'])->name('store');
     Route::match(['patch', 'put'], '/{address}', [AddressController::class, 'update'])->name('update');
     Route::delete('/{address}', [AddressController::class, 'destroy'])->name('destroy');
-    
+
 });

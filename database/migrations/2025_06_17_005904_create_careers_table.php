@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('careers', function (Blueprint $table) {
-            $table->id();  
+            $table->id();
             $table->string('name', 100);
-            $table->timestamps(); 
+            $table->timestamps();
         });
     }
 
@@ -26,4 +26,3 @@ return new class extends Migration
         Schema::dropIfExists('careers');
     }
 };
-
