@@ -64,7 +64,7 @@ class BookingPolicy {
     // Admin puede ver todo
     // Tutor puede ver sus propios bookings
     // Nanny puede ver detalles de bookings
-    canView(booking: Booking): boolean {
+    canView(): boolean {
         if (hasRole('admin')) {
             return can('bookings.view');
         }
