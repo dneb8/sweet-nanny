@@ -22,10 +22,10 @@ class AddressFactory extends Factory
     {
         // Rangos de códigos postales por zona (usar string como clave)
         $zones = [
-            ZoneEnum::GUADALAJARA->value => [44000, 45000],
+            ZoneEnum::GUADALAJARA->value => [44000, 44999],
             ZoneEnum::ZAPOPAN->value => [45000, 45246],
             ZoneEnum::TONALA->value => [45400, 45430],
-            ZoneEnum::TLAQUEPAQUE->value => [45500, 45640],
+            ZoneEnum::TLAQUEPAQUE->value => [45500, 45639],
             ZoneEnum::TLAJOMULCO->value => [45640, 45680],
         ];
 

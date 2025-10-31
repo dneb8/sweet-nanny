@@ -56,9 +56,9 @@ class AddressService
     private function determineZoneFromPostalCode(int $cp): ?ZoneEnum
     {
         return match (true) {
-            $cp >= 44000 && $cp <= 45000 => ZoneEnum::GUADALAJARA,
+            $cp >= 44000 && $cp <= 44999 => ZoneEnum::GUADALAJARA,
             $cp >= 45000 && $cp <= 45246 => ZoneEnum::ZAPOPAN,
-            $cp >= 45500 && $cp <= 45640 => ZoneEnum::TLAQUEPAQUE,
+            $cp >= 45500 && $cp <= 45639 => ZoneEnum::TLAQUEPAQUE,
             $cp >= 45640 && $cp <= 45680 => ZoneEnum::TLAJOMULCO,
             $cp >= 45400 && $cp <= 45430 => ZoneEnum::TONALA,
             default => null, // Permitir otros códigos postales validados por AWS Location
