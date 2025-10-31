@@ -83,7 +83,7 @@ const deleteCourse = () => {
             <Button size="sm" variant="ghost" @click="openModal(course)">
               <Icon icon="lucide:edit" />
             </Button>
-            <Button size="sm" variant="destructive" @click="openDelete(course)">
+            <Button size="sm" variant="ghost" class="text-rose-500 hover:text-rose-500/60" @click="openDelete(course)">
               <Icon icon="lucide:trash" />
             </Button>
           </div>

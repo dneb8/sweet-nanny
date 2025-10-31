@@ -22,6 +22,7 @@ export class AddressFormService {
   public formSchema
   public values
   public isFieldDirty
+  public setFieldValue: (field: string, value: any) => void
 
   public loading = ref<boolean>(false)
   public saved = ref<boolean>(false)
@@ -40,26 +41,36 @@ export class AddressFormService {
     // ✅ Validación: incluye addressable_* requeridos
     this.formSchema = toTypedSchema(
       z.object({
-        postal_code: z.string().nonempty("El código postal es obligatorio").max(10),
+        postal_code: z.string().nonempty("El código postal es obligatorio").length(5, "El código postal debe tener 5 dígitos").regex(/^\d{5}$/, "El código postal debe ser numérico"),
         street: z.string().nonempty("La calle es obligatoria").max(255),
+        name: z.string().nonempty("El nombre de la dirección es obligatorio").max(80),
         neighborhood: z.string().nonempty("La colonia es obligatoria").max(255),
-        type: z.string().nonempty("El tipo de dirección es obligatorio"),
-        other_type: z.string().max(255).nullable().optional(),
+        external_number: z.string().nonempty("El número exterior es obligatorio").max(50),
         internal_number: z.string().max(50).nullable().optional(),
+        municipality: z.string().max(255).nullable().optional(),
+        state: z.string().max(255).nullable().optional(),
+        latitude: z.number().nullable().optional(),
+        longitude: z.number().nullable().optional(),
+        type: z.string().nonempty("El tipo de dirección es obligatorio"),
         addressable_id: z.number().int().positive(),      // 🔸 polimórfico
         addressable_type: z.string().nonempty(),          // 🔸 polimórfico (FQCN)
       })
     )
 
-    const { values, isFieldDirty, handleSubmit /*, setValues*/ } = useForm({
+    const { values, isFieldDirty, handleSubmit, setFieldValue } = useForm({
       validationSchema: this.formSchema,
       initialValues: {
         postal_code: address?.postal_code ?? "",
         street: address?.street ?? "",
+        name: address?.name ?? "",
         neighborhood: address?.neighborhood ?? "",
-        type: address?.type ?? "",
-        other_type: address?.other_type ?? "",
+        external_number: address?.external_number ?? "",
         internal_number: address?.internal_number ?? "",
+        municipality: address?.municipality ?? "",
+        state: address?.state ?? "",
+        latitude: address?.latitude ?? null,
+        longitude: address?.longitude ?? null,
+        type: address?.type ?? "",
         addressable_id: ownerId,
         addressable_type: ownerType,
       },
@@ -67,6 +78,7 @@ export class AddressFormService {
 
     this.values = values
     this.isFieldDirty = isFieldDirty
+    this.setFieldValue = setFieldValue as unknown as (field: string, value: any) => void
 
     // Crear
     this.saveAddress = handleSubmit(async (vals) => {
@@ -133,7 +145,7 @@ export function createAddress(payload: any, owner: Owner) {
         const p: any = usePage().props
         resolve(p?.recent?.address ?? null)
       },
-      onError: (errors) => reject({ response: { data: { errors } } }),
+      onError: (errors: unknown) => reject({ response: { data: { errors } } }),
     })
   })
 }
@@ -152,7 +164,7 @@ export function updateAddress(id: string | number, payload: any, owner: Owner) {
         const p: any = usePage().props
         resolve(p?.recent?.address ?? null)
       },
-      onError: (errors) => reject({ response: { data: { errors } } }),
+      onError: (errors: unknown) => reject({ response: { data: { errors } } }),
     })
   })
 }

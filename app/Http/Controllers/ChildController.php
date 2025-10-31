@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Child;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use App\Services\ChildService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ChildController extends Controller
 {
@@ -25,7 +25,7 @@ class ChildController extends Controller
     public function update(Child $child, ChildService $childService, Request $request): JsonResponse
     {
         $child = $childService->updateChild($child, $request);
-        
+
         return response()->json($child);
     }
 

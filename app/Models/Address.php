@@ -19,11 +19,16 @@ class Address extends Model
     protected $fillable = [
         'postal_code',
         'street',
+        'name',
         'neighborhood',
+        'external_number',
+        'internal_number',
+        'municipality',
+        'state',
+        'latitude',
+        'longitude',
         'type',
         'zone',
-        'other_type',
-        'internal_number',
         'addressable_type',
         'addressable_id',
     ];
@@ -45,5 +50,4 @@ class Address extends Model
     {
         return $this->morphTo();
     }
-
 }

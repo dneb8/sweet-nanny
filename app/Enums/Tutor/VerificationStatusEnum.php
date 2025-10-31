@@ -14,9 +14,9 @@ enum VerificationStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            static::PENDIENTE => 'Pendiente',
-            static::VERIFICADO => 'Verificado',
-            static::DENEGADO => 'Denegado',
+            self::PENDIENTE => 'Pendiente',
+            self::VERIFICADO => 'Verificado',
+            self::DENEGADO => 'Denegado',
         };
     }
 

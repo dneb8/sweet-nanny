@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
-use App\Models\Booking;
 use App\Models\Address;
-use Illuminate\Support\Facades\DB;
+use App\Models\Booking;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class BookingService
 {
@@ -18,7 +18,7 @@ class BookingService
 
             // Handle address_id - store reference to tutor's address
             $addressId = data_get($bookingData, 'address_id');
-            
+
             // Validate that address belongs to the tutor
             if ($addressId) {
                 $tutorId = (int) data_get($bookingData, 'tutor_id');
@@ -26,21 +26,21 @@ class BookingService
                     ->where('addressable_type', 'App\\Models\\Tutor')
                     ->where('addressable_id', $tutorId)
                     ->first();
-                
-                if (!$address) {
+
+                if (! $address) {
                     throw new \Exception('Invalid address_id: Address does not belong to tutor');
                 }
             }
-            
+
             // Create booking with address_id reference
             $booking = Booking::create([
-                'tutor_id'    => (int) data_get($bookingData, 'tutor_id'),
-                'address_id'  => $addressId, // Store reference to tutor's address
+                'tutor_id' => (int) data_get($bookingData, 'tutor_id'),
+                'address_id' => $addressId, // Store reference to tutor's address
                 'description' => (string) data_get($bookingData, 'description', ''),
-                'recurrent'   => (bool) data_get($bookingData, 'recurrent', false),
-                'qualities'   => data_get($bookingData, 'qualities', []),
-                'careers'     => data_get($bookingData, 'careers', []),
-                'courses'     => data_get($bookingData, 'courses', []),
+                'recurrent' => (bool) data_get($bookingData, 'recurrent', false),
+                'qualities' => data_get($bookingData, 'qualities', []),
+                'careers' => data_get($bookingData, 'careers', []),
+                'courses' => data_get($bookingData, 'courses', []),
             ]);
 
             // Children: acepta booking.children (preferido) o booking.child_ids
@@ -53,6 +53,7 @@ class BookingService
                     if (is_object($c)) {
                         return (int) data_get($c, 'id', 0);
                     }
+
                     return (int) $c;
                 })
                 ->filter()   // quita 0 / null
@@ -60,7 +61,7 @@ class BookingService
                 ->values()
                 ->all();
 
-            if (!empty($childIds)) {
+            if (! empty($childIds)) {
                 $booking->children()->sync($childIds);
             }
 
@@ -68,22 +69,22 @@ class BookingService
             $rows = [];
             foreach ($appointments as $a) {
                 $rows[] = [
-                    'start_date'     => Carbon::parse(data_get($a, 'start_date')),
-                    'end_date'       => Carbon::parse(data_get($a, 'end_date')),
-                    'duration'       => (int) data_get($a, 'duration', 0),
-                    'status'         => (string) data_get($a, 'status', 'pending'),
+                    'start_date' => Carbon::parse(data_get($a, 'start_date')),
+                    'end_date' => Carbon::parse(data_get($a, 'end_date')),
+                    'duration' => (int) data_get($a, 'duration', 0),
+                    'status' => (string) data_get($a, 'status', 'pending'),
                     'payment_status' => (string) data_get($a, 'payment_status', 'unpaid'),
-                    'extra_hours'    => (int) data_get($a, 'extra_hours', 0),
-                    'total_cost'     => (float) data_get($a, 'total_cost', 0),
-                    'created_at'     => now(),
-                    'updated_at'     => now(),
+                    'extra_hours' => (int) data_get($a, 'extra_hours', 0),
+                    'total_cost' => (float) data_get($a, 'total_cost', 0),
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ];
             }
             if ($rows) {
                 $booking->bookingAppointments()->createMany($rows);
             }
 
-            return $booking->fresh(['children','bookingAppointments','address']);
+            return $booking->fresh(['children', 'bookingAppointments', 'address']);
         });
     }
 
@@ -92,15 +93,15 @@ class BookingService
         return DB::transaction(function () use ($booking, $payload) {
             $bookingData = $payload['booking'] ?? [];
             $appointments = $payload['appointments'] ?? [];
-            $addressData  = $payload['address'] ?? null;
+            $addressData = $payload['address'] ?? null;
 
             // Handle address polymorphically
             $addressId = $bookingData['address_id'] ?? null;
-            
+
             // Handle address_id - validate and update
             if (isset($bookingData['address_id'])) {
                 $addressId = $bookingData['address_id'];
-                
+
                 // Validate that address belongs to the tutor
                 if ($addressId) {
                     $tutorId = (int) ($bookingData['tutor_id'] ?? $booking->tutor_id);
@@ -108,8 +109,8 @@ class BookingService
                         ->where('addressable_type', 'App\\Models\\Tutor')
                         ->where('addressable_id', $tutorId)
                         ->first();
-                    
-                    if (!$address) {
+
+                    if (! $address) {
                         throw new \Exception('address_id inválido: la dirección no pertenece al tutor');
                     }
                 }
@@ -117,13 +118,13 @@ class BookingService
 
             // Update booking (including address_id if provided)
             $booking->update([
-                'tutor_id'    => (int) ($bookingData['tutor_id'] ?? $booking->tutor_id),
-                'address_id'  => $bookingData['address_id'] ?? $booking->address_id,
+                'tutor_id' => (int) ($bookingData['tutor_id'] ?? $booking->tutor_id),
+                'address_id' => $bookingData['address_id'] ?? $booking->address_id,
                 'description' => $bookingData['description'] ?? $booking->description,
-                'recurrent'   => (bool) ($bookingData['recurrent'] ?? $booking->recurrent),
-                'qualities'   => $bookingData['qualities'] ?? $booking->qualities,
-                'careers'     => $bookingData['careers'] ?? $booking->careers,
-                'courses'     => $bookingData['courses'] ?? $booking->courses,
+                'recurrent' => (bool) ($bookingData['recurrent'] ?? $booking->recurrent),
+                'qualities' => $bookingData['qualities'] ?? $booking->qualities,
+                'careers' => $bookingData['careers'] ?? $booking->careers,
+                'courses' => $bookingData['courses'] ?? $booking->courses,
             ]);
 
             // 4) Sincronizar niños (admite strings o ints)
@@ -136,26 +137,25 @@ class BookingService
 
             $rows = array_map(function ($a) {
                 return [
-                    'start_date'     => Carbon::parse($a['start_date']),
-                    'end_date'       => Carbon::parse($a['end_date']),
-                    'duration'       => (int) ($a['duration'] ?? 0),
-                    'status'         => Arr::get($a, 'status', 'pending'),
+                    'start_date' => Carbon::parse($a['start_date']),
+                    'end_date' => Carbon::parse($a['end_date']),
+                    'duration' => (int) ($a['duration'] ?? 0),
+                    'status' => Arr::get($a, 'status', 'pending'),
                     'payment_status' => Arr::get($a, 'payment_status', 'unpaid'),
-                    'extra_hours'    => (int) Arr::get($a, 'extra_hours', 0),
-                    'total_cost'     => (float) Arr::get($a, 'total_cost', 0),
-                    'created_at'     => now(),
-                    'updated_at'     => now(),
+                    'extra_hours' => (int) Arr::get($a, 'extra_hours', 0),
+                    'total_cost' => (float) Arr::get($a, 'total_cost', 0),
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ];
             }, $appointments);
 
-            if (!empty($rows)) {
+            if (! empty($rows)) {
                 $booking->bookingAppointments()->createMany($rows);
             }
 
             return $booking->fresh(['children', 'bookingAppointments', 'address']);
         });
     }
-
 
     public function delete(Booking $booking): void
     {

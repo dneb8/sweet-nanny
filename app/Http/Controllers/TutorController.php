@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Tutor\{CreateTutorRequest, UpdateTutorRequest};
+use App\Http\Requests\Tutor\CreateTutorRequest;
+use App\Http\Requests\Tutor\UpdateTutorRequest;
 use App\Models\Tutor;
 use App\Services\TutorService;
-use Inertia\{Inertia, Response};
-
+use Inertia\Inertia;
+use Inertia\Response;
 
 class TutorController extends Controller
 {

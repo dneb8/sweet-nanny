@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Enums\User\RoleEnum;
 use App\Models\Address;
 use App\Models\Tutor;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class TutorSeeder extends Seeder
@@ -16,8 +16,14 @@ class TutorSeeder extends Seeder
     {
         Tutor::factory()
             ->count(5)
-            ->hasAddresses(2)
             ->create()
-            ->each(fn($t) => $t->user->assignRole('tutor'));
+            ->each(function (Tutor $tutor) {
+                $tutor->user->assignRole(RoleEnum::TUTOR);
+
+                Address::factory()
+                    ->count(2)
+                    ->for($tutor, 'addressable')
+                    ->create();
+            });
     }
 }

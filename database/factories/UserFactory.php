@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -26,7 +25,7 @@ class UserFactory extends Factory
     {
         return [
             'name' => fake()->firstName(),
-            'surnames' => fake()->lastName() . ' ' . fake()->lastName(),
+            'surnames' => fake()->lastName().' '.fake()->lastName(),
             'email' => fake()->unique()->safeEmail(),
             'number' => fake()->numerify('33########'),
             'email_verified_at' => now(),

@@ -3,17 +3,17 @@
 namespace App\Models;
 
 use App\Enums\Children\KinkshipEnum;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Child extends Model
 {
-    use HasUlids, HasFactory, SoftDeletes;
+    use HasFactory, HasUlids, SoftDeletes;
 
     protected $casts = [
-        'kinkship'  => KinkshipEnum::class,
+        'kinkship' => KinkshipEnum::class,
         'birthdate' => 'date:Y-m-d',
     ];
 
@@ -38,7 +38,7 @@ class Child extends Model
     public function bookings()
     {
         return $this->belongsToMany(Booking::class, 'booking_child', 'child_id', 'booking_id')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     public function getRouteKeyName()

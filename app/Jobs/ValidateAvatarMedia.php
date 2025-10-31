@@ -19,6 +19,7 @@ class ValidateAvatarMedia implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public array $backoff = [5, 15, 30];
 
     public function __construct(
@@ -35,48 +36,49 @@ class ValidateAvatarMedia implements ShouldQueue
         $user = User::findOrFail($this->userId);
 
         $media = $user->media()->whereKey($this->mediaId)->first();
-        if (!$media) {
+        if (! $media) {
             return;
         }
 
         $bucket = config('filesystems.disks.s3.bucket');
         $region = config('filesystems.disks.s3.region', env('AWS_DEFAULT_REGION', 'us-east-2'));
-        $key    = ltrim($media->getPathRelativeToRoot(), '/');
+        $key = ltrim($media->getPathRelativeToRoot(), '/');
 
         $s3 = new S3Client([
-            'version'     => 'latest',
-            'region'      => $region,
+            'version' => 'latest',
+            'region' => $region,
             'credentials' => [
-                'key'    => env('AWS_ACCESS_KEY_ID'),
+                'key' => env('AWS_ACCESS_KEY_ID'),
                 'secret' => env('AWS_SECRET_ACCESS_KEY'),
             ],
         ]);
 
         $rekognition = new RekognitionClient([
-            'version'     => 'latest',
-            'region'      => $region,
+            'version' => 'latest',
+            'region' => $region,
             'credentials' => [
-                'key'    => env('AWS_ACCESS_KEY_ID'),
+                'key' => env('AWS_ACCESS_KEY_ID'),
                 'secret' => env('AWS_SECRET_ACCESS_KEY'),
             ],
         ]);
 
         try {
             // 1) Espera breve: si el objeto no está listo, reencola y sal
-            if (!$this->waitForS3Object($s3, $bucket, $key)) {
+            if (! $this->waitForS3Object($s3, $bucket, $key)) {
                 $this->release(10);
+
                 return;
             }
 
             // 2) Moderación (con un reintento breve si hay timing de metadata)
             $mod = $this->retryRekognition(fn () => $rekognition->detectModerationLabels([
-                'Image'         => ['S3Object' => ['Bucket' => $bucket, 'Name' => $key]],
+                'Image' => ['S3Object' => ['Bucket' => $bucket, 'Name' => $key]],
                 'MinConfidence' => $this->minConfidence,
             ]));
 
             $ban = [
-                'Explicit Nudity','Sexual Activity','Sexual Content',
-                'Graphic Male Nudity','Graphic Female Nudity','Violence','Hate Symbols',
+                'Explicit Nudity', 'Sexual Activity', 'Sexual Content',
+                'Graphic Male Nudity', 'Graphic Female Nudity', 'Violence', 'Hate Symbols',
             ];
 
             $blocked = collect($mod['ModerationLabels'] ?? [])->contains(
@@ -87,12 +89,13 @@ class ValidateAvatarMedia implements ShouldQueue
             if ($blocked) {
                 $media->delete();
                 $user->notify(new AvatarProcessed(false, 'La imagen no cumple con las políticas de contenido.'));
+
                 return;
             }
 
             // 3) Rostros (mismo patrón de reintento corto)
             $faces = $this->retryRekognition(fn () => $rekognition->detectFaces([
-                'Image'      => ['S3Object' => ['Bucket' => $bucket, 'Name' => $key]],
+                'Image' => ['S3Object' => ['Bucket' => $bucket, 'Name' => $key]],
                 'Attributes' => ['DEFAULT'],
             ]));
 
@@ -103,6 +106,7 @@ class ValidateAvatarMedia implements ShouldQueue
                     ? 'Tu imagen fue rechazada porque no se detectó ningún rostro.'
                     : 'Tu imagen fue rechazada porque se detectaron múltiples rostros. Solo debe haber uno.';
                 $user->notify(new AvatarProcessed(false, $msg));
+
                 return;
             }
 
@@ -116,17 +120,17 @@ class ValidateAvatarMedia implements ShouldQueue
         } catch (AwsException $e) {
             // Errores AWS (permisos/región/red). Reintento simple.
             Log::warning('ValidateAvatarMedia AWS', [
-                'code'    => $e->getAwsErrorCode(),
+                'code' => $e->getAwsErrorCode(),
                 'message' => $e->getAwsErrorMessage() ?: $e->getMessage(),
-                'bucket'  => $bucket,
-                'key'     => $key,
+                'bucket' => $bucket,
+                'key' => $key,
             ]);
             $this->release(10);
         } catch (\Throwable $e) {
             // Cualquier otro error transitorio
             Log::error('ValidateAvatarMedia error', [
                 'user_id' => $this->userId,
-                'media_id'=> $this->mediaId,
+                'media_id' => $this->mediaId,
                 'message' => $e->getMessage(),
             ]);
             $this->release(10);
@@ -141,11 +145,13 @@ class ValidateAvatarMedia implements ShouldQueue
         for ($i = 0; $i < $maxAttempts; $i++) {
             try {
                 $s3->headObject(['Bucket' => $bucket, 'Key' => $key]);
+
                 return true;
             } catch (AwsException $e) {
                 usleep($sleepMs * 1000);
             }
         }
+
         return false;
     }
 
@@ -164,11 +170,13 @@ class ValidateAvatarMedia implements ShouldQueue
                     stripos($e->getAwsErrorMessage() ?? '', 'Unable to get object metadata') !== false
                 )) {
                     usleep(400 * 1000);
+
                     continue;
                 }
                 throw $e;
             }
         }
+
         // Último intento
         return $fn();
     }

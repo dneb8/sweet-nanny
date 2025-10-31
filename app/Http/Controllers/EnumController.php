@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Nanny\QualityEnum;
 use App\Enums\Career\DegreeEnum;
 use App\Enums\Course\NameEnum as CourseNameEnum;
+use App\Enums\Nanny\QualityEnum;
 use Illuminate\Http\JsonResponse;
 
 class EnumController extends Controller
