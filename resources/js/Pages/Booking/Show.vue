@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
+import { router } from '@inertiajs/vue3'
 import type { Booking } from '@/types/Booking'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -156,7 +157,7 @@ const label =
                     size="sm"
                     variant="default"
                     class="w-full text-[11px] h-7"
-                    @click="$inertia.get(route('bookings.appointments.nannies.choose', { booking: props.booking.id, appointment: a.id }))"
+                    @click="router.get(route('bookings.appointments.nannies.choose', { booking: props.booking.id, appointment: a.id }))"
                   >
                     <Icon icon="lucide:user-plus" class="mr-1.5 h-3.5 w-3.5" />
                     Elegir niñera
