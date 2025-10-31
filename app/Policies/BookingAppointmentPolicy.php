@@ -43,7 +43,8 @@ class BookingAppointmentPolicy
 
         foreach ($userRoles as $roleName) {
             $roleEnum = $this->getRoleEnum($roleName);
-            if ($roleEnum && BookingAppointmentPermission::allows($permission, $roleEnum)) {
+            // Check permission using Laravel's built-in can() method
+            if ($roleEnum && $user->can($permission)) {
                 return true;
             }
         }

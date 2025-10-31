@@ -1,18 +1,36 @@
-import { usePage } from '@inertiajs/vue3';
-import type { PageProps } from '@/types/UsePage';
+import { usePage } from '@inertiajs/vue3'
+import type { PageProps } from '@/types/UsePage'
 
-export type AppRole = 'admin' | 'tutor' | 'nanny';
-
-const toArray = (v: string | string[]) => (Array.isArray(v) ? v : v.split('|').map((s) => s.trim()).filter(Boolean));
-
-export function can(permissions: string | string[]): boolean {
-    const page = usePage<PageProps>();
-    const perms = page.props.auth?.permisos ?? [];
-    return toArray(permissions).some((p) => perms.includes(p));
+export function getRoles(): string[] {
+  const user = usePage<PageProps>().props.auth.user as any
+  const roles = user?.roles ?? []
+  return Array.isArray(roles)
+    ? roles.map(r => (typeof r === 'string' ? r : r?.name)).filter(Boolean) as string[]
+    : []
 }
 
-export function hasRole(roles: AppRole | AppRole[]): boolean {
-    const page = usePage<PageProps>();
-    const userRoles = (page.props.auth?.roles ?? []) as AppRole[];
-    return toArray(roles as string | string[]).some((r) => userRoles.includes(r as AppRole));
+export function getPermissions(): string[] {
+  const user = usePage<PageProps>().props.auth.user as any
+  const perms = user?.permissions ?? []
+  return Array.isArray(perms)
+    ? perms.map(p => (typeof p === 'string' ? p : p?.name)).filter(Boolean) as string[]
+    : []
+}
+
+export function hasRole(roleName: string): boolean {
+  return getRoles().includes(roleName)
+}
+
+export function can(permissionName: string): boolean {
+  return getPermissions().includes(permissionName)
+}
+
+/**
+ * Si NO hay permisos cargados en el frontend, usa un fallback (por rol).
+ * Si sí hay permisos, respeta el permiso explícito.
+ */
+export function canOrRole(permissionName: string, roleFallback: boolean): boolean {
+  const perms = getPermissions()
+  if (perms.length === 0) return roleFallback
+  return perms.includes(permissionName)
 }

@@ -16,7 +16,6 @@ class BookingService
             $bookingData = data_get($payload, 'booking', []);
             $appointments = data_get($payload, 'appointments', []);
 
-            // Handle address_id - store reference to tutor's address
             $addressId = data_get($bookingData, 'address_id');
 
             // Validate that address belongs to the tutor
@@ -93,7 +92,6 @@ class BookingService
         return DB::transaction(function () use ($booking, $payload) {
             $bookingData = $payload['booking'] ?? [];
             $appointments = $payload['appointments'] ?? [];
-            $addressData = $payload['address'] ?? null;
 
             // Handle address polymorphically
             $addressId = $bookingData['address_id'] ?? null;

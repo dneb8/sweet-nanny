@@ -5,9 +5,12 @@ import type { Booking } from '@/types/Booking'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useBookingView } from '@/services/BookingService'
-import { bookingAppointmentPolicy } from '@/policies/bookingAppointmentPolicy'
+import { useBookingAppointmentPolicy } from '@/policies/bookingAppointmentPolicy'
+
 const props = defineProps<{ booking: Booking }>()
+
 const v = useBookingView(props.booking)
+const policy = useBookingAppointmentPolicy()
 
 const base =
   'group inline-flex items-center h-9 hover:gap-5 rounded-xl px-2 overflow-hidden w-9 ' +
@@ -73,7 +76,8 @@ const label =
         <!-- PANEL PRINCIPAL (agenda + requisitos) -->
         <div class="md:col-span-8 space-y-4">
           <!-- Resumen compacto -->
-          <div class="rounded-3xl border border-white/30 bg-white/20 dark:border-white/10 dark:bg-white/5 backdrop-blur-xl shadow-lg p-4 sm:p-5"><h2 class="text-sm font-semibold flex items-center gap-2 mb-3">
+          <div class="rounded-3xl border border-white/30 bg-white/20 dark:border-white/10 dark:bg-white/5 backdrop-blur-xl shadow-lg p-4 sm:p-5">
+            <h2 class="text-sm font-semibold flex items-center gap-2 mb-3">
               <Icon icon="lucide:clipboard-check" class="h-4 w-4" /> Requisitos de la niñera
             </h2>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -149,10 +153,13 @@ const label =
                   <Badge variant="outline" class="px-2 py-0.5 text-[11px]">{{ a.status ?? 'Pendiente' }}</Badge>
                   <span v-if="a.duration" class="text-[11px] text-muted-foreground">{{ a.duration }} min</span>
                 </div>
+
                 <div v-if="a.nanny" class="text-[12px] text-muted-foreground">
-                  Niñera: <span class="text-foreground font-medium">{{ a.nanny.name }}</span>
+                  Niñera: <span class="text-foreground font-medium">{{ a.nanny.user.name + ' ' + a.nanny.user.surnames }}</span>
                 </div>
-                <div v-else-if="bookingAppointmentPolicy.canChooseNanny(a, props.booking)" class="pt-2">
+
+                <!-- BOTÓN CORREGIDO: usa policy.canChooseNanny -->
+                <div v-else-if="policy.canChooseNanny(a, props.booking)" class="pt-2">
                   <Button
                     size="sm"
                     variant="default"
@@ -163,6 +170,7 @@ const label =
                     Elegir niñera
                   </Button>
                 </div>
+
                 <div v-if="a.notes" class="text-[12px] leading-snug pt-2 border-t border-white/20">
                   {{ a.notes }}
                 </div>
@@ -251,8 +259,10 @@ const label =
               <Icon icon="lucide:baby" class="h-4 w-4" /> Niños ({{ (props.booking.childrenWithTrashed?.length || props.booking.children?.length || 0) }})
             </h3>
 
-            <div v-if="(props.booking.childrenWithTrashed?.length || props.booking.children?.length) === 0"
-                class="text-[13px] text-muted-foreground">
+            <div
+              v-if="(props.booking.childrenWithTrashed?.length || props.booking.children?.length) === 0"
+              class="text-[13px] text-muted-foreground"
+            >
               No hay niños asignados
             </div>
 
