@@ -190,14 +190,15 @@ export function useGooglePlaces() {
                 await initServices();
             }
 
-            // Get predictions
-            const predictions: any = await new Promise((resolve, reject) => {
+            // Get predictions - includes addresses, businesses, and establishments
+            // Removed types: ['address'] to allow Starbucks, Oxxo, etc.
+            let predictions: any = await new Promise((resolve, reject) => {
                 autocompleteService.value.getPlacePredictions(
                     {
                         input: query,
                         componentRestrictions: { country: 'mx' },
                         language: 'es-MX',
-                        types: ['address'],
+                        // No types restriction - allows addresses AND establishments
                     },
                     (results: any, status: any) => {
                         if (status === google.maps.places.PlacesServiceStatus.OK) {
@@ -210,6 +211,30 @@ export function useGooglePlaces() {
                     }
                 );
             });
+
+            // If no results from getPlacePredictions, try getQueryPredictions as fallback
+            // This can find businesses and places when autocomplete returns nothing
+            if (!predictions || predictions.length === 0) {
+                predictions = await new Promise((resolve, reject) => {
+                    autocompleteService.value.getQueryPredictions(
+                        {
+                            input: query,
+                            location: new google.maps.LatLng(
+                                parseFloat(import.meta.env.VITE_DEFAULT_CENTER_LAT || '20.6597'),
+                                parseFloat(import.meta.env.VITE_DEFAULT_CENTER_LNG || '-103.3496')
+                            ),
+                            radius: 50000, // 50km radius around Guadalajara
+                        },
+                        (results: any, status: any) => {
+                            if (status === google.maps.places.PlacesServiceStatus.OK) {
+                                resolve(results || []);
+                            } else {
+                                resolve([]);
+                            }
+                        }
+                    );
+                });
+            }
 
             // Get details for each prediction
             const results: AddressSuggestion[] = [];
