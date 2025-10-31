@@ -128,8 +128,11 @@ const submit = async () => {
   <div>
     <!-- Búsqueda forzada -->
     <div class="mb-6">
-      <div class="relative">
-        <Label>Buscar dirección (Google Maps) *</Label>
+      <div class="relative space-y-2">
+        <div class="flex gap-2 items-center">
+            <Icon icon="icon-park-outline:search" width="18" height="18" />
+            <Label class="text-base font-medium">Busca tu dirección</Label>
+        </div>
         <Input
           :model-value="searchQuery"
           @input="onSearchInput"
@@ -164,7 +167,7 @@ const submit = async () => {
         </div>
       </div>
       <p class="mt-2 text-xs text-muted-foreground">
-        Escribe al menos 3 caracteres y selecciona una opción. Luego completa los campos obligatorios al final.
+        Elije una dirección dentro de la Zona Metropolitana de Guadalajara.
       </p>
     </div>
 
@@ -172,7 +175,7 @@ const submit = async () => {
     <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
       <FormField v-slot="{ componentField }" name="street">
         <FormItem>
-          <Label>Calle *</Label>
+          <Label class="text-muted-foreground">Calle</Label>
           <FormControl>
             <Input v-bind="componentField" placeholder="Auto-completado" readonly disabled class="bg-muted" />
           </FormControl>
@@ -180,19 +183,9 @@ const submit = async () => {
         </FormItem>
       </FormField>
 
-      <FormField v-slot="{ componentField }" name="name">
-        <FormItem>
-          <Label>Nombre de la Dirección *</Label>
-          <FormControl>
-            <Input v-bind="componentField" placeholder="Ej: Mi Casa — Americana" maxlength="80" />
-          </FormControl>
-          <FormMessage>{{ errors['name']?.[0] }}</FormMessage>
-        </FormItem>
-      </FormField>
-
       <FormField v-slot="{ componentField }" name="external_number">
         <FormItem>
-          <Label>Número Exterior *</Label>
+          <Label class="text-muted-foreground">Número Exterior</Label>
           <FormControl>
             <Input v-bind="componentField" placeholder="Auto-completado" readonly disabled class="bg-muted" />
           </FormControl>
@@ -202,7 +195,7 @@ const submit = async () => {
 
       <FormField v-slot="{ componentField }" name="neighborhood">
         <FormItem>
-          <Label>Colonia *</Label>
+          <Label class="text-muted-foreground">Colonia</Label>
           <FormControl>
             <Input v-bind="componentField" placeholder="Auto-completado" readonly disabled class="bg-muted" />
           </FormControl>
@@ -212,7 +205,7 @@ const submit = async () => {
 
       <FormField v-slot="{ componentField }" name="postal_code">
         <FormItem>
-          <Label>Código Postal *</Label>
+          <Label class="text-muted-foreground">Código Postal</Label>
           <FormControl>
             <Input v-bind="componentField" placeholder="Auto-completado" readonly disabled class="bg-muted" />
           </FormControl>
@@ -222,7 +215,7 @@ const submit = async () => {
 
       <FormField v-slot="{ componentField }" name="municipality">
         <FormItem>
-          <Label>Municipio</Label>
+          <Label class="text-muted-foreground">Municipio</Label>
           <FormControl>
             <Input v-bind="componentField" placeholder="Auto-completado" readonly disabled class="bg-muted" />
           </FormControl>
@@ -231,7 +224,7 @@ const submit = async () => {
 
       <FormField v-slot="{ componentField }" name="state">
         <FormItem>
-          <Label>Estado</Label>
+          <Label class="text-muted-foreground">Estado</Label>
           <FormControl>
             <Input v-bind="componentField" placeholder="Auto-completado" readonly disabled class="bg-muted" />
           </FormControl>
@@ -241,6 +234,15 @@ const submit = async () => {
 
     <!-- Obligatorios EDITABLES al final -->
     <div class="mt-8 grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
+      <FormField v-slot="{ componentField }" name="name">
+        <FormItem>
+          <Label>Nombre de la Dirección *</Label>
+          <FormControl>
+            <Input v-bind="componentField" placeholder="Ej: Mi Casa — Americana" maxlength="80" />
+          </FormControl>
+          <FormMessage>{{ errors['name']?.[0] }}</FormMessage>
+        </FormItem>
+      </FormField>
       <!-- Número Interno (obligatorio ahora) -->
       <FormField v-slot="{ componentField }" name="internal_number">
         <FormItem>
@@ -269,9 +271,8 @@ const submit = async () => {
             <Select
               :model-value="componentField.value"
               @update:model-value="componentField.onChange"
-              :disabled="!hasSelectedSuggestion"
             >
-              <SelectTrigger>
+              <SelectTrigger class="w-full">
                 <SelectValue placeholder="Selecciona un tipo" />
               </SelectTrigger>
               <SelectContent>

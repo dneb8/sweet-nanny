@@ -78,7 +78,7 @@ export class AddressFormService {
 
     this.values = values
     this.isFieldDirty = isFieldDirty
-    this.setFieldValue = setFieldValue
+    this.setFieldValue = setFieldValue as unknown as (field: string, value: any) => void
 
     // Crear
     this.saveAddress = handleSubmit(async (vals) => {
@@ -145,7 +145,7 @@ export function createAddress(payload: any, owner: Owner) {
         const p: any = usePage().props
         resolve(p?.recent?.address ?? null)
       },
-      onError: (errors) => reject({ response: { data: { errors } } }),
+      onError: (errors: unknown) => reject({ response: { data: { errors } } }),
     })
   })
 }
@@ -164,7 +164,7 @@ export function updateAddress(id: string | number, payload: any, owner: Owner) {
         const p: any = usePage().props
         resolve(p?.recent?.address ?? null)
       },
-      onError: (errors) => reject({ response: { data: { errors } } }),
+      onError: (errors: unknown) => reject({ response: { data: { errors } } }),
     })
   })
 }

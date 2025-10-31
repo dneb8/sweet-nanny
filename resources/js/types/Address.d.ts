@@ -4,7 +4,7 @@ export interface Address
   id?: number
   postal_code: string
   street: string
-  name: string
+  name?: string
   neighborhood: string
   external_number: string
   internal_number?: string | null
