@@ -1,67 +1,25 @@
-import { User } from "@/types/User";
-import { RoleEnum } from "@/enums/role.enum";
-import { usePage } from "@inertiajs/vue3";
-import { Rol } from "@/types/Rol";
-import { can, role } from "@/helpers/permissionHelper";
-import { PageProps } from "@/types/UsePage";
+import { usePage } from '@inertiajs/vue3';
+import type { PageProps } from '@/types/UsePage';
+import type { User } from '@/types/User';
+import { can, hasRole } from '@/helpers/permissionHelper';
 
-export class UserPolicy {
-    // Usuario autenticado
+class UserPolicy {
     private authUser = usePage<PageProps>().props.auth.user;
 
-    // Método para determinar si un usuario es desarrollador
-    private esDesarrollador = (user: User) => {
-        return user.persona.roles.filter((rol: Rol) => rol.name === RoleEnum.DESARROLLADOR).length > 0;
-    };
+    // Solo admin puede actualizar usuarios.
+    canUpdate(user: User): boolean {
+        if (!can('user.update')) return false;
+        if (!hasRole('admin')) return false;
+        return true; // Admin puede editar a cualquiera (incluido él mismo)
+    }
 
-    // Método para determinar si un usuario es administrador
-    private esAdministrador = (user: User) => {
-        return user.persona.roles.filter((rol: Rol) => rol.name === RoleEnum.ADMINISTRADOR).length > 0;
-    };
-
-    // Método para determinar si se puede editar un usuario
-    public canUpdateUser = (user: User) => {
-        if (! can('user.update')) {
-            return false;
-        }
-
-        if (role(RoleEnum.DESARROLLADOR) && this.esDesarrollador(user) && this.authUser.id !== user.id) {
-            return false;
-        }
-
-        if (role(RoleEnum.ADMINISTRADOR) && this.esDesarrollador(user)) {
-            return false;
-        }
-
-        if (role(RoleEnum.ADMINISTRADOR) && this.esAdministrador(user) && this.authUser.id !== user.id) {
-            return false;
-        }
-
+    // Solo admin puede eliminar usuarios, pero no a sí mismo.
+    canDelete(user: User): boolean {
+        if (!can('user.delete')) return false;
+        if (!hasRole('admin')) return false;
+        if (this.authUser.id === user.ulid) return false; // No puede eliminarse a sí mismo
         return true;
-    };
-
-    // Método para determinar si se puede eliminar un usuario
-    public canDeleteUser = (user: User) => {
-        if (! can('user.delete')) {
-            return false;
-        }
-
-        if (this.authUser.id === user.id) {
-            return false;
-        }
-
-        if (role(RoleEnum.DESARROLLADOR) && this.esDesarrollador(user)) {
-            return false;
-        }
-
-        if (role(RoleEnum.ADMINISTRADOR) && this.esDesarrollador(user)) {
-            return false;
-        }
-
-        if (role(RoleEnum.ADMINISTRADOR) && this.esAdministrador(user)) {
-            return false;
-        }
-
-        return true;
-    };
+    }
 }
+
+export const userPolicy = new UserPolicy();

@@ -18,6 +18,7 @@ import type { User } from '@/types/User'
 import { UserService } from '@/services/UserService'
 import { getRoleLabelByString, RoleEnum } from '@/enums/role.enum'
 import { getQualityLabelByString } from '@/enums/quality.enum'
+import { userPolicy } from '@/policies/userPolicy'
 
 
 const props = defineProps<{
@@ -60,6 +61,7 @@ const {
 
             <!-- Editar -->
             <DropdownMenuItem
+              v-if="userPolicy.canUpdate(props.user)"
               @click="editUser"
               class="group text-muted-foreground hover:bg-muted"
             >
@@ -68,10 +70,11 @@ const {
             </DropdownMenuItem>
           </DropdownMenuGroup>
 
-          <DropdownMenuSeparator />
+          <DropdownMenuSeparator v-if="userPolicy.canUpdate(props.user) && userPolicy.canDelete(props.user)" />
 
           <!-- Eliminar -->
           <DropdownMenuItem
+            v-if="userPolicy.canDelete(props.user)"
             @click="deleteUser"
             class="group text-muted-foreground hover:bg-muted"
           >

@@ -1,30 +1,18 @@
-import { PageProps } from '@/types/UsePage';
 import { usePage } from '@inertiajs/vue3';
+import type { PageProps } from '@/types/UsePage';
 
-export function can(permissions: string): boolean {
+export type AppRole = 'admin' | 'tutor' | 'nanny';
+
+const toArray = (v: string | string[]) => (Array.isArray(v) ? v : v.split('|').map((s) => s.trim()).filter(Boolean));
+
+export function can(permissions: string | string[]): boolean {
     const page = usePage<PageProps>();
-    const permissionsArray = permissions.split('|').map(permission => permission.trim());
-    const { permisos : permisosUsuario }  = page.props.auth;
-
-    if (!permisosUsuario) return false;
-
-    for (const permission of permissionsArray) {
-        if (permisosUsuario.includes(permission)) return true;
-    }
-
-    return false;
+    const perms = page.props.auth?.permisos ?? [];
+    return toArray(permissions).some((p) => perms.includes(p));
 }
 
-export function role(roles: string): boolean {
+export function hasRole(roles: AppRole | AppRole[]): boolean {
     const page = usePage<PageProps>();
-    const rolesArray = roles.split('|').map(role => role.trim());
-    const { roles : rolesUsuario }  = page.props.auth;
-
-    if (!rolesUsuario) return false;
-
-    for (const role of rolesArray) {
-        if (rolesUsuario.includes(role)) return true;
-    }
-
-    return false;
+    const userRoles = (page.props.auth?.roles ?? []) as AppRole[];
+    return toArray(roles as string | string[]).some((r) => userRoles.includes(r as AppRole));
 }
