@@ -47,18 +47,33 @@ const isAdmin = computed(() => {
     return user?.roles?.includes('admin') ?? false;
 });
 
-const bookingsNavItems: NavItem[] = [
-  {
-    title: 'Servicios',
-    href: '/bookings',
-    icon: 'ph:baby-carriage',
-  },
-  {
-    title: 'Crear Servicio',
-    href: '/bookings/create',
-    icon: 'fluent:calendar-add-24-regular',
-  },
-];
+// Check if user has TUTOR role
+const isTutor = computed(() => {
+    const user = page.props.auth?.user as { roles?: string[] } | null;
+    return user?.roles?.includes('tutor') ?? false;
+});
+
+// Bookings nav items - "Crear Servicio" only visible for tutors
+const bookingsNavItems = computed(() => {
+    const items: NavItem[] = [
+        {
+            title: 'Servicios',
+            href: '/bookings',
+            icon: 'ph:baby-carriage',
+        },
+    ];
+
+    // Only tutors can see "Crear Servicio"
+    if (isTutor.value) {
+        items.push({
+            title: 'Crear Servicio',
+            href: '/bookings/create',
+            icon: 'fluent:calendar-add-24-regular',
+        });
+    }
+
+    return items;
+});
 
 
 const footerNavItems: NavItem[] = [
