@@ -16,7 +16,6 @@ interface Props {
   zoom?: number
   height?: string
   showMarker?: boolean
-  apiKey: string
 
   // Opciones del botón "Ver en Google Maps"
   showOpenButton?: boolean
@@ -54,16 +53,18 @@ const latNum = computed(() => toNumber(props.latitude))
 const lngNum = computed(() => toNumber(props.longitude))
 const hasValidCoords = computed(() => isFiniteLatLng(latNum.value, lngNum.value))
 
-// URL oficial de Google Maps (JS/places) para buscar por lat,lng
+// URL para abrir en Google Maps
 const googleMapsUrl = computed(() => {
   if (!hasValidCoords.value) return "#"
-  // https://www.google.com/maps/search/?api=1&query=LAT,LNG
   return `https://www.google.com/maps/search/?api=1&query=${latNum.value},${lngNum.value}`
 })
 
+// Lee la API key desde variables de entorno (Vite expone las que empiezan con VITE_)
+const GMAPS_API_KEY = import.meta.env.VITE_GMAPS as string | undefined
+
 function loadGoogleMaps(apiKey: string): Promise<void> {
-  // Evita cargar dos veces
   if ((window as any).google?.maps) return Promise.resolve()
+
   if (document.getElementById("gmaps-sdk")) {
     return new Promise((res) => { (window as any).initMapReady = () => res() })
   }
@@ -75,7 +76,10 @@ function loadGoogleMaps(apiKey: string): Promise<void> {
     scriptEl.async = true
     scriptEl.defer = true
     scriptEl.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMapReady`
-    scriptEl.onerror = reject
+    scriptEl.onerror = (e) => {
+      console.error("[GoogleMaps] Error cargando el SDK:", e)
+      reject(e)
+    }
     document.head.appendChild(scriptEl)
   })
 }
@@ -104,7 +108,7 @@ function initMap() {
 
 function updatePosition() {
   if (!map) return
-  if (!hasValidCoords.value) return // no muevas el mapa si no es válido
+  if (!hasValidCoords.value) return
   const pos = { lat: latNum.value, lng: lngNum.value }
   map.setCenter(pos)
   if (typeof props.zoom === "number") map.setZoom(props.zoom)
@@ -118,8 +122,16 @@ function updatePosition() {
 }
 
 onMounted(async () => {
-  await loadGoogleMaps(props.apiKey)
-  initMap()
+  if (!GMAPS_API_KEY) {
+    console.warn("[GoogleMaps] VITE_GMAPS no está definido. Define VITE_GMAPS en tu .env/.env.local")
+    return
+  }
+  try {
+    await loadGoogleMaps(GMAPS_API_KEY)
+    initMap()
+  } catch (err) {
+    console.error("[GoogleMaps] No se pudo inicializar el mapa. Revisa tu API key y restricciones.", err)
+  }
 })
 
 onUnmounted(() => {
@@ -149,7 +161,6 @@ watch(() => [latNum.value, lngNum.value, props.zoom, props.showMarker], () => {
         :class="hasValidCoords ? 'cursor-pointer bg-card hover:bg-accent' : 'cursor-not-allowed bg-muted'"
         :tabindex="hasValidCoords ? 0 : -1"
       >
-        <!-- Ícono de ubicación simple en SVG para no depender de librerías -->
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z"/>
         </svg>

@@ -18,6 +18,7 @@ const label =
   'opacity-0 -translate-x-1 max-w-0 ' +
   'group-hover:opacity-100 group-hover:translate-x-0 group-hover:max-w-[6rem] ' +
   'transition-all duration-900'
+
 </script>
 
 <template>
@@ -240,7 +241,6 @@ const label =
                 :zoom="16"
                 height="320px"
                 :showMarker="true"
-                apiKey="AIzaSyAGsvUiKV_DFO5aXrswzvK_2X6NCQ7bsT0"
               />
 
             </div>
