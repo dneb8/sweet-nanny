@@ -23,6 +23,26 @@ declare global {
 }
 declare const google: any;
 
+// Allowed municipalities in Guadalajara Metropolitan Area (ZMG)
+const ALLOWED_MUNICIPALITIES = new Set([
+    'guadalajara',
+    'zapopan',
+    'tlaquepaque',
+    'tlajomulco',
+    'tonala',
+]);
+
+/**
+ * Normalize municipality name for comparison
+ * Converts to lowercase and removes accents
+ */
+function normalizeMunicipality(name: string): string {
+    return name
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, ''); // Remove diacritics
+}
+
 export function useGooglePlaces() {
     const loading = ref(false);
     const suggestions: Ref<AddressSuggestion[]> = ref([]);
@@ -32,6 +52,15 @@ export function useGooglePlaces() {
     const geocoder: Ref<any> = ref(null);
 
     const apiKey = import.meta.env.VITE_GMAPS_API_KEY;
+
+    // Define bounds for Guadalajara Metropolitan Area for location bias
+    // Southwest: 20.5, -103.5 | Northeast: 20.8, -103.2 (approximate ZMG bounds)
+    const ZMG_BOUNDS = {
+        south: 20.5,
+        west: -103.5,
+        north: 20.8,
+        east: -103.2,
+    };
 
     /**
      * Initialize Google Places services
@@ -192,12 +221,19 @@ export function useGooglePlaces() {
 
             // Get predictions - includes addresses, businesses, and establishments
             // Removed types: ['address'] to allow Starbucks, Oxxo, etc.
+            // Use location bias with strict bounds to focus on ZMG
+            const bounds = new google.maps.LatLngBounds(
+                new google.maps.LatLng(ZMG_BOUNDS.south, ZMG_BOUNDS.west),
+                new google.maps.LatLng(ZMG_BOUNDS.north, ZMG_BOUNDS.east)
+            );
+
             let predictions: any = await new Promise((resolve, reject) => {
                 autocompleteService.value.getPlacePredictions(
                     {
                         input: query,
                         componentRestrictions: { country: 'mx' },
                         language: 'es-MX',
+                        locationBias: bounds,
                         // No types restriction - allows addresses AND establishments
                     },
                     (results: any, status: any) => {
@@ -236,17 +272,22 @@ export function useGooglePlaces() {
                 });
             }
 
-            // Get details for each prediction
+            // Get details for each prediction and filter by ZMG municipalities
             const results: AddressSuggestion[] = [];
-            const limit = Math.min(predictions.length, maxResults);
+            const limit = Math.min(predictions.length, maxResults * 2); // Fetch more to account for filtering
 
-            for (let i = 0; i < limit; i++) {
+            for (let i = 0; i < limit && results.length < maxResults; i++) {
                 try {
                     const detail = await getPlaceDetails(predictions[i].place_id);
                     if (detail) {
-                        // Use the formatted description from prediction for label
-                        detail.label = predictions[i].description;
-                        results.push(detail);
+                        // Filter: Only accept addresses from ZMG municipalities
+                        const normalizedMunicipality = normalizeMunicipality(detail.municipality);
+                        if (ALLOWED_MUNICIPALITIES.has(normalizedMunicipality)) {
+                            // Use the formatted description from prediction for label
+                            detail.label = predictions[i].description;
+                            results.push(detail);
+                        }
+                        // Skip results from municipalities outside ZMG
                     }
                 } catch (err) {
                     console.warn('Failed to get place details:', err);
