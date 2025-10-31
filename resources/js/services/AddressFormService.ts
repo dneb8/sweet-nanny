@@ -43,6 +43,7 @@ export class AddressFormService {
       z.object({
         postal_code: z.string().nonempty("El código postal es obligatorio").length(5, "El código postal debe tener 5 dígitos").regex(/^\d{5}$/, "El código postal debe ser numérico"),
         street: z.string().nonempty("La calle es obligatoria").max(255),
+        name: z.string().nonempty("El nombre de la dirección es obligatorio").max(80),
         neighborhood: z.string().nonempty("La colonia es obligatoria").max(255),
         external_number: z.string().nonempty("El número exterior es obligatorio").max(50),
         internal_number: z.string().max(50).nullable().optional(),
@@ -61,6 +62,7 @@ export class AddressFormService {
       initialValues: {
         postal_code: address?.postal_code ?? "",
         street: address?.street ?? "",
+        name: address?.name ?? "",
         neighborhood: address?.neighborhood ?? "",
         external_number: address?.external_number ?? "",
         internal_number: address?.internal_number ?? "",

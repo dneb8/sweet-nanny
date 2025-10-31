@@ -19,6 +19,7 @@ class Address extends Model
     protected $fillable = [
         'postal_code',
         'street',
+        'name',
         'neighborhood',
         'external_number',
         'internal_number',

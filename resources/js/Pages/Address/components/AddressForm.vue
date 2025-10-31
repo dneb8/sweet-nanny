@@ -64,6 +64,30 @@ const selectSuggestion = (s: AddressSuggestion) => {
   setFieldValue('latitude', s.latitude ?? null)
   setFieldValue('longitude', s.longitude ?? null)
 
+  // Auto-generate name if empty
+  if (!values.name || values.name.trim() === '') {
+    let generatedName = ''
+    
+    // Priority: use place name if available from Google (for establishments)
+    // Otherwise construct from address components
+    if (s.label && s.label !== s.fullAddress) {
+      // Format: "Place Name — Full Address"
+      generatedName = `${s.label.split(',')[0]} — ${s.neighborhood || s.municipality || ''}`
+    } else {
+      // Format: "Street ExternalNumber — Neighborhood"
+      const streetPart = s.street && s.external_number ? `${s.street} ${s.external_number}` : s.street || s.external_number || ''
+      const neighborhoodPart = s.neighborhood || ''
+      generatedName = `${streetPart} — ${neighborhoodPart}`.trim()
+    }
+    
+    // Limit to 80 characters
+    if (generatedName.length > 80) {
+      generatedName = generatedName.substring(0, 77) + '...'
+    }
+    
+    setFieldValue('name', generatedName)
+  }
+
   // Los dos campos editables se quedan para el usuario:
   // internal_number (string) y type (enum)
   if (!values.type) setFieldValue('type', '') // asegura estado controlado
@@ -153,6 +177,16 @@ const submit = async () => {
             <Input v-bind="componentField" placeholder="Auto-completado" readonly disabled class="bg-muted" />
           </FormControl>
           <FormMessage>{{ errors['street']?.[0] }}</FormMessage>
+        </FormItem>
+      </FormField>
+
+      <FormField v-slot="{ componentField }" name="name">
+        <FormItem>
+          <Label>Nombre de la Dirección *</Label>
+          <FormControl>
+            <Input v-bind="componentField" placeholder="Ej: Mi Casa — Americana" maxlength="80" />
+          </FormControl>
+          <FormMessage>{{ errors['name']?.[0] }}</FormMessage>
         </FormItem>
       </FormField>
 

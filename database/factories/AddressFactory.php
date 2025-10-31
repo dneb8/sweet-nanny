@@ -48,14 +48,19 @@ class AddressFactory extends Factory
 
         $type = $this->faker->randomElement(TypeEnum::values());
 
+        $street = $this->faker->streetName();
+        $externalNumber = $this->faker->buildingNumber();
+        $neighborhood = $this->faker->citySuffix();
+
         return [
             'postal_code' => (string) $postalCode,
-            'street' => $this->faker->streetName(),
-            'neighborhood' => $this->faker->citySuffix(),
+            'street' => $street,
+            'name' => $street.' #'.$externalNumber.' — '.$neighborhood,
+            'neighborhood' => $neighborhood,
             'zone' => $zone,
             'type' => $type,
             'internal_number' => $this->faker->optional()->buildingNumber(),
-            'external_number' => $this->faker->buildingNumber(),
+            'external_number' => $externalNumber,
         ];
     }
 

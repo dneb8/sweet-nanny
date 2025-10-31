@@ -131,10 +131,14 @@ class NannySeeder extends Seeder
             $externalNumber = count($streetParts) > 1 ? trim($streetParts[1]) : fake()->buildingNumber();
             $streetName = trim($streetParts[0]);
 
+            // Generar nombre descriptivo de la dirección
+            $addressName = "{$streetName} {$externalNumber} — {$data['neighborhood']}";
+
             // Crear su dirección asociada (sin type, se genera aleatorio en el factory)
             Address::factory()->state([
                 'postal_code' => $data['postal_code'],
                 'street' => $streetName,
+                'name' => $addressName,
                 'neighborhood' => $data['neighborhood'],
                 'zone' => $data['other_type'],
                 'internal_number' => $data['internal_number'],

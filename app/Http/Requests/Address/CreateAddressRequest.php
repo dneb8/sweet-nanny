@@ -39,6 +39,7 @@ class CreateAddressRequest extends FormRequest
         return [
             'postal_code' => ['required', 'string', 'size:5', 'regex:/^\d{5}$/'],
             'street' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:80'],
             'neighborhood' => ['required', 'string', 'max:255'],
             'external_number' => ['required', 'string', 'max:50'],
             'internal_number' => ['nullable', 'string', 'max:50'],
