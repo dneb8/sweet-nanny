@@ -48,7 +48,6 @@ export function useGooglePlaces() {
     const suggestions: Ref<AddressSuggestion[]> = ref([]);
     const error: Ref<string | null> = ref(null);
     const autocompleteService: Ref<any> = ref(null);
-    const placesService: Ref<any> = ref(null);
     const geocoder: Ref<any> = ref(null);
 
     const apiKey = import.meta.env.VITE_GMAPS_API_KEY;
@@ -118,7 +117,6 @@ export function useGooglePlaces() {
         addressComponents.forEach((component: any) => {
             const types = component.types;
             const value = component.long_name;
-            const shortValue = component.short_name;
 
             if (types.includes('street_number')) {
                 components.external_number = value;
@@ -251,7 +249,7 @@ export function useGooglePlaces() {
             // If no results from getPlacePredictions, try getQueryPredictions as fallback
             // This can find businesses and places when autocomplete returns nothing
             if (!predictions || predictions.length === 0) {
-                predictions = await new Promise((resolve, reject) => {
+                predictions = await new Promise((resolve) => {
                     autocompleteService.value.getQueryPredictions(
                         {
                             input: query,
