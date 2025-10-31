@@ -110,7 +110,7 @@ const {
       <template #body="slotProps">
         <div class="grid grid-cols-3 gap-2">
           <div
-            v-if="userPolicy.canUpdate(slotProps.record)"
+            v-if="userPolicy.canUpdateUser(slotProps.record)"
             @click="editarUsuario(slotProps.record)"
             class="flex justify-center items-center w-max text-blue-600 dark:text-blue-500 hover:text-blue-600/80 dark:hover:text-blue-400 hover:cursor-pointer"
             title="Editar usuario"
@@ -119,7 +119,7 @@ const {
           </div>
 
           <div
-            v-if="userPolicy.canDelete(slotProps.record)"
+            v-if="userPolicy.canDeleteUser(slotProps.record)"
             @click="abrirModalEliminarUsuario(slotProps.record)"
             class="flex justify-center items-center w-max text-rose-600 dark:text-rose-500 hover:text-rose-600/80 dark:hover:text-rose-400 hover:cursor-pointer"
             title="Eliminar usuario"
