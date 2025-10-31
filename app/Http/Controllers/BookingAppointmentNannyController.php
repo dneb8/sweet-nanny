@@ -44,7 +44,8 @@ class BookingAppointmentNannyController extends Controller
             ->get();
 
         // Get Top 3 random nannies from available set
-        $top3 = $availableNannies->random(min(3, $availableNannies->count()));
+        $count = $availableNannies->count();
+        $top3 = $count > 0 ? $availableNannies->random(min(3, $count)) : collect([]);
 
         return Inertia::render('BookingAppointment/ChooseNanny', [
             'booking' => $booking->load(['tutor.user', 'address']),

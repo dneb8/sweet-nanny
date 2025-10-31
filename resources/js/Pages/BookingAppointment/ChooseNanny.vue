@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { Icon } from '@iconify/vue';
 import { router } from '@inertiajs/vue3';
+import axios from 'axios';
 import type { Booking } from '@/types/Booking';
 import type { BookingAppointment } from '@/types/BookingAppointment';
 import type { NannySelectionData } from '@/types/Nanny';
@@ -10,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useToast } from '@/composables/useToast';
 
 const props = defineProps<{
     booking: Booking;
@@ -26,22 +28,27 @@ const selectedNannyForDetail = ref<NannySelectionData | null>(null);
 const searchTerm = ref('');
 const availableNannies = ref<NannySelectionData[]>([]);
 const isLoading = ref(false);
+const { toast } = useToast();
 
 // Fetch available nannies from API
 const fetchNannies = async () => {
     isLoading.value = true;
     try {
-        const response = await fetch(
+        const response = await axios.get(
             route('api.bookings.appointments.nannies.available', {
                 booking: props.booking.id,
                 appointment: props.appointment.id,
                 searchTerm: searchTerm.value,
             })
         );
-        const data = await response.json();
-        availableNannies.value = data.data || [];
+        availableNannies.value = response.data.data || [];
     } catch (error) {
         console.error('Error fetching nannies:', error);
+        toast({
+            title: 'Error',
+            description: 'No se pudieron cargar las niñeras disponibles. Por favor, intenta de nuevo.',
+            variant: 'destructive',
+        });
     } finally {
         isLoading.value = false;
     }
