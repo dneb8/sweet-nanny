@@ -90,4 +90,25 @@ class Nanny extends Model
     {
         return $this->user?->avatarSignedOrPublicUrl($minutes);
     }
+
+    /**
+     * Scope to filter nannies that are available between given dates.
+     * Excludes nannies that have appointments overlapping with the given date range.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string  $startDate
+     * @param  string  $endDate
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeAvailableBetween($query, $startDate, $endDate)
+    {
+        return $query->whereDoesntHave('bookingAppointments', function ($q) use ($startDate, $endDate) {
+            $q->where('nanny_id', '!=', null)
+                ->where(function ($q) use ($startDate, $endDate) {
+                    // Check for overlap: existing.start < new.end AND existing.end > new.start
+                    $q->where('start_date', '<', $endDate)
+                        ->where('end_date', '>', $startDate);
+                });
+        });
+    }
 }
