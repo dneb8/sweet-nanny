@@ -66,13 +66,6 @@ export class NannyProfileFormService {
         preserveScroll: true,
         onSuccess: () => {
           this.saved.value = true;
-          toast.success("Perfil actualizado correctamente", {
-            style: {
-              background: "#E9D5FF",
-              color: "#6B21A8",
-              fontWeight: "500",
-            },
-          });
         },
         onError: (errs: Record<string, any>) => {
           const normalized: Record<string, string[]> = {};

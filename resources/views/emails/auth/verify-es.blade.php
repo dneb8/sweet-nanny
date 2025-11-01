@@ -1,7 +1,7 @@
 @component('mail::message')
 @php
   // Colores derivados de tu tema
-  $primary = '#E8A8FF';     // hsl(284,100%,83%) -> HEX
+  $primary = '#d99b9b';     // hsl(0,41%,72%) -> HEX
   $textOnPrimary = '#1F2937'; // mejor contraste que blanco
   $beige = '#F7F3EF';       // gris/arena cute de fondo
 @endphp

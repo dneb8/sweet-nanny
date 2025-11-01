@@ -27,7 +27,7 @@ class BookingSeeder extends Seeder
                     ])
                     ->each(function ($appointment) use ($nannyId, $now) {
                         $start = Carbon::instance(fake()->dateTimeBetween('-3 days', '+3 days'));
-                        $end   = (clone $start)->addHours(fake()->numberBetween(1, 5));
+                        $end   = (clone $start)->addHours(fake()->numberBetween(1, 8));
 
                         // Determinar status según reglas
                         if ($nannyId) {

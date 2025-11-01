@@ -150,7 +150,7 @@ const label =
                   <span v-if="a.duration" class="text-[11px] text-muted-foreground">{{ a.duration }} min</span>
                 </div>
                 <div v-if="a.nanny" class="text-[12px] text-muted-foreground">
-                  Niñera: <span class="text-foreground font-medium">{{ a.nanny.name }}</span>
+                  Niñera: <span class="text-foreground font-medium">{{ a.nanny.user.name + ' ' + a.nanny.user.surnames }}</span>
                 </div>
                 <div v-if="a.notes" class="text-[12px] leading-snug pt-2 border-t border-white/20">
                   {{ a.notes }}

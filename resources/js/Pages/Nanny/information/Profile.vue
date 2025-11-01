@@ -11,6 +11,8 @@ import { formatExperienceFrom } from "@/utils/formatExperienceForm"
 
 const props = defineProps<{ nanny: Nanny }>()
 
+console.log(props.nanny.user);
+
 // Modal
 const open = ref(false)
 

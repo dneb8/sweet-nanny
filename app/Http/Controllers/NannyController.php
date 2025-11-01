@@ -6,7 +6,6 @@ use App\Enums\Nanny\QualityEnum;
 use App\Models\Nanny;
 use App\Models\Quality;
 use App\Http\Requests\Nanny\{CreateNannyRequest, UpdateNannyRequest, UpdateNannyProfileRequest};
-use App\Services\NannyService;
 use Inertia\{Inertia, Response};
 
 use Illuminate\Http\Request;
@@ -34,20 +33,6 @@ class NannyController extends Controller
      */
     public function show(Nanny $nanny)
     {
-        $nanny->load([
-            'user',
-            'addresses',
-            'courses',
-            'careers',         
-            'qualities',
-            'reviews',
-        ]);
-
-        // Se cargan los bookingAppointments pero paginados
-        $bookings = $nanny->bookingAppointments()
-            ->with('booking')   // esto es lo mismo que antes: bookingAppointments.booking
-            ->paginate(3);   //PAGINACIÓN
-
         return Inertia::render('Nanny/Show', [
             'nanny' => $nanny->load([
                 'user',
@@ -56,7 +41,7 @@ class NannyController extends Controller
                 'careers',
                 'qualities',
                 'reviews',
-                'bookingAppointments.booking',
+                'bookingAppointments.booking.address',
             ]),
         ]);
     }

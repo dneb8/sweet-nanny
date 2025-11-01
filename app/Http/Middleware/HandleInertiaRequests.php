@@ -68,6 +68,9 @@ class HandleInertiaRequests extends Middleware
                 'name' => $request->user()->name,
                 'surnames' => $request->user()->surnames,
                 'email' => $request->user()->email,
+                'avatar_url' => $request->user()->avatar_url,
+                'roles' => $request->user()->roles,
+                'email_verified_at' => $request->user()->email_verified_at,
             ] : null,
 
             // Recent items

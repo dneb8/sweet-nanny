@@ -52,10 +52,15 @@ class TutorController extends Controller
     {
         // $this->authorize('view', $tutor);
 
-        $tutorData = $tutorService->getShowData($tutor->ulid);
+        $tutor = $tutorService->getShowData($tutor->ulid);
 
         return Inertia::render('Tutor/Show', [
-            'tutor' => $tutorData,
+            'tutor' => $tutor->load([
+                'user.roles',
+                'addresses',
+                'reviews',
+                'bookings.bookingAppointments',
+            ]),
         ]);
     }
 

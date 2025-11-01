@@ -31,9 +31,9 @@ class ProfileController extends Controller
         return Inertia::render('settings/Profile', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
-            'avatarUrl' => $user->avatar_url,     // accessor
-            'avatarStatus' => $user->avatar_status,  // accessor
-            'avatarNote' => $user->avatar_note,    // accessor
+            'avatarUrl' => $user->avatar_url,    
+            'avatarStatus' => $user->avatar_status, 
+            'avatarNote' => $user->avatar_note,   
         ]);
     }
 
