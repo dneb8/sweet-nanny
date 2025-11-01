@@ -22,8 +22,10 @@ const user = page.props.auth.user as User;
 
 const form = useForm({
     name: user.name,
+    surnames: (user as any).surnames || '',
     email: user.email,
 });
+
 
 const submit = () => {
     form.patch(route('profile.update'), {
@@ -44,6 +46,18 @@ const submit = () => {
                     <Label for="name">Nombre</Label>
                     <Input id="name" class="mt-1 block w-full" v-model="form.name" required autocomplete="name" placeholder="Nombre completo" />
                     <InputError class="mt-2" :message="form.errors.name" />
+                </div>
+
+                <div class="grid gap-2">
+                <Label for="surnames">Apellidos</Label>
+                <Input
+                    id="surnames"
+                    class="mt-1 block w-full"
+                    v-model="form.surnames"
+                    autocomplete="surnames"
+                    placeholder="Apellido"
+                />
+                <InputError class="mt-2" :message="form.errors.surname" />
                 </div>
 
                 <div class="grid gap-2">
