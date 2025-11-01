@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Nanny;
 use App\Models\Quality;
-use App\Http\Requests\Nanny\{CreateNannyRequest, UpdateNannyRequest};
+use App\Http\Requests\Nanny\{CreateNannyRequest, UpdateNannyRequest, UpdateNannyProfileRequest};
 use App\Services\NannyService;
 use Inertia\{Inertia, Response};
 use App\Enums\Nanny\QualityEnum;
@@ -93,5 +93,21 @@ class NannyController extends Controller
             'qualities' => $nanny->qualities()->get(['id', 'name']),
         ]);
     }
+
+// NannyController.php
+public function updateProfile(UpdateNannyProfileRequest $request, Nanny $nanny)
+{
+    $validated = $request->validated();
+
+    $nanny->update([
+        'bio' => $validated['bio'] ?? null,
+        'start_date' => $validated['start_date'],
+    ]);
+
+    return back()->with('success', 'Perfil actualizado correctamente');
+}
+
+
+
 
 }
