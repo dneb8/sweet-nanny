@@ -1,14 +1,15 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Http\Request;
+
+use App\Enums\Nanny\QualityEnum;
 use App\Models\Nanny;
 use App\Models\Quality;
 use App\Http\Requests\Nanny\{CreateNannyRequest, UpdateNannyRequest, UpdateNannyProfileRequest};
 use App\Services\NannyService;
 use Inertia\{Inertia, Response};
-use App\Enums\Nanny\QualityEnum;
 
+use Illuminate\Http\Request;
 
 class NannyController extends Controller
 {
@@ -48,11 +49,17 @@ class NannyController extends Controller
             ->paginate(3);   //PAGINACIÓN
 
         return Inertia::render('Nanny/Show', [
-            'nanny' => $nanny,
-            'bookings' => $bookings,
+            'nanny' => $nanny->load([
+                'user',
+                'addresses',
+                'courses',
+                'careers',
+                'qualities',
+                'reviews',
+                'bookingAppointments.booking',
+            ]),
         ]);
     }
-
 
     /**
      * Show the form for editing the specified resource.
@@ -82,7 +89,7 @@ class NannyController extends Controller
     {
         $validated = $request->validate([
             'qualities' => 'array',
-            'qualities.*' => 'string|in:' . implode(',', QualityEnum::values()),
+            'qualities.*' => 'string|in:'.implode(',', QualityEnum::values()),
         ]);
 
         $qualityIds = Quality::whereIn('name', $validated['qualities'])->pluck('id');
@@ -94,20 +101,17 @@ class NannyController extends Controller
         ]);
     }
 
-// NannyController.php
-public function updateProfile(UpdateNannyProfileRequest $request, Nanny $nanny)
-{
-    $validated = $request->validated();
+    // NannyController.php
+    public function updateProfile(UpdateNannyProfileRequest $request, Nanny $nanny)
+    {
+        $validated = $request->validated();
 
-    $nanny->update([
-        'bio' => $validated['bio'] ?? null,
-        'start_date' => $validated['start_date'],
-    ]);
+        $nanny->update([
+            'bio' => $validated['bio'] ?? null,
+            'start_date' => $validated['start_date'],
+        ]);
 
-    return back()->with('success', 'Perfil actualizado correctamente');
-}
-
-
-
+        return back()->with('success', 'Perfil actualizado correctamente');
+    }
 
 }

@@ -9,7 +9,7 @@ import type { Career } from "@/types/Career";
 import type { Nanny } from "@/types/Nanny";
 
 // ✅ Usa el enum nuevo y sus helpers exportados
-import {isCareerName } from "@/enums/careers/career-name.enum";
+import { isCareerName } from "@/enums/careers/career-name.enum";
 
 export class CareerFormService {
   public career?: Ref<Career>;

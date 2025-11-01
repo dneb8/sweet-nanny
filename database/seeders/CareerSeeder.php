@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Career;
+use Illuminate\Database\Seeder;
 
 class CareerSeeder extends Seeder
 {

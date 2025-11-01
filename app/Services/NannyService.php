@@ -2,13 +2,12 @@
 
 namespace App\Services;
 
-use App\Classes\Fetcher\{Fetcher, Filter};
+use App\Classes\Fetcher\Fetcher;
 use App\Enums\User\RoleEnum;
 use App\Http\Requests\Nanny\CreateNannyRequest;
 use App\Http\Requests\Nanny\UpdateNannyRequest;
-use App\Models\{Nanny};
+use App\Models\Nanny;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\{Auth, Validator};
 use Illuminate\Support\Str;
 
 class NannyService
@@ -43,7 +42,7 @@ class NannyService
             'password' => bcrypt(Str::random(10)),
         ]);
 
-    $nanny->assignRole(RoleEnum::from($validated->roles));
+        $nanny->assignRole(RoleEnum::from($validated->roles));
 
     }
 
@@ -58,6 +57,6 @@ class NannyService
             'number' => $validated->number,
         ]);
 
-        $nanny->syncRoles(RoleEnum::from($validated->roles));   
+        $nanny->syncRoles(RoleEnum::from($validated->roles));
     }
 }

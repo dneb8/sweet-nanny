@@ -2,11 +2,11 @@
 
 namespace App\Http\Requests\Career;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Enum;
-use App\Enums\Career\StatusEnum;
 use App\Enums\Career\DegreeEnum;
 use App\Enums\Career\NameCareerEnum;
+use App\Enums\Career\StatusEnum;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class CreateCareerRequest extends FormRequest
 {
@@ -17,7 +17,6 @@ class CreateCareerRequest extends FormRequest
     {
         return true;
     }
-
 
     /**
      * Get the validation rules that apply to the request.

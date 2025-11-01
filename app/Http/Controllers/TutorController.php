@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Tutor\{CreateTutorRequest, UpdateTutorRequest};
+use App\Http\Requests\Tutor\CreateTutorRequest;
+use App\Http\Requests\Tutor\UpdateTutorRequest;
 use App\Models\Tutor;
 use App\Services\TutorService;
-use Inertia\{Inertia, Response};
-
+use Inertia\Inertia;
+use Inertia\Response;
 
 class TutorController extends Controller
 {
@@ -47,14 +48,14 @@ class TutorController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Tutor $tutor)
+    public function show(Tutor $tutor, TutorService $tutorService): Response
     {
+        // $this->authorize('view', $tutor);
+
+        $tutorData = $tutorService->getShowData($tutor->ulid);
+
         return Inertia::render('Tutor/Show', [
-            'tutor' => $tutor->load([
-                'user',        // el usuario del tutor
-                'addresses',   // direcciones (morphMany)
-                'children',    // hijos
-            ]),
+            'tutor' => $tutorData,
         ]);
     }
 

@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Booking;
-use App\Services\BookingService;
-use App\Enums\Children\KinkshipEnum;
-use App\Enums\Nanny\QualityEnum;
 use App\Enums\Career\NameCareerEnum;
+use App\Enums\Children\KinkshipEnum;
 use App\Enums\Course\NameEnum as CourseNameEnum;
+use App\Enums\Nanny\QualityEnum;
 use App\Http\Requests\Bookings\CreateBookingRequest;
 use App\Http\Requests\Bookings\UpdateBookingRequest;
+use App\Models\Booking;
+use App\Models\User;
+use App\Services\BookingService;
 use Illuminate\Support\Facades\Auth;
-use Inertia\{Inertia, Response};
+use Inertia\Inertia;
+use Inertia\Response;
 use Throwable;
 
 class BookingController extends Controller
@@ -29,20 +30,20 @@ class BookingController extends Controller
     public function create(): Response
     {
         $user = User::with([
-            'tutor' => fn ($q) => $q->select('id','user_id')->with([
+            'tutor' => fn ($q) => $q->select('id', 'user_id')->with([
                 'children',
-                'user.address',
-                'addresses', // Include tutor's addresses
+                'user',
+                'addresses',
             ]),
         ])->findOrFail(Auth::id());
 
-        $kinkships = array_map(fn($c) => $c->value, KinkshipEnum::cases());
+        $kinkships = array_map(fn ($c) => $c->value, KinkshipEnum::cases());
 
         return Inertia::render('Booking/Create', [
-            'kinkships'   => $kinkships,
-            'tutor'       => $user->tutor,
-            'qualities'   => QualityEnum::labels(),
-            'careers'     => NameCareerEnum::labels(),
+            'kinkships' => $kinkships,
+            'tutor' => $user->tutor,
+            'qualities' => QualityEnum::labels(),
+            'careers' => NameCareerEnum::labels(),
             'courseNames' => CourseNameEnum::labels(),
         ]);
     }
@@ -50,7 +51,7 @@ class BookingController extends Controller
     public function show(Booking $booking): Response
     {
         $booking = Booking::useWritePdo()
-            ->with(['tutor.user','address','bookingAppointments.nanny','childrenWithTrashed', 'children'])
+            ->with(['tutor.user', 'address', 'bookingAppointments.nanny', 'childrenWithTrashed', 'children'])
             ->findOrFail($booking->id);
 
         return Inertia::render('Booking/Show', ['booking' => $booking]);
@@ -65,26 +66,23 @@ class BookingController extends Controller
         return to_route('bookings.show', $booking)->with('notification', 'Servicio creado correctamente.');
     }
 
-
     public function edit(Booking $booking): Response
     {
-        $booking->load([
-            'tutor.addresses',
-            'children',
-            'bookingAppointments',
-            'address',
-        ]);
+        $kinkships = array_map(fn ($c) => $c->value, KinkshipEnum::cases());
 
-        $kinkships = array_map(fn($c) => $c->value, KinkshipEnum::cases());
+        $booking->load(['tutor.children', 'tutor.addresses', 'children', 'bookingAppointments', 'address']);
 
         return Inertia::render('Booking/Edit', [
-            'booking'        => $booking,
+            'booking' => $booking,
             'initialBooking' => $booking,
-            'kinkships'      => $kinkships,
-            'qualities'      => QualityEnum::labels(),
-            'careers'        => NameCareerEnum::labels(),
-            'courseNames'    => CourseNameEnum::labels(),
+            'tutor' => $booking->tutor,
+            'initialChildren' => $booking->tutor?->children ?? [],
+            'kinkships' => $kinkships,
+            'qualities' => QualityEnum::labels(),
+            'careers' => NameCareerEnum::labels(),
+            'courseNames' => CourseNameEnum::labels(),
         ]);
+
     }
 
     public function update(UpdateBookingRequest $request, Booking $booking, BookingService $service)
@@ -100,9 +98,11 @@ class BookingController extends Controller
     {
         try {
             $service->delete($booking);
+
             return redirect()->route('bookings.index')->with('notification', 'Servicio eliminado.');
         } catch (Throwable $e) {
             report($e);
+
             return back()->withErrors(['general' => 'No se pudo eliminar el servicio.']);
         }
     }

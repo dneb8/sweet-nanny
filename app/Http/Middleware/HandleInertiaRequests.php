@@ -2,10 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
-use Tighten\Ziggy\Ziggy;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -37,13 +35,16 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-          return array_merge(parent::share($request), [
+        return array_merge(parent::share($request), [
             'csrf_token' => fn () => csrf_token(),
 
             // Rutas
             'route.current' => function () use ($request) {
                 $currentRoute = $request->route()->getName();
-                if (!$currentRoute) return null;
+                if (! $currentRoute) {
+                    return null;
+                }
+
                 return route($currentRoute, $request->route()->parameters);
             },
 

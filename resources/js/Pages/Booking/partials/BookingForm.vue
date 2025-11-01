@@ -31,6 +31,7 @@ const props = withDefaults(defineProps<{
   courseNames: () => ({}),
 })
 
+
 // Instancia del service (pasamos tutor_id desde el front)
 const formService = new BookingFormService(
   props.initialBooking as Booking | undefined,

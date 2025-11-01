@@ -3,39 +3,29 @@
 // Matching PHP backend enum values
 export enum CareerNameEnum {
   PEDAGOGIA = 'pedagogia',
-  EDUCACION_PREESCOLAR = 'educacion_preescolar',
-  PSICOLOGIA_INFANTIL = 'psicologia_infantil',
-  EDUCACION_ESPECIAL = 'educacion_especial',
-  PUERICULTURA = 'puericultura',
-  TERAPIA_OCUPACIONAL = 'terapia_ocupacional',
-  ESTIMULACION_TEMPRANA = 'estimulacion_temprana',
-  ENFERMERIA_PEDIATRICA = 'enfermeria_pediatrica',
   PSICOLOGIA = 'psicologia',
   ENFERMERIA = 'enfermeria',
-  ARTES = 'artes',
+  DOCENCIA = 'docencia',
+  NUTRICION = 'nutricion',
   TRABAJO_SOCIAL = 'trabajo_social',
   PSICOPEDAGOGIA = 'psicopedagogia',
-  EDUCACION_INFANTIL = 'educacion_infantil',
-  NUTRICION = 'nutricion',
+  TERAPIA_PSICOMOTRIZ = 'terapia_psicomotriz',
+  PEDIATRIA = 'pediatria',
+  ARTES_ESCENICAS_DANZA = 'artes_escenicas_danza',
 }
 
 // Human-readable labels (matching PHP::label())
 export const CareerNameLabels: Record<CareerNameEnum, string> = {
   [CareerNameEnum.PEDAGOGIA]: 'Pedagogía',
-  [CareerNameEnum.EDUCACION_PREESCOLAR]: 'Educación Preescolar',
-  [CareerNameEnum.PSICOLOGIA_INFANTIL]: 'Psicología Infantil',
-  [CareerNameEnum.EDUCACION_ESPECIAL]: 'Educación Especial',
-  [CareerNameEnum.PUERICULTURA]: 'Puericultura',
-  [CareerNameEnum.TERAPIA_OCUPACIONAL]: 'Terapia Ocupacional',
-  [CareerNameEnum.ESTIMULACION_TEMPRANA]: 'Estimulación Temprana',
-  [CareerNameEnum.ENFERMERIA_PEDIATRICA]: 'Enfermería Pediátrica',
   [CareerNameEnum.PSICOLOGIA]: 'Psicología',
   [CareerNameEnum.ENFERMERIA]: 'Enfermería',
-  [CareerNameEnum.ARTES]: 'Artes',
+  [CareerNameEnum.DOCENCIA]: 'Docencia',
+  [CareerNameEnum.NUTRICION]: 'Nutrición',
   [CareerNameEnum.TRABAJO_SOCIAL]: 'Trabajo Social',
   [CareerNameEnum.PSICOPEDAGOGIA]: 'Psicopedagogía',
-  [CareerNameEnum.EDUCACION_INFANTIL]: 'Educación Infantil',
-  [CareerNameEnum.NUTRICION]: 'Nutrición',
+  [CareerNameEnum.TERAPIA_PSICOMOTRIZ]: 'Terapia Psicomotriz',
+  [CareerNameEnum.PEDIATRIA]: 'Pediatría',
+  [CareerNameEnum.ARTES_ESCENICAS_DANZA]: 'Artes Escénicas / Danza',
 };
 
 // Helpers (matching quality.enum.ts pattern)

@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Enums\User\RoleEnum;
-use App\Http\Requests\User\{CreateUserRequest, UpdateUserRequest};
-use App\Models\{User};
+use App\Http\Requests\User\CreateUserRequest;
+use App\Http\Requests\User\UpdateUserRequest;
+use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\RedirectResponse;
-use Inertia\{Inertia, Response};
+use Inertia\Inertia;
+use Inertia\Response;
 
 class UserController extends Controller
 {
@@ -18,15 +20,13 @@ class UserController extends Controller
     {
         // Gate::authorize('viewAny', User::class);
 
-        $sortables = ['role', 'email_verified_at'];
-        $searchables = ['name', 'email', 'surnames'];
+        $roles = array_map(fn ($role) => $role->value, RoleEnum::cases());
+
         $users = $userService->indexFetch();
 
         return Inertia::render('User/Index', [
             'users' => $users,
-            'roles' => RoleEnum::cases(),
-            'sortables' => $sortables,
-            'searchables' => $searchables,
+            'roles' => array_values($roles),
         ]);
     }
 
@@ -37,6 +37,7 @@ class UserController extends Controller
     {
         // Gate::authorize('create', User::class);
         $roles = RoleEnum::cases();
+
         return Inertia::render('User/Create', [
             'roles' => $roles,
         ]);
@@ -69,6 +70,7 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('message', [
             'title' => 'Usuario creado',
             'description' => 'El usuario ha sido creado correctamente.',
+            'icon' => 'check',
         ]);
     }
 
@@ -78,7 +80,7 @@ class UserController extends Controller
     public function edit(User $user): Response
     {
         // Gate::authorize('update', $user);
-        
+
         return Inertia::render('User/Edit', [
             'user' => $user->load(['roles']),
             'roles' => RoleEnum::cases(),
@@ -107,11 +109,11 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        if ($user->hasRole('nanny')) {
+        if ($user->hasRole(RoleEnum::NANNY->value)) {
             return redirect()->route('nannies.show', $user->nanny);
         }
 
-        if ($user->hasRole('tutor')) {
+        if ($user->hasRole(RoleEnum::TUTOR->value)) {
             return redirect()->route('tutors.show', $user->tutor);
         }
 
@@ -119,7 +121,6 @@ class UserController extends Controller
             'user' => $user->load(['roles']),
         ]);
     }
-
 
     /**
      * Elimina un usuario
@@ -134,7 +135,7 @@ class UserController extends Controller
             'message' => [
                 'title' => 'Usuario eliminado',
                 'description' => 'El usuario ha sido eliminado correctamente.',
-            ]
+            ],
         ]);
     }
 }

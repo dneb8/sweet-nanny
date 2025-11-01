@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Enums\Children\KinkshipEnum;
 use App\Models\Child;
 use App\Models\Tutor;
-use App\Enums\Children\KinkshipEnum;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Carbon\Carbon;
 

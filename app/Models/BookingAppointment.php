@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Enums\Booking\StatusEnum; 
+use Illuminate\Database\Eloquent\Model;
 
 class BookingAppointment extends Model
 {
@@ -22,7 +22,6 @@ class BookingAppointment extends Model
         'total_cost',
     ];
 
-    // Aquí el cast a enum
     protected $casts = [
         'status' => StatusEnum::class,
         'start_date' => 'datetime',

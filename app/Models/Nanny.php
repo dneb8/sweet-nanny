@@ -2,23 +2,23 @@
 
 namespace App\Models;
 
+use App\Enums\Career\DegreeEnum;
+use App\Enums\Career\StatusEnum;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Enums\Career\StatusEnum;
-use App\Enums\Career\DegreeEnum;
 
 class Nanny extends Model
 {
-    use HasFactory, SoftDeletes, HasUlids;
+    use HasFactory, HasUlids, SoftDeletes;
 
     protected $fillable = [
         'user_id',
         'bio',
         'availability',
         'start_date',
-        'address_id'
+        'address_id',
     ];
 
     // Relación 1:N con Course
@@ -31,19 +31,18 @@ class Nanny extends Model
     public function careers()
     {
         return $this->belongsToMany(Career::class, 'career_nanny')
-        ->withPivot('degree', 'status', 'institution') // ✅ estos sí existen
-        ->withCasts([
-            'status' => StatusEnum::class,
-            'degree' => DegreeEnum::class,
-        ])
-        ->withTimestamps();
+            ->withPivot('degree', 'status', 'institution') // ✅ estos sí existen
+            ->withCasts([
+                'status' => StatusEnum::class,
+                'degree' => DegreeEnum::class,
+            ])
+            ->withTimestamps();
     }
-
 
     // Relación N:N con cualidades
     public function qualities()
     {
-         return $this->belongsToMany(Quality::class, 'nanny_qualities')->withTimestamps();
+        return $this->belongsToMany(Quality::class, 'nanny_qualities')->withTimestamps();
     }
 
     public function user()
@@ -51,23 +50,23 @@ class Nanny extends Model
         return $this->belongsTo(User::class);
     }
 
-    //Relación 1:N con servicios 
+    // Relación 1:N con servicios
     public function bookingAppointments()
     {
         return $this->hasMany(BookingAppointment::class);
     }
-    
+
     public function reviews()
     {
         return $this->morphMany(Review::class, 'reviewable');
     }
-    
+
     // Polymorphic relation to addresses
     public function addresses()
     {
         return $this->morphMany(Address::class, 'addressable');
     }
-    
+
     public function uniqueIds()
     {
         // Generación automática de ulid para la columna ulid.
@@ -82,5 +81,13 @@ class Nanny extends Model
     public function getRouteKeyName()
     {
         return 'ulid';
+    }
+
+    /**
+     * Get avatar URL from related User
+     */
+    public function avatarUrl(?int $minutes = 10): ?string
+    {
+        return $this->user?->avatarSignedOrPublicUrl($minutes);
     }
 }

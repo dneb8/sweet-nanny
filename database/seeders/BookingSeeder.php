@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\{Booking, BookingAppointment, Nanny};
+use App\Models\{Booking, BookingAppointment, Nanny, Tutor};
 use Carbon\Carbon;
 
 class BookingSeeder extends Seeder
