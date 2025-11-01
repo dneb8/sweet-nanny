@@ -21,7 +21,7 @@ bookings: any
   <div class="grid grid-cols-1 gap-5">
     <!-- Columna superior -->
     <div class="space-y-5">
-      <ProfileCard :nanny="props.nanny" />
+      <ProfileCard :nanny="props.nanny" :key="props.nanny.id" />
       <div class="grid md:grid-cols-2 gap-5">
         <AddressCard :nanny="props.nanny" />
         <CoursesCard :nanny="props.nanny" />
