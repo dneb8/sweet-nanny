@@ -2,43 +2,30 @@
 
 namespace App\Concerns;
 
+use Illuminate\Support\Collection;
+use Spatie\Permission\Models\Permission as PermissionModel;
+use StringBackedEnum;
+
+/**
+ * @mixin StringBackedEnum
+ */
 trait HasPermissions
 {
     /**
-     * Get the permission map for this enum
-     * Must be implemented by the enum using this trait
-     *
-     * @return array<string, array<\App\Enums\User\RoleEnum>>
+     * {@inheritDoc}
      */
-    abstract public static function map(): array;
-
-    /**
-     * Get all permission values for this enum
-     *
-     * @return array<string>
-     */
-    public static function permissions(): array
+    final public static function all(): Collection
     {
-        return array_keys(static::map());
+        return collect(self::cases());
     }
 
-    /**
-     * Get roles allowed for a specific permission
-     *
-     * @return array<\App\Enums\User\RoleEnum>
-     */
-    public static function rolesFor(string $permission): array
+    final public function model(string $guardName = null): PermissionModel
     {
-        return static::map()[$permission] ?? [];
+        return PermissionModel::findByName($this->value);
     }
 
-    /**
-     * Check if a role is allowed for a specific permission
-     */
-    public static function allows(string $permission, \App\Enums\User\RoleEnum $role): bool
+    final public function trans(string $locale = null): string
     {
-        $allowedRoles = static::rolesFor($permission);
-
-        return in_array($role, $allowedRoles, true);
+        return trans("permissions.$this->value", locale: $locale);
     }
 }

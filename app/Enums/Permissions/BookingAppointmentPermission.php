@@ -14,7 +14,7 @@ enum BookingAppointmentPermission: string
     public static function map(): array
     {
         return [
-            self::ChooseNanny->value => [RoleEnum::ADMIN, RoleEnum::TUTOR],
+            self::ChooseNanny->value => [ RoleEnum::ADMIN, RoleEnum::TUTOR],
         ];
     }
 }
