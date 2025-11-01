@@ -28,4 +28,25 @@ trait HasPermissions
     {
         return trans("permissions.$this->value", locale: $locale);
     }
+
+    /**
+     * Check if a given permission is allowed for a specific role
+     *
+     * @param string $permission The permission name to check
+     * @param mixed $role The role enum to check against
+     * @return bool
+     */
+    final public static function allows(string $permission, mixed $role): bool
+    {
+        $map = static::map();
+        $allowedRoles = $map[$permission] ?? [];
+
+        foreach ($allowedRoles as $allowedRole) {
+            if ($allowedRole === $role || $allowedRole->value === $role->value) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

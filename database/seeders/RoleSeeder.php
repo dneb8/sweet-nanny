@@ -16,6 +16,9 @@ class RoleSeeder extends Seeder
 {
     public function run(): void
     {
+        // === 0) Limpiar la caché de Spatie al inicio para evitar problemas ===
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
         $guard = 'web';
 
         // === 1) Resolver tu RoleEnum real (User\RoleEnum o Role\RoleEnum) ===
@@ -42,7 +45,7 @@ class RoleSeeder extends Seeder
 
             foreach ($map as $permName => $allowedRoleEnums) {
                 // Crear/asegurar el permiso en el guard correcto
-                Permission::firstOrCreate([
+                $permission = Permission::firstOrCreate([
                     'name'       => $permName,
                     'guard_name' => $guard,
                 ]);
@@ -53,8 +56,8 @@ class RoleSeeder extends Seeder
                         ->where('guard_name', $guard)
                         ->first();
 
-                    if ($role) {
-                        $role->givePermissionTo($permName);
+                    if ($role && ! $role->hasPermissionTo($permission)) {
+                        $role->givePermissionTo($permission);
                     }
                 }
             }
