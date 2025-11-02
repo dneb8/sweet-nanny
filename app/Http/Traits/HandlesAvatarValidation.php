@@ -26,7 +26,7 @@ trait HandlesAvatarValidation
 
         // Avoid re-queuing spam (30s lock; adjust as needed)
         $lockKey = "validate-avatar:{$user->id}:{$media->id}";
-        $lockDurationSeconds = 30;
+        $lockDurationSeconds = 3;
         $gotLock = Cache::lock($lockKey, $lockDurationSeconds)->get();
 
         if (! $gotLock) {

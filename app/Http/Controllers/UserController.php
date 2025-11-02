@@ -148,7 +148,7 @@ class UserController extends Controller
      * Update a user's avatar image.
      * Allows the user themselves or an admin to upload an avatar.
      */
-    public function updateAvatar(UpdateAvatarRequest $request, User $user): RedirectResponse
+    public function updateAvatar(User $user): RedirectResponse
     {
         // Authorization: only the user themselves or admin can update avatar
         if (Auth::id() !== $user->id && ! Auth::user()?->hasRole('admin')) {
@@ -166,7 +166,7 @@ class UserController extends Controller
         // Trigger validation if needed
         $this->kickoffAvatarValidationIfNeeded($user);
 
-        return redirect()->back()->with('info', 'Tu imagen se subió. Te notificaremos cuando esté validada.');
+        return redirect()->back();
     }
 
     /**
