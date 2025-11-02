@@ -56,4 +56,9 @@ class Tutor extends Model
         return 'ulid';
     }
 
+    public function reviews()
+    {
+        return $this->morphMany(Review::class, 'reviewable');
+    }
+
 }

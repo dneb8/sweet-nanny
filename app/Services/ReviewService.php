@@ -14,7 +14,7 @@ class ReviewService
     public function indexFetch(): LengthAwarePaginator
     {
         $reviews = Review::query()
-            ->with(['reviewable'])
+            ->with(['reviewable.user.roles'])
             ->orderBy('created_at', 'desc');
 
         $sortables = ['created_at', 'rating', 'approved'];

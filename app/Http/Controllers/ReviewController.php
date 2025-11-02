@@ -20,7 +20,7 @@ class ReviewController extends Controller
     {
         $reviewService->toggleApproved($review);
 
-        return back()->with('notification', 'Estado de aprobación actualizado correctamente.');
+        return back()->with('success', 'Estado de aprobación actualizado correctamente.');
     }
 }
 

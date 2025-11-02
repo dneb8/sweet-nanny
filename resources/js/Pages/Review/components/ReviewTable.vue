@@ -7,13 +7,16 @@ import { ReviewTableService } from '@/services/reviewTableService';
 import ReviewFiltros from './ReviewFiltros.vue';
 import ReviewCard from './ReviewCard.vue';
 import Badge from '@/components/common/Badge.vue';
+import { getRoleLabelByString } from "@/enums/role.enum";
+import { getUserInitials } from "@/utils/getUserInitials";
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 defineProps<{
     resource: FetcherResponse<Review>;
 }>();
 
 // Servicio que expone estado + handlers
-const { filtros, visibleColumns, toggleApproved, getReviewableName, getReviewableType } = new ReviewTableService();
+const { filtros, visibleColumns, toggleApproved, getReviewableName, verUsuarioPerfil, getRoleBadgeClasses } = new ReviewTableService();
 
 // Helper para generar estrellas
 const getStars = (rating: number): string => {
@@ -72,20 +75,49 @@ const getStars = (rating: number): string => {
             </template>
         </Column>
 
-        <!-- Para (Reviewable) con chip -->
-        <Column header="Para">
-            <template #body="slotProps">
-                <div class="flex flex-col gap-1">
-                    <div class="flex items-center gap-2">
-                        <Badge
-                            label="Para:"
-                            customClass="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
-                        />
-                        <span class="text-xs text-muted-foreground">{{ getReviewableType(slotProps.record) }}</span>
-                    </div>
-                    <span class="font-medium text-sm">{{ getReviewableName(slotProps.record) }}</span>
-                </div>
-            </template>
+        <!-- Columna: Perfil (avatar + click a perfil de usuario) -->
+        <Column header="Perfil" field="id">
+        <template #body="slotProps">
+            <div
+            @click="verUsuarioPerfil(slotProps.record?.reviewable?.user)"
+            class="flex items-center gap-2 cursor-pointer hover:text-rose-400 dark:hover:text-rose-300"
+            title="Ver perfil"
+            >
+            <Avatar shape="square" size="sm" class="cursor-pointer overflow-hidden">
+                <!-- Si tienes avatar_url en reviewable.user -->
+                <AvatarImage
+                v-if="slotProps.record?.reviewable?.user?.avatar_url"
+                :src="slotProps.record.reviewable.user.avatar_url"
+                :alt="slotProps.record?.reviewable?.user?.name ?? 'avatar'"
+                class="h-8 w-8 object-cover"
+                />
+                <AvatarFallback v-else>
+                {{ getUserInitials(slotProps.record?.reviewable?.user) }}
+                </AvatarFallback>
+            </Avatar>
+            </div>
+        </template>
+        </Column>
+
+        <!-- Columna: Nombre -->
+        <Column header="Nombre">
+        <template #body="slotProps">
+            <span class="text-sm">
+            {{ getReviewableName(slotProps.record) ?? 'Sin nombre' }}
+            </span>
+        </template>
+        </Column>
+
+        <!-- Columna: Rol (badge) -->
+        <Column header="Rol">
+        <template #body="slotProps">
+            <div class="flex items-center gap-2">
+            <Badge
+                :label="getRoleLabelByString(slotProps.record?.reviewable?.user?.roles?.[0]?.name ?? '') || 'Sin rol'"
+                :customClass="getRoleBadgeClasses(slotProps.record?.reviewable?.user?.roles?.[0]?.name ?? '')"
+            />
+            </div>
+        </template>
         </Column>
 
         <!-- Estado (Approved) -->
@@ -113,22 +145,23 @@ const getStars = (rating: number): string => {
 
         <!-- Acciones con iconos más grandes -->
         <Column header="Acciones" field="id">
-            <template #body="slotProps">
-                <div class="flex gap-2">
-                    <div
-                        @click="toggleApproved(slotProps.record)"
-                        :class="[
-                            'flex justify-center items-center w-max hover:cursor-pointer',
-                            slotProps.record.approved
-                                ? 'text-emerald-600 dark:text-emerald-500 hover:text-emerald-600/80 dark:hover:text-emerald-400'
-                                : 'text-amber-600 dark:text-amber-500 hover:text-amber-600/80 dark:hover:text-amber-400',
-                        ]"
-                        :title="slotProps.record.approved ? 'Marcar como no aprobado (privado)' : 'Marcar como aprobado (público)'"
-                    >
-                        <Icon :icon="slotProps.record.approved ? 'mdi:earth' : 'mdi:earth-off'" :size="22" />
-                    </div>
-                </div>
-            </template>
+        <template #body="p">
+            <button
+            @click="toggleApproved(p.record)"
+            :title="p.record.approved ? 'Desaprobar' : 'Aprobar'"
+            :class="[
+                'flex h-8 w-8 items-center justify-center rounded-md',
+                p.record.approved ? 'text-emerald-600' : 'text-amber-600'
+            ]"
+            >
+            <Icon
+                :icon="p.record.approved ? 'mdi:earth' : 'mdi:earth-off'"
+                class="block leading-none"
+                :width="18" :height="18"
+            />
+            </button>
+        </template>
         </Column>
+
     </DataTable>
 </template>
