@@ -2,7 +2,7 @@ import { usePage } from '@inertiajs/vue3'
 import type { PageProps } from '@/types/UsePage'
 
 export function getRoles(): string[] {
-  const user = usePage<PageProps>().props.auth.user as any
+  const user = usePage<PageProps>().props.auth?.user as any
   const roles = user?.roles ?? []
   return Array.isArray(roles)
     ? roles.map(r => (typeof r === 'string' ? r : r?.name)).filter(Boolean) as string[]
@@ -10,7 +10,7 @@ export function getRoles(): string[] {
 }
 
 export function getPermissions(): string[] {
-  const user = usePage<PageProps>().props.auth.user as any
+  const user = usePage<PageProps>().props.auth?.user as any
   const perms = user?.permissions ?? []
   return Array.isArray(perms)
     ? perms.map(p => (typeof p === 'string' ? p : p?.name)).filter(Boolean) as string[]

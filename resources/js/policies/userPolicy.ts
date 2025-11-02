@@ -46,7 +46,7 @@ class UserPolicy {
         if (!role(RoleEnum.ADMIN)) return false;
 
         // No puede eliminarse a sí mismo
-        if (this.authUser.id === user.ulid) return false;
+        if (this.authUser.ulid === user.ulid) return false;
 
         // Admin no puede eliminar a otro Admin
         if (this.isAdmin(user)) return false;

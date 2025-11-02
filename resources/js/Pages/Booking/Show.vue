@@ -158,7 +158,7 @@ const label =
                   Niñera: <span class="text-foreground font-medium">{{ a.nanny.user.name + ' ' + a.nanny.user.surnames }}</span>
                 </div>
 
-                <!-- BOTÓN CORREGIDO: usa policy.canChooseNanny -->
+                <!-- usa policy.canChooseNanny -->
                 <div v-else-if="policy.canChooseNanny(a, props.booking)" class="pt-2">
                   <Button
                     size="sm"

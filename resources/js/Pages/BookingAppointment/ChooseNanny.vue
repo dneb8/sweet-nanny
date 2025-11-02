@@ -57,7 +57,6 @@ const fetchNannies = async () => {
 }
 
 onMounted(() => {
-  // ✅ Solo abre el Top-3 la primera vez por cita
   const alreadyShown = typeof window !== 'undefined' && sessionStorage.getItem(top3Key) === '1'
   if (!alreadyShown && (props.top3Nannies?.length ?? 0) > 0) {
     showTop3Modal.value = true
