@@ -13,10 +13,10 @@ class BookingAppointmentFactory extends Factory
     public function definition(): array
     {
         $startDate = $this->faker->dateTimeBetween('now', '+1 month');
-        $endDate = (clone $startDate)->modify('+4 hours');
+        $endDate = (clone $startDate)->modify('+2 hours');
 
         return [
-            'nanny_id' => Nanny::inRandomOrder()->value('id'), // id de niñera random
+            'nanny_id' => Nanny::inRandomOrder()->value('id'),
             'start_date' => $startDate,
             'end_date' => $endDate,
             'status' => $this->faker->randomElement(['pending', 'confirmed', 'cancelled']),

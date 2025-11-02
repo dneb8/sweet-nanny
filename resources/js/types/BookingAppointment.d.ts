@@ -17,4 +17,7 @@ export interface BookingAppointment {
   booking?: Booking
   nanny?: Nanny
   price?: Price
+  addresses?: Address[]
+  children?: Child[]
+  childrenWithTrashed?: Child[]
 }
