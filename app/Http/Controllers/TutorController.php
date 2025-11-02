@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Tutor\CreateTutorRequest;
 use App\Http\Requests\Tutor\UpdateTutorRequest;
+use App\Http\Traits\HandlesAvatarValidation;
 use App\Models\Tutor;
 use App\Services\TutorService;
 use Inertia\Inertia;
@@ -11,6 +12,7 @@ use Inertia\Response;
 
 class TutorController extends Controller
 {
+    use HandlesAvatarValidation;
     /**
      * Display a listing of the resource.
      */
@@ -54,13 +56,19 @@ class TutorController extends Controller
 
         $tutor = $tutorService->getShowData($tutor->ulid);
 
+        $tutor->load([
+            'user.roles',
+            'user.media' => fn ($q) => $q->where('collection_name', 'images'),
+            'addresses',
+            'reviews',
+            'bookings.bookingAppointments',
+        ]);
+
+        // Trigger validation if needed for pending avatars
+        $this->kickoffAvatarValidationIfNeeded($tutor->user);
+
         return Inertia::render('Tutor/Show', [
-            'tutor' => $tutor->load([
-                'user.roles',
-                'addresses',
-                'reviews',
-                'bookings.bookingAppointments',
-            ]),
+            'tutor' => $tutor,
         ]);
     }
 

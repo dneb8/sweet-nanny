@@ -3,15 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Nanny\QualityEnum;
+use App\Http\Requests\Nanny\{CreateNannyRequest, UpdateNannyRequest, UpdateNannyProfileRequest};
+use App\Http\Traits\HandlesAvatarValidation;
 use App\Models\Nanny;
 use App\Models\Quality;
-use App\Http\Requests\Nanny\{CreateNannyRequest, UpdateNannyRequest, UpdateNannyProfileRequest};
-use Inertia\{Inertia, Response};
-
 use Illuminate\Http\Request;
+use Inertia\{Inertia, Response};
 
 class NannyController extends Controller
 {
+    use HandlesAvatarValidation;
     /**
      * Show the form for creating a new resource.
      */
@@ -33,16 +34,22 @@ class NannyController extends Controller
      */
     public function show(Nanny $nanny)
     {
+        $nanny->load([
+            'user.roles',
+            'user.media' => fn ($q) => $q->where('collection_name', 'images'),
+            'addresses',
+            'courses',
+            'careers',
+            'qualities',
+            'reviews',
+            'bookingAppointments.booking.address',
+        ]);
+
+        // Trigger validation if needed for pending avatars
+        $this->kickoffAvatarValidationIfNeeded($nanny->user);
+
         return Inertia::render('Nanny/Show', [
-            'nanny' => $nanny->load([
-                'user.roles',
-                'addresses',
-                'courses',
-                'careers',
-                'qualities',
-                'reviews',
-                'bookingAppointments.booking.address',
-            ]),
+            'nanny' => $nanny,
         ]);
     }
 
