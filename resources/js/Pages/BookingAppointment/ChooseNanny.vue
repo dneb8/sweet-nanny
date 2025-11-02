@@ -31,7 +31,6 @@ const selectedNannyForDetail = ref<NannySelectionData | null>(null)
 const searchTerm = ref('')
 const availableNannies = ref<NannySelectionData[]>([])
 const isLoading = ref(false)
-const hasAutoOpened = ref(false)
 const { toast } = useToast()
 
 const fetchNannies = async () => {
