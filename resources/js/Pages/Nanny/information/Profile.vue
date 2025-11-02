@@ -83,6 +83,8 @@ const handleSaved = () => {
           :avatar-url="props.nanny.user?.avatar_url"
           :avatar-status="(props.nanny.user as any)?.avatar_status"
           :avatar-note="(props.nanny.user as any)?.avatar_note"
+          :upload-route="route('users.avatar.update', props.nanny.user?.ulid)"
+          :delete-route="route('users.avatar.delete', props.nanny.user?.ulid)"
           :size="160"
           :first-name="props.nanny.user?.name"
           :last-name="props.nanny.user?.surnames"
