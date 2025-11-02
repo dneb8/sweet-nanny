@@ -17,6 +17,7 @@ Route::middleware(['auth', 'verified'])->prefix('bookings')->name('bookings.')->
     Route::prefix('{booking}/appointments/{appointment}')->name('appointments.')->group(function () {
         Route::get('/nannies/choose', [BookingAppointmentNannyController::class, 'index'])->name('nannies.choose');
         Route::post('/nannies/{nanny}', [BookingAppointmentNannyController::class, 'assign'])->name('nannies.assign');
+        Route::post('/cancel', [BookingAppointmentController::class, 'cancel'])->name('cancel');
     });
 });
 

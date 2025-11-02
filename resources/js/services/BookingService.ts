@@ -30,6 +30,20 @@ export function useBookingView(booking: Booking) {
       ? String(value)
       : new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium' }).format(d)
   }
+  
+  // Formato completo de fecha legible (ej: "miércoles, 5 de febrero de 2025")
+  const fmtReadableDate = (value?: string | Date | null) => {
+    if (!value) return '—'
+    const d = typeof value === 'string' ? new Date(value) : value
+    return isNaN(+d)
+      ? String(value)
+      : new Intl.DateTimeFormat('es-MX', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        }).format(d)
+  }
 
   // labels genéricos para arrays de enums
   const enumLabel = (val: string, type: 'quality' | 'career' | 'course') =>
@@ -73,11 +87,16 @@ export function useBookingView(booking: Booking) {
   const qualities = () => booking.qualities ?? []
   const courses = () => booking.courses ?? []
 
+  // Cancel appointment
+  const cancelAppointment = (appointmentId: string) => {
+    router.post(route('bookings.appointments.cancel', { booking: booking.id, appointment: appointmentId }))
+  }
+
   return {
     // actions
-    showDeleteModal, goShow, goEdit, askDelete, confirmDelete,
+    showDeleteModal, goShow, goEdit, askDelete, confirmDelete, cancelAppointment,
     // format
-    fmtDateTime, fmtDate, enumLabel, statusBadge, qualityBadge, careerBadge, courseBadge,
+    fmtDateTime, fmtDate, fmtReadableDate, enumLabel, statusBadge, qualityBadge, careerBadge, courseBadge,
     // data accessors
     children, appointments, careers, qualities, courses,
     // scroll

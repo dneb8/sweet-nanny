@@ -133,26 +133,38 @@ const label =
               <div
                 v-for="(a,i) in v.appointments()"
                 :key="a.id ?? i"
-                class="rounded-2xl border border-white/20 bg-white/40 dark:bg-white/10 backdrop-blur-md p-3 space-y-2 shadow"
+                class="rounded-2xl border border-white/20 bg-white/40 dark:bg-white/10 backdrop-blur-md p-4 space-y-3 shadow"
               >
-                <div class="grid grid-cols-2 gap-2 text-[13px]">
+                <!-- Fecha legible -->
+                <div class="space-y-1">
+                  <p class="text-[11px] text-muted-foreground">Fecha de la cita</p>
+                  <p class="font-semibold text-sm flex items-center gap-1.5">
+                    <Icon icon="lucide:calendar-days" class="h-4 w-4 opacity-70" />
+                    {{ v.fmtReadableDate(a.start_date ?? a.start_at) }}
+                  </p>
+                </div>
+
+                <!-- Horarios -->
+                <div class="grid grid-cols-2 gap-3 text-[13px]">
                   <div>
-                    <p class="text-[11px] text-muted-foreground">Inicio</p>
+                    <p class="text-[11px] text-muted-foreground mb-1">Hora inicio</p>
                     <p class="font-medium flex items-center gap-1">
-                      <Icon icon="lucide:calendar" class="h-4 w-4 opacity-70" />
-                      {{ v.fmtDateTime(a.start_date ?? a.start_at) }}
+                      <Icon icon="lucide:clock" class="h-3.5 w-3.5 opacity-70" />
+                      {{ new Date(a.start_date ?? a.start_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) }}
                     </p>
                   </div>
                   <div>
-                    <p class="text-[11px] text-muted-foreground">Fin</p>
+                    <p class="text-[11px] text-muted-foreground mb-1">Hora fin</p>
                     <p class="font-medium flex items-center gap-1">
-                      <Icon icon="lucide:calendar-check" class="h-4 w-4 opacity-70" />
-                      {{ v.fmtDateTime(a.end_date ?? a.end_at) }}
+                      <Icon icon="lucide:clock" class="h-3.5 w-3.5 opacity-70" />
+                      {{ new Date(a.end_date ?? a.end_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) }}
                     </p>
                   </div>
                 </div>
+
+                <!-- Status y duración -->
                 <div class="flex items-center justify-between">
-                  <Badge variant="outline" class="px-2 py-0.5 text-[11px]">{{ a.status ?? 'Pendiente' }}</Badge>
+                  <Badge :class="v.statusBadge(a.status)" class="px-2 py-0.5 text-[11px]">{{ a.status ?? 'Pendiente' }}</Badge>
                   <span v-if="a.duration" class="text-[11px] text-muted-foreground">{{ a.duration }} min</span>
                 </div>
 
@@ -175,6 +187,25 @@ const label =
 
                 <div v-if="a.notes" class="text-[12px] leading-snug pt-2 border-t border-white/20">
                   {{ a.notes }}
+                </div>
+
+                <!-- Cancel appointment button -->
+                <div v-if="a.status !== 'cancelled'" class="pt-2 border-t border-white/20">
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    class="w-full text-[11px] h-7"
+                    @click="v.cancelAppointment(a.id)"
+                  >
+                    <Icon icon="lucide:x-circle" class="mr-1.5 h-3.5 w-3.5" />
+                    Cancelar cita
+                  </Button>
+                </div>
+                <div v-else class="pt-2 border-t border-white/20">
+                  <div class="flex items-center justify-center gap-2 text-[11px] text-muted-foreground py-1">
+                    <Icon icon="lucide:ban" class="h-3.5 w-3.5" />
+                    <span>Cita cancelada</span>
+                  </div>
                 </div>
               </div>
             </div>

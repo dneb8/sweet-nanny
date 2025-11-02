@@ -125,4 +125,14 @@ class BookingAppointmentPolicy
             implode(', ', $userRoles)
         ));
     }
+
+    /**
+     * Determine if the user can cancel an appointment
+     * Uses the same logic as chooseNanny for authorization
+     */
+    public function cancel(User $user, BookingAppointment $appointment): Response
+    {
+        // Reuse the same authorization logic as chooseNanny
+        return $this->chooseNanny($user, $appointment);
+    }
 }
