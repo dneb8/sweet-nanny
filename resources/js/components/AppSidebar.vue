@@ -20,6 +20,11 @@ const adminNavItems: NavItem[] = [
         href: '/users',
         icon: 'proicons:person-multiple',
     },
+    {
+        title: 'Reviews',
+        href: '/reviews',
+        icon: 'mdi:star-outline',
+    },
     // {
     //     title: 'Niñeras',
     //     href: '/nannies',

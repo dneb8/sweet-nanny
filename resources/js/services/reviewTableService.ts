@@ -6,12 +6,14 @@ import type { User } from '@/types/User';
 
 export interface FiltrosReview {
     approved: string | null;
+    role: string | null;
 }
 
 export class ReviewTableService {
     // Propiedades reactivas del componente
     public filtros = ref<FiltrosReview>({
         approved: null,
+        role: null,
     });
 
     // Constante reactiva que contiene las columnas visibles
@@ -21,13 +23,14 @@ export class ReviewTableService {
         // Providers para comunicación con DataTable/Filters
         provide('reviews_filters', computed(() => this.getFilters()));
         provide('clear_reviews_filters', () => {
-            this.filtros.value = { approved: null };
+            this.filtros.value = { approved: null, role: null };
         });
     }
 
     // Getter de filtros
     public getFilters = () => ({
         approved: this.filtros.value.approved,
+        role: this.filtros.value.role,
     });
 
     // Función para toggle approved status

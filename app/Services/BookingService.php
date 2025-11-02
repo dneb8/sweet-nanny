@@ -35,11 +35,14 @@ class BookingService
         return Fetcher::for($bookings)
             ->allowFilters([
                 'recurrent' => [
+                    'as' => 'recurrent',
                     'using' => function ($filter) {
                         return $filter->transform(fn($val) => filter_var($val, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE));
                     },
                 ],
-                'status' => [],
+                'status' => [
+                    'as' => 'status',
+                ],
             ])
             ->allowSort($sortables)
             ->allowSearch($searchables)

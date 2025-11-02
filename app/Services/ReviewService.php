@@ -25,6 +25,9 @@ class ReviewService
                 'approved' => [
                     'using' => fn (Filter $filter) => $filter->usingScope('filtrarPorApproved'),
                 ],
+                'role' => [
+                    'as' => 'reviewable.user.roles.name',
+                ],
             ])
             ->allowSort($sortables)
             ->allowSearch($searchables)

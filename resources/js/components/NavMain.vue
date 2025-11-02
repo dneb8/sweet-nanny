@@ -2,6 +2,8 @@
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { RoleEnum } from '@/enums/role.enum';
 
 defineProps<{
     items: NavItem[];
@@ -10,6 +12,13 @@ defineProps<{
 }>();
 
 const page = usePage();
+
+// Check if the current user is an admin
+const isAdmin = computed(() => {
+    const user = page.props.auth?.user as any;
+    if (!user || !user.roles || user.roles.length === 0) return false;
+    return user.roles.some((role: any) => role.name === RoleEnum.ADMIN);
+});
 </script>
 
 <template>
@@ -26,7 +35,7 @@ const page = usePage();
             </SidebarMenuItem>
         </SidebarMenu>
     </SidebarGroup>
-    <SidebarGroup class="pl-4 py-0">
+    <SidebarGroup v-if="isAdmin && adminItems && adminItems.length > 0" class="pl-4 py-0">
         <SidebarGroupLabel>Administración</SidebarGroupLabel>
         <SidebarMenu>
             <SidebarMenuItem v-for="item in adminItems" :key="item.title">
