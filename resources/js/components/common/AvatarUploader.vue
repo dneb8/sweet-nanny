@@ -198,19 +198,6 @@ const boxStyle = computed(() => ({
 
     <!-- Controles -->
     <div class="flex flex-col gap-2">
-      <div class="flex items-center gap-2">
-        <!-- Eliminar -->
-        <button
-          v-if="!previewUrl && avatarUrl"
-          type="button"
-          class="inline-flex items-center rounded-md border px-3 py-1.5 text-sm hover:bg-accent disabled:opacity-50"
-          @click="remove"
-          :disabled="isDeleting || readonly"
-        >
-          Eliminar foto
-        </button>
-      </div>
-
       <!-- Acciones de preview -->
       <div v-if="previewUrl" class="flex items-center gap-2">
         <button
