@@ -3,20 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Enums\User\RoleEnum;
+use App\Http\Requests\UpdateAvatarRequest;
 use App\Http\Requests\User\CreateUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
-use App\Jobs\ValidateAvatarMedia;
+use App\Http\Traits\HandlesAvatarValidation;
 use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class UserController extends Controller
 {
+    use HandlesAvatarValidation;
     /**
      * Redirige al listado de usuarios
      */
@@ -147,16 +148,12 @@ class UserController extends Controller
      * Update a user's avatar image.
      * Allows the user themselves or an admin to upload an avatar.
      */
-    public function updateAvatar(Request $request, User $user): RedirectResponse
+    public function updateAvatar(UpdateAvatarRequest $request, User $user): RedirectResponse
     {
         // Authorization: only the user themselves or admin can update avatar
         if (Auth::id() !== $user->id && ! Auth::user()?->hasRole('admin')) {
             abort(403, 'No tienes permiso para actualizar el avatar de este usuario.');
         }
-
-        $request->validate([
-            'avatar' => ['required', 'image', 'mimes:jpeg,jpg,png,webp', 'max:4096'], // 4MB
-        ]);
 
         // Save the image immediately (collection 'images' on disk 's3')
         $user->addMediaFromRequest('avatar')
@@ -186,34 +183,5 @@ class UserController extends Controller
         $user->clearMediaCollection('images');
 
         return redirect()->back()->with('success', 'Foto de perfil eliminada correctamente.');
-    }
-
-    /**
-     * If the user has media 'images' with status 'pending',
-     * trigger the validation Job (once per time window).
-     */
-    private function kickoffAvatarValidationIfNeeded(User $user): void
-    {
-        $media = $user->getFirstMedia('images');
-        if (! $media) {
-            return;
-        }
-
-        $status = $media->getCustomProperty('status', 'approved');
-        if ($status !== 'pending') {
-            return;
-        }
-
-        // Avoid re-queuing spam (30s lock; adjust as needed)
-        $lockKey = "validate-avatar:{$user->id}:{$media->id}";
-        $lockDurationSeconds = 30;
-        $gotLock = Cache::lock($lockKey, $lockDurationSeconds)->get();
-
-        if (! $gotLock) {
-            return;
-        }
-
-        // Queue validation in background
-        ValidateAvatarMedia::dispatch($user->id, $media->id)->onQueue('default');
     }
 }
