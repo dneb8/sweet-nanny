@@ -135,4 +135,38 @@ class BookingAppointmentPolicy
         // Reuse the same authorization logic as chooseNanny
         return $this->chooseNanny($user, $appointment);
     }
+
+    /**
+     * Determine if the user can update an appointment
+     */
+    public function update(User $user, BookingAppointment $appointment): Response
+    {
+        // Check status - only draft and pending can be edited
+        if (!in_array($appointment->status, ['draft', 'pending'])) {
+            return Response::deny('Solo se pueden editar citas en estado draft o pending.');
+        }
+
+        // Admin can edit any
+        if ($user->hasRole(RoleEnum::ADMIN->value)) {
+            return Response::allow();
+        }
+
+        // Tutor can edit their own
+        if ($user->hasRole(RoleEnum::TUTOR->value)) {
+            $appointment->loadMissing('booking.tutor');
+            $bookingTutorUserId = $appointment->booking?->tutor?->user_id;
+
+            if (is_null($bookingTutorUserId)) {
+                return Response::deny('La cita no tiene tutor asociado.');
+            }
+
+            if ((int)$bookingTutorUserId !== (int)$user->id) {
+                return Response::deny('No eres dueño de este booking.');
+            }
+
+            return Response::allow();
+        }
+
+        return Response::deny('No tienes permiso para editar esta cita.');
+    }
 }

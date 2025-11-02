@@ -19,6 +19,9 @@ Route::middleware(['auth', 'verified'])->prefix('bookings')->name('bookings.')->
         Route::get('/nannies/choose', [BookingAppointmentNannyController::class, 'index'])->name('nannies.choose');
         Route::post('/nannies/{nanny}', [BookingAppointmentNannyController::class, 'assign'])->name('nannies.assign');
         Route::post('/cancel', [BookingAppointmentController::class, 'cancel'])->name('cancel');
+        Route::patch('/dates', [BookingAppointmentController::class, 'updateDates'])->name('update-dates');
+        Route::patch('/address', [BookingAppointmentController::class, 'updateAddress'])->name('update-address');
+        Route::patch('/children', [BookingAppointmentController::class, 'updateChildren'])->name('update-children');
     });
 });
 
