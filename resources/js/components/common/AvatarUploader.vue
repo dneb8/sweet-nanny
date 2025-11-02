@@ -94,19 +94,6 @@ function submit() {
   })
 }
 
-function remove() {
-  if (!confirm("¿Eliminar foto de perfil?")) return
-  isDeleting.value = true
-  router.delete(props.deleteRoute, {
-    preserveScroll: true,
-    onFinish: () => {
-      isDeleting.value = false
-      resetFile()
-      emit("deleted")
-    },
-  })
-}
-
 // Polling (si pending)
 let interval: number | null = null
 function stopPolling() {
