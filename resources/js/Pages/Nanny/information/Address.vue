@@ -100,7 +100,7 @@ const deleteAddress = () => {
             <Button size="sm" variant="ghost" @click="openModal(addr)">
               <Icon icon="lucide:edit" />
             </Button>
-            <Button size="sm" variant="destructive" @click="openDelete(addr)">
+            <Button size="sm" variant="ghost" class="text-rose-500 hover:text-rose-500/60" @click="openDelete(addr)">
               <Icon icon="lucide:trash" />
             </Button>
           </div>

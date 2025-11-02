@@ -3,15 +3,28 @@
 namespace Database\Seeders;
 
 use App\Models\Course;
+use App\Models\Nanny;
 use Illuminate\Database\Seeder;
 
 class CourseSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        Course::factory()->count(20)->create();
+        // Borramos cualquier curso previo
+        Course::truncate();
+
+        // Obtener todas las niñeras
+        $nannies = Nanny::all();
+
+        foreach ($nannies as $nanny) {
+            // Cada niñera tiene entre 1 y 4 cursos
+            $numCourses = rand(1, 4);
+
+            Course::factory()
+                ->count($numCourses)
+                ->create([
+                    'nanny_id' => $nanny->id,
+                ]);
+        }
     }
 }

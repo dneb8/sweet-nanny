@@ -51,7 +51,7 @@ const isDeleting = ref(false);
 const currentAvatarUrl = computed(() => previewUrl.value || props.avatarUrl);
 
 // Reactive polling for avatar status when pending
-let statusPollInterval: NodeJS.Timeout | null = null;
+let statusPollInterval: number | null = null;
 
 const pollAvatarStatus = () => {
     if (props.avatarStatus === 'pending') {

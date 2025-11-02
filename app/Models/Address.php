@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\Address\TypeEnum;
+use App\Enums\Address\ZoneEnum;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,10 +19,16 @@ class Address extends Model
     protected $fillable = [
         'postal_code',
         'street',
+        'name',
         'neighborhood',
-        'type',
-        'other_type',
+        'external_number',
         'internal_number',
+        'municipality',
+        'state',
+        'latitude',
+        'longitude',
+        'type',
+        'zone',
         'addressable_type',
         'addressable_id',
     ];
@@ -33,6 +40,7 @@ class Address extends Model
 
     protected $casts = [
         'type' => TypeEnum::class, // Enum backeado por string
+        'zone' => ZoneEnum::class,
     ];
 
     /**

@@ -93,7 +93,7 @@ const deleteCareer = () => {
             <Button size="sm" variant="ghost" @click="openModal(career)">
               <Icon icon="lucide:edit" />
             </Button>
-            <Button size="sm" variant="destructive" @click="openDelete(career)">
+            <Button size="sm" variant="ghost" class="text-rose-500 hover:text-rose-500/60" @click="openDelete(career)">
               <Icon icon="lucide:trash" />
             </Button>
           </div>
