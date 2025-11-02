@@ -7,18 +7,13 @@ enum NameCareerEnum: string
     case PEDAGOGIA = 'pedagogia';
     case PSICOLOGIA = 'psicologia';
     case ENFERMERIA = 'enfermeria';
-    case ARTES = 'artes';
-    case EDUCACION_ESPECIAL = 'educacion_especial';
+    case DOCENCIA = 'docencia';
+    case NUTRICION = 'nutricion';
     case TRABAJO_SOCIAL = 'trabajo_social';
     case PSICOPEDAGOGIA = 'psicopedagogia';
-    case EDUCACION_INFANTIL = 'educacion_infantil';
-    case NUTRICION = 'nutricion';
-    case EDUCACION_PREESCOLAR = 'educacion_preescolar';
-    case PSICOLOGIA_INFANTIL = 'psicologia_infantil';
-    case PUERICULTURA = 'puericultura';
-    case TERAPIA_OCUPACIONAL = 'terapia_ocupacional';
-    case ESTIMULACION_TEMPRANA = 'estimulacion_temprana';
-    case ENFERMERIA_PEDIATRICA = 'enfermeria_pediatrica';
+    case TERAPIA_PSICOMOTRIZ = 'terapia_psicomotriz';
+    case PEDIATRIA = 'pediatria';
+    case ARTES_ESCENICAS_DANZA = 'artes_escenicas_danza';
 
     public function label(): string
     {
@@ -26,18 +21,13 @@ enum NameCareerEnum: string
             self::PEDAGOGIA => 'Pedagogía',
             self::PSICOLOGIA => 'Psicología',
             self::ENFERMERIA => 'Enfermería',
-            self::ARTES => 'Artes',
-            self::EDUCACION_ESPECIAL => 'Educación Especial',
+            self::DOCENCIA => 'Docencia',
+            self::NUTRICION => 'Nutrición',
             self::TRABAJO_SOCIAL => 'Trabajo Social',
             self::PSICOPEDAGOGIA => 'Psicopedagogía',
-            self::EDUCACION_INFANTIL => 'Educación Infantil',
-            self::NUTRICION => 'Nutrición',
-            self::EDUCACION_PREESCOLAR => 'Educación Preescolar',
-            self::PSICOLOGIA_INFANTIL => 'Psicología Infantil',
-            self::PUERICULTURA => 'Puericultura',
-            self::TERAPIA_OCUPACIONAL => 'Terapia Ocupacional',
-            self::ESTIMULACION_TEMPRANA => 'Estimulación Temprana',
-            self::ENFERMERIA_PEDIATRICA => 'Enfermería Pediátrica',
+            self::TERAPIA_PSICOMOTRIZ => 'Terapia Psicomotriz',
+            self::PEDIATRIA => 'Pediatría',
+            self::ARTES_ESCENICAS_DANZA => 'Artes Escénicas / Danza',
         };
     }
 

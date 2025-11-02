@@ -9,7 +9,7 @@ const props = defineProps<{ nanny: Nanny }>()
 // Calcular % de completitud
 const sections = [
   { key: 'bio', value: props.nanny.bio },
-  { key: 'address', value: props.nanny.address },
+  { key: 'address', value: props.nanny.addresses },
   { key: 'courses', value: props.nanny.courses },
   { key: 'careers', value: props.nanny.careers },
   { key: 'qualities', value: props.nanny.qualities },

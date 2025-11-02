@@ -22,4 +22,5 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+*:[Zz]one.Identifier
 public/build/manifest.json

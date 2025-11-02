@@ -1,12 +1,20 @@
 <script setup lang="ts">
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem
+} from "@/components/ui/select"
 import { FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { watch } from 'vue'
-import { CourseFormService } from "@/services/courseFormService";
-import { Nanny } from "@/types/Nanny"
-import { Course } from "@/types/Course"
+import { watch } from "vue"
+import { CourseFormService } from "@/services/courseFormService"
+import type { Nanny } from "@/types/Nanny"
+import type { Course } from "@/types/Course"
+import { COURSE_NAME_OPTIONS } from "@/enums/courses/course-name.enum"
 
 const props = defineProps<{
   course?: Course;
@@ -22,55 +30,57 @@ const formService = new CourseFormService(
     organization: "",
     date: "",
   }
-);
+)
 
-// Valores reactivos desde el servicio
-const { errors, loading, saved } = formService;
+const { errors, loading, saved } = formService
 
-// Emitir saved a formservice
 watch(() => saved.value, (value) => {
-  if (value) {
-    emit("saved"); 
-  }
-});
+  if (value) emit("saved")
+})
 
-// Función de submit para editar o guardar
 const submit = async () => {
   if (props.course?.id) {
-    await formService.updateCourse();
+    await formService.updateCourse()
   } else {
-    await formService.saveCourse();
+    await formService.saveCourse()
   }
-};
+}
 </script>
 
 <template>
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8 mt-6">
-    <!-- Nombre -->
+    <!-- Nombre del curso -->
     <FormField v-slot="{ componentField }" name="name">
       <FormItem>
         <Label>Nombre del curso</Label>
         <FormControl>
-          <Input placeholder="Ej. Primeros auxilios" v-bind="componentField" />
+          <Select v-bind="componentField" :disabled="loading">
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona un curso" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                v-for="option in COURSE_NAME_OPTIONS"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </FormControl>
-        <FormMessage>
-          {{ errors['name'] ? errors['name'][0] : '' }}
-        </FormMessage>
+        <FormMessage>{{ errors['name'] ? errors['name'][0] : '' }}</FormMessage>
       </FormItem>
     </FormField>
-
 
     <!-- Organización -->
     <FormField v-slot="{ componentField }" name="organization">
       <FormItem>
         <Label>Organización</Label>
         <FormControl>
-          <Input placeholder="Ej. Cruz Roja" v-bind="componentField" />
+          <Input placeholder="Ej. Cruz Roja" v-bind="componentField" :disabled="loading" />
         </FormControl>
-        <FormMessage />
-        <span v-if="errors['organization']" class="text-sm font-medium">
-           {{ errors['organization'][0] }}
-        </span>
+        <FormMessage>{{ errors['organization'] ? errors['organization'][0] : '' }}</FormMessage>
       </FormItem>
     </FormField>
 
@@ -79,12 +89,9 @@ const submit = async () => {
       <FormItem>
         <Label>Fecha</Label>
         <FormControl>
-          <Input type="date" v-bind="componentField" />
+          <Input type="date" v-bind="componentField" :disabled="loading" />
         </FormControl>
-        <FormMessage />
-        <span v-if="errors['date']" class="text-sm font-medium">
-           {{ errors['date'][0] }}
-        </span>
+        <FormMessage>{{ errors['date'] ? errors['date'][0] : '' }}</FormMessage>
       </FormItem>
     </FormField>
   </div>
@@ -92,7 +99,7 @@ const submit = async () => {
   <!-- Botones -->
   <div class="mt-6 flex justify-end gap-2">
     <Button @click="submit" class="w-auto" :disabled="loading">
-      <span v-if="loading"> Guardando...</span>
+      <span v-if="loading">Guardando...</span>
       <span v-else>{{ props.course ? "Actualizar" : "Guardar" }}</span>
     </Button>
   </div>

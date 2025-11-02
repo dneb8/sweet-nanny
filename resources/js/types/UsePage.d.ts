@@ -1,17 +1,26 @@
-import { User } from "./User";
+// resources/js/types/inertia.d.ts
+import { User } from '@/types/User'
 
-export interface PageProps {
+declare module '@inertiajs/core' {
+  export interface PageProps {
     auth: {
-        user: User;
-        roles: string[];
-        permisos: string[];
-    } | null;
+      user: User
+      roles: string[]
+      permisos: string[]
+    } | null
     flash: {
-        message: string;
-        notification: {
-            type: string;
-            message: string;
-        };
-    };
-    [key: string]: any;
+      message?: string
+      notification?: {
+        type: string
+        message: string
+      }
+    }
+    name?: string
+    quote?: string
+    ziggy?: unknown
+    sidebarOpen?: boolean
+    [key: string]: any
+  }
 }
+
+export type { PageProps } from '@inertiajs/core'

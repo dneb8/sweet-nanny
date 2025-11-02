@@ -30,6 +30,20 @@ export function useBookingView(booking: Booking) {
       ? String(value)
       : new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium' }).format(d)
   }
+  
+  // Formato completo de fecha legible (ej: "miércoles, 5 de febrero de 2025")
+  const fmtReadableDate = (value?: string | Date | null) => {
+    if (!value) return '—'
+    const d = typeof value === 'string' ? new Date(value) : value
+    return isNaN(+d)
+      ? String(value)
+      : new Intl.DateTimeFormat('es-MX', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        }).format(d)
+  }
 
   // labels genéricos para arrays de enums
   const enumLabel = (val: string, type: 'quality' | 'career' | 'course') =>
@@ -45,6 +59,11 @@ export function useBookingView(booking: Booking) {
       default: return 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200'
     }
   }
+
+  // Consistent badge colors for Qualities, Careers, and Courses
+  const qualityBadge = () => 'bg-purple-200 text-purple-900 dark:text-purple-200 dark:bg-purple-900/60 dark:border-purple-200'
+  const careerBadge = () => 'bg-indigo-200 text-indigo-900 dark:text-indigo-100 dark:bg-indigo-500/40 dark:border-indigo-200'
+  const courseBadge = () => 'bg-emerald-200 text-emerald-900 dark:text-emerald-100 dark:bg-emerald-900/60 dark:border-emerald-200'
 
   // auto-scroll suave (si lo necesitas en una fila horizontal)
   const scrollContainer = ref<HTMLElement | null>(null)
@@ -62,19 +81,26 @@ export function useBookingView(booking: Booking) {
   onUnmounted(() => { if (scrollInterval) clearInterval(scrollInterval) })
 
   // helpers compactos para vista
-  const children = () => booking.children ?? []
+  // Children and addresses are now on appointments, extract from first appointment
+  const children = () => booking.booking_appointments?.[0]?.children ?? []
   const appointments = () => booking.booking_appointments ?? []
   const careers = () => booking.careers ?? []
   const qualities = () => booking.qualities ?? []
   const courses = () => booking.courses ?? []
+  const address = () => booking.booking_appointments?.[0]?.addresses?.[0] ?? null
+
+  // Cancel appointment
+  const cancelAppointment = (appointmentId: string) => {
+    router.post(route('bookings.appointments.cancel', { booking: booking.id, appointment: appointmentId }))
+  }
 
   return {
     // actions
-    showDeleteModal, goShow, goEdit, askDelete, confirmDelete,
+    showDeleteModal, goShow, goEdit, askDelete, confirmDelete, cancelAppointment,
     // format
-    fmtDateTime, fmtDate, enumLabel, statusBadge,
+    fmtDateTime, fmtDate, fmtReadableDate, enumLabel, statusBadge, qualityBadge, careerBadge, courseBadge,
     // data accessors
-    children, appointments, careers, qualities, courses,
+    children, appointments, careers, qualities, courses, address,
     // scroll
     scrollContainer,
   }

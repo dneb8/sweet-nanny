@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\BookingAppointment;
 use App\Models\User;
+use App\Policies\BookingAppointmentPolicy;
 use App\Policies\UserPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
@@ -15,6 +17,7 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         User::class => UserPolicy::class,
+        BookingAppointment::class => BookingAppointmentPolicy::class,
     ];
 
     /**

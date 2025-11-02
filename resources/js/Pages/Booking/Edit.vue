@@ -13,8 +13,6 @@ import type { BookingAppointment } from '@/types/BookingAppointment'
 const props = defineProps<{
   booking: Booking & {
     tutor: Tutor & { addresses?: Address[]; children?: Child[] }
-    children: Child[]
-    address?: Address | null
     bookingAppointments: BookingAppointment[]
   }
   kinkships: string[]
@@ -24,12 +22,12 @@ const props = defineProps<{
   initialBooking: any
 }>()
 
-// Tutor con fallback de children/address desde el booking
+// Tutor with fallback from tutor's own addresses/children (not from booking)
 const tutorForForm = computed(() => {
   const t = props.booking.tutor as Tutor & { addresses?: Address[]; children?: Child[] }
-  const addresses = t.addresses ?? (props.booking.address ? [props.booking.address as Address] : [])
-  const children  = t.children  ?? props.booking.children ?? []
-  return { ...t, addresses, children }
+  // Note: address and children now live on BookingAppointment, not Booking
+  // The tutor already has their own addresses and children loaded
+  return { ...t, addresses: t.addresses ?? [], children: t.children ?? [] }
 })
 </script>
 

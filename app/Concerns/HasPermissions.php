@@ -2,43 +2,51 @@
 
 namespace App\Concerns;
 
+use Illuminate\Support\Collection;
+use Spatie\Permission\Models\Permission as PermissionModel;
+use StringBackedEnum;
+
+/**
+ * @mixin StringBackedEnum
+ */
 trait HasPermissions
 {
     /**
-     * Get the permission map for this enum
-     * Must be implemented by the enum using this trait
-     *
-     * @return array<string, array<\App\Enums\User\RoleEnum>>
+     * {@inheritDoc}
      */
-    abstract public static function map(): array;
-
-    /**
-     * Get all permission values for this enum
-     *
-     * @return array<string>
-     */
-    public static function permissions(): array
+    final public static function all(): Collection
     {
-        return array_keys(static::map());
+        return collect(self::cases());
+    }
+
+    final public function model(string $guardName = null): PermissionModel
+    {
+        return PermissionModel::findByName($this->value);
+    }
+
+    final public function trans(string $locale = null): string
+    {
+        return trans("permissions.$this->value", locale: $locale);
     }
 
     /**
-     * Get roles allowed for a specific permission
+     * Check if a given permission is allowed for a specific role
      *
-     * @return array<\App\Enums\User\RoleEnum>
+     * @param string $permission The permission name to check
+     * @param mixed $role The role enum to check against
+     * @return bool
      */
-    public static function rolesFor(string $permission): array
+    final public static function allows(string $permission, mixed $role): bool
     {
-        return static::map()[$permission] ?? [];
-    }
+        $map = static::map();
+        $allowedRoles = $map[$permission] ?? [];
 
-    /**
-     * Check if a role is allowed for a specific permission
-     */
-    public static function allows(string $permission, \App\Enums\User\RoleEnum $role): bool
-    {
-        $allowedRoles = static::rolesFor($permission);
+        foreach ($allowedRoles as $allowedRole) {
+            if ($allowedRole === $role || $allowedRole->value === $role->value) {
+                return true;
+            }
+        }
 
-        return in_array($role, $allowedRoles, true);
+        return false;
     }
 }

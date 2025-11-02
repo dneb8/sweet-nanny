@@ -5,7 +5,7 @@ import type { Rol } from '@/types/Rol';
 import { can, role } from '@/helpers/permissionHelper';
 import { RoleEnum } from '@/enums/role.enum';
 
-export class UserPolicy {
+class UserPolicy {
     private get authUser() {
         return usePage<PageProps>().props.auth?.user;
     }
@@ -46,7 +46,7 @@ export class UserPolicy {
         if (!role(RoleEnum.ADMIN)) return false;
 
         // No puede eliminarse a sí mismo
-        if (this.authUser.id === user.ulid) return false;
+        if (this.authUser.ulid === user.ulid) return false;
 
         // Admin no puede eliminar a otro Admin
         if (this.isAdmin(user)) return false;
@@ -54,3 +54,6 @@ export class UserPolicy {
         return true;
     };
 }
+
+// Export a singleton instance for use across the application
+export const userPolicy = new UserPolicy();
