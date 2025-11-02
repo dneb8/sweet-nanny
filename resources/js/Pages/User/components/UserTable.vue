@@ -111,7 +111,7 @@ const {
             class="flex justify-center items-center w-max text-blue-600 dark:text-blue-500 hover:text-blue-600/80 dark:hover:text-blue-400 hover:cursor-pointer"
             title="Editar usuario"
           >
-            <Icon icon="mdi:edit-outline" :size="20" />
+            <Icon icon="mdi:edit-outline" :width="20" />
           </div>
 
           <div
@@ -119,14 +119,13 @@ const {
             class="flex justify-center items-center w-max text-rose-600 dark:text-rose-500 hover:text-rose-600/80 dark:hover:text-rose-400 hover:cursor-pointer"
             title="Eliminar usuario"
           >
-            <Icon icon="fluent:delete-12-regular" :size="20" />
+            <Icon icon="fluent:delete-12-regular" :width="20" />
           </div>
         </div>
       </template>
     </Column>
   </DataTable>
 
-  <!-- ✅ Reemplazo del Dialog por DeleteModal -->
   <DeleteModal
     v-model:show="modalEliminarUsuario"
     :message="`¿Estás seguro de eliminar a ${usuarioEliminar?.name ?? ''} (${usuarioEliminar?.email ?? ''})?`"

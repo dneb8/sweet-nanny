@@ -16,7 +16,6 @@ defineProps<{
 
 // Servicio que expone estado + handlers
 const {
-    bookingEliminar,
     modalEliminarBooking,
     filtros,
     visibleColumns,
