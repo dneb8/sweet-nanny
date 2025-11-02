@@ -8,10 +8,8 @@ class UpdateNannyProfileRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Para prueba: quitar admin temporalmente
         // Solo la niñera propietaria o una administradora puede actualizar su perfil
-        // return $this->user()->is_admin || $this->user()->id === $this->nanny->user_id;
-        return true; // temporal para pruebas
+        return $this->user()->is_admin || $this->user()->id === $this->nanny->user_id;
     }
 
     public function rules(): array

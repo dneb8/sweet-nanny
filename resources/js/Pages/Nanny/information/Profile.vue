@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog"
 import NannyProfileForm from '../components/NannyProfileForm.vue'
 import { ref, computed } from "vue"
-import { formatExperienceFrom } from "@/utils/formatExperienceForm"
+import { formatExperienceForm } from "@/utils/formatExperienceForm"
 
 const props = defineProps<{ nanny: Nanny }>()
 const emit = defineEmits<{
@@ -35,7 +35,7 @@ const completedSections = sections.filter(
 ).length
 const completion = ref(Math.round((completedSections / sections.length) * 100))
 
-const experience = ref(formatExperienceFrom(props.nanny.start_date ?? ''))
+const experience = ref(formatExperienceForm(props.nanny.start_date ?? ''))
 
 const fullName = computed(() => {
   const name = props.nanny.user?.name ?? 'Nanny sin nombre'
@@ -45,7 +45,7 @@ const fullName = computed(() => {
 
 const handleSaved = () => {
   open.value = false
-  experience.value = formatExperienceFrom(props.nanny.start_date ?? '')
+  experience.value = formatExperienceForm(props.nanny.start_date ?? '')
 }
 </script>
 

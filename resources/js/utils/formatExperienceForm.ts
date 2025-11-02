@@ -1,5 +1,5 @@
-// utils/formatExperienceFrom.ts
-export function formatExperienceFrom(startDate: string): string {
+// utils/formatExperienceForm.ts
+export function formatExperienceForm(startDate: string): string {
   if (!startDate) return 'Sin fecha';
 
   const start = new Date(startDate);
