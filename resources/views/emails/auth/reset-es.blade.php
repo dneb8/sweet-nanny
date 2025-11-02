@@ -1,7 +1,7 @@
 @component('mail::message')
 @php
   // Colores coherentes con verify-es
-  $primary = '#E8A8FF';     // de hsl(284,100%,83%)
+  $primary = '#d99b9b';     // de hsl(0,41%,72%)
   $textOnPrimary = '#1F2937'; // mejor contraste que blanco
   $beige = '#F7F3EF';       // gris/arena cute de fondo
 @endphp

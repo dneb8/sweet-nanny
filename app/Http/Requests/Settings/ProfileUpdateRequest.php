@@ -17,6 +17,7 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'surnames' => ['nullable', 'string', 'max:255'], // coincide con DB
             'email' => [
                 'required',
                 'string',
@@ -27,4 +28,5 @@ class ProfileUpdateRequest extends FormRequest
             ],
         ];
     }
+
 }
