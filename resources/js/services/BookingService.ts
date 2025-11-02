@@ -62,11 +62,13 @@ export function useBookingView(booking: Booking) {
   onUnmounted(() => { if (scrollInterval) clearInterval(scrollInterval) })
 
   // helpers compactos para vista
-  const children = () => booking.children ?? []
+  // Children and addresses are now on appointments, extract from first appointment
+  const children = () => booking.booking_appointments?.[0]?.children ?? []
   const appointments = () => booking.booking_appointments ?? []
   const careers = () => booking.careers ?? []
   const qualities = () => booking.qualities ?? []
   const courses = () => booking.courses ?? []
+  const address = () => booking.booking_appointments?.[0]?.addresses?.[0] ?? null
 
   return {
     // actions
@@ -74,7 +76,7 @@ export function useBookingView(booking: Booking) {
     // format
     fmtDateTime, fmtDate, enumLabel, statusBadge,
     // data accessors
-    children, appointments, careers, qualities, courses,
+    children, appointments, careers, qualities, courses, address,
     // scroll
     scrollContainer,
   }
