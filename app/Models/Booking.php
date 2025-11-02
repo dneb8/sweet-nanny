@@ -37,8 +37,6 @@ class Booking extends Model
         return $this->belongsTo(Tutor::class);
     }
 
-
-
     // public function getRouteKeyName()
     // {
     //     return 'ulid';
