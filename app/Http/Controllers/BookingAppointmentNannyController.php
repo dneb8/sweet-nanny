@@ -49,8 +49,8 @@ class BookingAppointmentNannyController extends Controller
         $top3 = $randomCount > 0 ? $availableNannies->random($randomCount) : collect([]);
 
         return Inertia::render('BookingAppointment/ChooseNanny', [
-            'booking' => $booking->load(['tutor.user', 'address']),
-            'appointment' => $appointment,
+            'booking' => $booking->load(['tutor.user']),
+            'appointment' => $appointment->load(['addresses', 'children']),
             'top3Nannies' => $top3->map(fn ($nanny) => $this->formatNannyData($nanny)),
             'qualities' => QualityEnum::labels(),
             'careers' => NameCareerEnum::labels(),
