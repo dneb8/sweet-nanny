@@ -51,7 +51,15 @@ class BookingController extends Controller
     public function show(Booking $booking): Response
     {
         $booking = Booking::useWritePdo()
-            ->with(['tutor.user', 'bookingAppointments.nanny.user', 'bookingAppointments.addresses', 'bookingAppointments.childrenWithTrashed', 'bookingAppointments.children'])
+            ->with([
+                'tutor.user',
+                'tutor.children',
+                'tutor.addresses',
+                'bookingAppointments.nanny.user',
+                'bookingAppointments.addresses',
+                'bookingAppointments.childrenWithTrashed',
+                'bookingAppointments.children'
+            ])
             ->findOrFail($booking->id);
 
         $kinkships = array_map(fn ($c) => $c->value, KinkshipEnum::cases());

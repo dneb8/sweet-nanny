@@ -25,25 +25,11 @@ const emit = defineEmits<{
     (e: 'saved'): void
 }>()
 
-const addresses = ref<Address[]>([])
+// Get addresses from tutor (passed from controller)
+const addresses = ref<Address[]>((props.booking.tutor as any)?.addresses ?? [])
 const selectedAddressId = ref<number | null>(props.appointment.addresses?.[0]?.id ?? null)
 const tutorIdNum = computed<number>(() => Number(props.booking.tutor?.id ?? 0))
 const tutorType = 'App\\Models\\Tutor'
-
-// Load tutor addresses
-async function loadAddresses() {
-    if (!tutorIdNum.value) return
-    try {
-        const { data } = await axios.get(route('addresses.index', { owner_id: tutorIdNum.value, owner_type: tutorType }), {
-            headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-        })
-        addresses.value = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : []
-    } catch (error) {
-        console.error('Error loading addresses:', error)
-    }
-}
-
-loadAddresses()
 
 const isSelected = (id?: string | number | null) => id != null && Number(selectedAddressId.value) === Number(id)
 

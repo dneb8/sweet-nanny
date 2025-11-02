@@ -25,24 +25,10 @@ const emit = defineEmits<{
     (e: 'saved'): void
 }>()
 
-const children = ref<Child[]>([])
+// Get children from tutor (passed from controller)
+const children = ref<Child[]>((props.booking.tutor as any)?.children ?? [])
 const selectedIds = ref<number[]>(props.appointment.children?.map((c) => Number(c.id)) ?? [])
 const tutorId = computed<number | null>(() => Number(props.booking.tutor?.id ?? 0))
-
-// Load tutor children
-async function loadChildren() {
-    if (!tutorId.value) return
-    try {
-        const { data } = await axios.get(route('tutors.children.index', { tutor: tutorId.value }), {
-            headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-        })
-        children.value = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : []
-    } catch (error) {
-        console.error('Error loading children:', error)
-    }
-}
-
-loadChildren()
 
 // Age calculation
 function ageFrom(birthdate?: string | null): string {
