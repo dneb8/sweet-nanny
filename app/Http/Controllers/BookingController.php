@@ -51,7 +51,7 @@ class BookingController extends Controller
     public function show(Booking $booking): Response
     {
         $booking = Booking::useWritePdo()
-            ->with(['tutor.user', 'bookingAppointments.nanny', 'bookingAppointments.addresses', 'bookingAppointments.childrenWithTrashed', 'bookingAppointments.children'])
+            ->with(['tutor.user', 'bookingAppointments.nanny.user', 'bookingAppointments.addresses', 'bookingAppointments.childrenWithTrashed', 'bookingAppointments.children'])
             ->findOrFail($booking->id);
 
         return Inertia::render('Booking/Show', ['booking' => $booking]);
