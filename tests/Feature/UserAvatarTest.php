@@ -6,9 +6,21 @@ use App\Models\Tutor;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
     Storage::fake('s3');
+    
+    // Ensure guard is set to 'web'
+    config(['auth.defaults.guard' => 'web']);
+    
+    // Create required roles for guard 'web'
+    foreach (['admin', 'nanny', 'tutor'] as $roleName) {
+        Role::findOrCreate($roleName, 'web');
+    }
+    
+    // Clear permission cache
+    app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 });
 
 test('user can upload their own avatar via users route', function () {
