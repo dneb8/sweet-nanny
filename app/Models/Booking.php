@@ -11,7 +11,6 @@ class Booking extends Model
 
     protected $fillable = [
         'tutor_id',
-        'address_id',
         'description',
         'recurrent',
         'qualities',
@@ -36,34 +35,6 @@ class Booking extends Model
     public function tutor()
     {
         return $this->belongsTo(Tutor::class);
-    }
-
-    // Relación con Address (belongsTo - foreign key reference)
-    // Address remains owned by Tutor, booking just references it
-    public function address()
-    {
-        return $this->belongsTo(Address::class);
-    }
-
-    // Deprecated: Polymorphic relation (kept for migration)
-    public function addressPolymorphic()
-    {
-        return $this->morphOne(Address::class, 'addressable');
-    }
-
-    // Relación con Child (cada booking puede tener varios niños)
-    public function children()
-    {
-        return $this->belongsToMany(Child::class, 'booking_child', 'booking_id', 'child_id')
-            ->withTimestamps();
-    }
-
-    // Incluye soft-deleted para vistas históricas
-    public function childrenWithTrashed()
-    {
-        return $this->belongsToMany(Child::class, 'booking_child', 'booking_id', 'child_id')
-            ->withTimestamps()
-            ->withTrashed();
     }
 
     // public function getRouteKeyName()

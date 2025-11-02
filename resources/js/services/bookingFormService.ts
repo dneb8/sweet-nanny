@@ -80,18 +80,23 @@ export class BookingFormService {
       })
     )
 
+    // Extract children and address from first appointment (if editing)
+    const firstAppointment = booking?.booking_appointments?.[0]
     const initialChildIds: number[] =
-      Array.isArray(booking?.children)
-        ? booking!.children
+      Array.isArray(firstAppointment?.children)
+        ? firstAppointment!.children
             .map((c: any) => c?.id)
             .filter((id: any) => id != null)
             .map((id: any) => Number(id))
         : []
 
+    const initialAddressId = 
+      firstAppointment?.addresses?.[0]?.id ?? null
+
     const initial: BookingFormValues = {
       booking: {
         tutor_id: this.initialTutorId ?? null,
-        address_id: booking?.address_id ?? (booking?.address?.id as any) ?? null,
+        address_id: initialAddressId,
         description: booking?.description ?? "",
         recurrent: !!booking?.recurrent,
   child_ids: initialChildIds,

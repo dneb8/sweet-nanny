@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Booking;
+use App\Models\BookingAppointment;
 use App\Models\Child;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -10,16 +10,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('booking_child', function (Blueprint $table) {
-            $table->foreignIdFor(Booking::class)->constrained()->cascadeOnDelete();
+        Schema::create('booking_appointment_child', function (Blueprint $table) {
+            $table->foreignIdFor(BookingAppointment::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Child::class)->constrained()->cascadeOnDelete();
-            $table->primary(['booking_id', 'child_id']);
+            $table->primary(['booking_appointment_id', 'child_id']);
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('booking_child');
+        Schema::dropIfExists('booking_appointment_child');
     }
 };
