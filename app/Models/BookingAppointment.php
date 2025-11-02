@@ -42,4 +42,17 @@ class BookingAppointment extends Model
     {
         return $this->belongsToMany(Address::class);
     }
+
+    public function children()
+    {
+        return $this->belongsToMany(Child::class, 'booking_appointment_child', 'booking_appointment_id', 'child_id')
+            ->withTimestamps();
+    }
+
+    public function childrenWithTrashed()
+    {
+        return $this->belongsToMany(Child::class, 'booking_appointment_child', 'booking_appointment_id', 'child_id')
+            ->withTimestamps()
+            ->withTrashed();
+    }
 }

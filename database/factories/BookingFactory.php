@@ -17,14 +17,11 @@ class BookingFactory extends Factory
      */
     public function definition(): array
     {
-        $tutor = Tutor::query()->with('addresses')->inRandomOrder()->first()
-            ?? Tutor::factory()->hasAddresses(2)->create();
-
-        $address = $tutor->addresses()->inRandomOrder()->first();
+        $tutor = Tutor::query()->inRandomOrder()->first()
+            ?? Tutor::factory()->create();
 
         return [
             'tutor_id' => $tutor->id,
-            'address_id' => $address?->id,
             'description' => $this->faker->sentence(),
             'recurrent' => $this->faker->boolean(),
             'qualities' => [],

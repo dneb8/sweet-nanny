@@ -67,29 +67,20 @@ const selectSuggestion = (s: AddressSuggestion) => {
   // Auto-generate name if empty
   if (!values.name || values.name.trim() === '') {
     let generatedName = ''
-    
-    // Priority: use place name if available from Google (for establishments)
-    // Otherwise construct from address components
     if (s.label && s.label !== s.fullAddress) {
-      // Format: "Place Name — Full Address"
       generatedName = `${s.label.split(',')[0]} — ${s.neighborhood || s.municipality || ''}`
     } else {
-      // Format: "Street ExternalNumber — Neighborhood"
       const streetPart = s.street && s.external_number ? `${s.street} ${s.external_number}` : s.street || s.external_number || ''
       const neighborhoodPart = s.neighborhood || ''
       generatedName = `${streetPart} — ${neighborhoodPart}`.trim()
     }
-    
-    // Limit to 80 characters
     if (generatedName.length > 80) {
       generatedName = generatedName.substring(0, 77) + '...'
     }
-    
     setFieldValue('name', generatedName)
   }
 
-  // Los dos campos editables se quedan para el usuario:
-  // internal_number (string) y type (enum)
+  // Los dos campos editables: internal_number (opcional) y type (obligatorio)
   if (!values.type) setFieldValue('type', '') // asegura estado controlado
 
   hasSelectedSuggestion.value = true
@@ -97,10 +88,10 @@ const selectSuggestion = (s: AddressSuggestion) => {
   clearSuggestions()
 }
 
-// Guardar habilitado solo si: hay sugerencia + internos requeridos llenos
-const isInternalNumberValid = computed(() => !!values.internal_number && String(values.internal_number).trim().length > 0)
+// ✅ internal_number ahora es OPCIONAL
 const isTypeValid = computed(() => !!values.type && String(values.type).trim().length > 0)
-const canSubmit = computed(() => hasSelectedSuggestion.value && isInternalNumberValid.value && isTypeValid.value && !loading.value)
+// Guardar habilitado si: hay sugerencia + type válido + no loading
+const canSubmit = computed(() => hasSelectedSuggestion.value && isTypeValid.value && !loading.value)
 
 watch(
   () => saved.value,
@@ -130,8 +121,8 @@ const submit = async () => {
     <div class="mb-6">
       <div class="relative space-y-2">
         <div class="flex gap-2 items-center">
-            <Icon icon="icon-park-outline:search" width="18" height="18" />
-            <Label class="text-base font-medium">Busca tu dirección</Label>
+          <Icon icon="icon-park-outline:search" width="18" height="18" />
+          <Label class="text-base font-medium">Busca tu dirección</Label>
         </div>
         <Input
           :model-value="searchQuery"
@@ -232,7 +223,7 @@ const submit = async () => {
       </FormField>
     </div>
 
-    <!-- Obligatorios EDITABLES al final -->
+    <!-- Editables -->
     <div class="mt-8 grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
       <FormField v-slot="{ componentField }" name="name">
         <FormItem>
@@ -243,10 +234,11 @@ const submit = async () => {
           <FormMessage>{{ errors['name']?.[0] }}</FormMessage>
         </FormItem>
       </FormField>
-      <!-- Número Interno (obligatorio ahora) -->
+
+      <!-- Número Interno (OPCIONAL ahora) -->
       <FormField v-slot="{ componentField }" name="internal_number">
         <FormItem>
-          <Label>Número Interno *</Label>
+          <Label>Número Interno (opcional)</Label>
           <FormControl>
             <Input
               v-bind="componentField"
@@ -254,12 +246,7 @@ const submit = async () => {
               :disabled="!hasSelectedSuggestion"
             />
           </FormControl>
-          <FormMessage>
-            {{ errors['internal_number']?.[0] }}
-            <template v-if="!errors['internal_number'] && !isInternalNumberValid && hasSelectedSuggestion">
-              Debes ingresar el número interno.
-            </template>
-          </FormMessage>
+          <FormMessage>{{ errors['internal_number']?.[0] }}</FormMessage>
         </FormItem>
       </FormField>
 
@@ -288,8 +275,8 @@ const submit = async () => {
           </FormControl>
           <FormMessage>
             {{ errors['type']?.[0] }}
-            <template v-if="!errors['type'] && !isTypeValid && hasSelectedSuggestion">
-              Debes seleccionar un tipo.
+            <template v-if="!errors['type'] && !hasSelectedSuggestion">
+              Debes seleccionar una sugerencia de Google primero.
             </template>
           </FormMessage>
         </FormItem>

@@ -63,7 +63,7 @@ const fmtDateTime = (value?: string | Date | null) => {
             </div>
           </td>
           <td class="px-4 py-3">
-            {{ (booking.children ?? []).map((c: { name: string }) => c.name).join(', ') || '—' }}
+            {{ (booking.booking_appointments?.[0]?.children ?? []).map((c: { name: string }) => c.name).join(', ') || '—' }}
           </td>
           <td class="px-4 py-3">
             <span class="inline-flex rounded-full border px-2 py-0.5 text-xs">

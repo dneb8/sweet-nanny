@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Gate;
 
 class UserController extends Controller
 {
@@ -23,7 +24,7 @@ class UserController extends Controller
      */
     public function index(UserService $userService): Response
     {
-        // Gate::authorize('viewAny', User::class);
+        Gate::authorize('viewAny', User::class);
 
         $roles = array_map(fn ($role) => $role->value, RoleEnum::cases());
 
@@ -40,7 +41,7 @@ class UserController extends Controller
      */
     public function create(): Response
     {
-        // Gate::authorize('create', User::class);
+        Gate::authorize('create', User::class);
         $roles = RoleEnum::cases();
 
         return Inertia::render('User/Create', [
@@ -54,6 +55,8 @@ class UserController extends Controller
      */
     public function store(UserService $userService, CreateUserRequest $request): RedirectResponse
     {
+        Gate::authorize('create', User::class);
+        
         $user = $userService->createUser($request);
 
         if ($user->hasRole(RoleEnum::NANNY->value)) {
@@ -84,7 +87,7 @@ class UserController extends Controller
      */
     public function edit(User $user): Response
     {
-        // Gate::authorize('update', $user);
+        Gate::authorize('update', $user);
 
         return Inertia::render('User/Edit', [
             'user' => $user->load(['roles']),
@@ -97,7 +100,7 @@ class UserController extends Controller
      */
     public function update(UserService $userService, UpdateUserRequest $request, User $user): RedirectResponse
     {
-        // Gate::authorize('update', $user);
+        Gate::authorize('update', $user);
 
         $userService->updateUser($user, $request);
 
@@ -114,6 +117,8 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
+        Gate::authorize('viewAny', User::class);
+        
         if ($user->hasRole(RoleEnum::NANNY->value)) {
             return redirect()->route('nannies.show', $user->nanny);
         }
@@ -132,7 +137,7 @@ class UserController extends Controller
      */
     public function destroy(User $user): RedirectResponse
     {
-        // Gate::authorize('delete', $user);
+        Gate::authorize('delete', $user);
 
         User::destroy($user->id);
 
