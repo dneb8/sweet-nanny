@@ -21,7 +21,6 @@ const props = defineProps<{
 }>();
 
 const {
-    bookingEliminar,
     modalEliminarBooking,
     verBooking,
     editarBooking,
