@@ -21,6 +21,9 @@ export function hasRole(roleName: string): boolean {
   return getRoles().includes(roleName)
 }
 
+// Alias for hasRole to maintain backward compatibility
+export const role = hasRole
+
 export function can(permissionName: string): boolean {
   return getPermissions().includes(permissionName)
 }
