@@ -1,4 +1,17 @@
-import type { AppPageProps } from '@/types/index';
+import { User } from "./User";
 
-// Re-export PageProps for convenience
-export type PageProps = AppPageProps;
+export interface PageProps {
+    auth: {
+        user: User;
+        roles: string[];
+        permisos: string[];
+    } | null;
+    flash: {
+        message: string;
+        notification: {
+            type: string;
+            message: string;
+        };
+    };
+    [key: string]: any;
+}

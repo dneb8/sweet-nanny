@@ -61,7 +61,7 @@ const {
 
             <!-- Editar -->
             <DropdownMenuItem
-              v-if="userPolicy.canUpdate(props.user)"
+              v-if="userPolicy.canUpdateUser(props.user)"
               @click="editUser"
               class="group text-muted-foreground hover:bg-muted"
             >
@@ -70,11 +70,11 @@ const {
             </DropdownMenuItem>
           </DropdownMenuGroup>
 
-          <DropdownMenuSeparator v-if="userPolicy.canUpdate(props.user) && userPolicy.canDelete(props.user)" />
+          <DropdownMenuSeparator v-if="userPolicy.canUpdateUser(props.user) && userPolicy.canDeleteUser(props.user)" />
 
           <!-- Eliminar -->
           <DropdownMenuItem
-            v-if="userPolicy.canDelete(props.user)"
+            v-if="userPolicy.canDeleteUser(props.user)"
             @click="deleteUser"
             class="group text-muted-foreground hover:bg-muted"
           >

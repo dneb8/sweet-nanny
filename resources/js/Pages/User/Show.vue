@@ -67,12 +67,12 @@ const {
 
     <!-- Acciones -->
     <div class="flex flex-wrap gap-3">
-      <Button v-if="userPolicy.canUpdate(props.user)" @click="editUser" variant="secondary">
+      <Button v-if="userPolicy.canUpdateUser(props.user)" @click="editUser" variant="secondary">
         <Icon icon="mdi:pencil-outline" class="w-4 h-4 mr-2" />
         Editar
       </Button>
 
-      <Button v-if="userPolicy.canDelete(props.user)" @click="deleteUser" variant="destructive">
+      <Button v-if="userPolicy.canDeleteUser(props.user)" @click="deleteUser" variant="destructive">
         <Icon icon="mdi:trash-can-outline" class="w-4 h-4 mr-2" />
         Eliminar
       </Button>
