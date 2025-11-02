@@ -57,5 +57,25 @@ export function useBookingAppointmentPolicy() {
     return allowed
   }
 
-  return { canChooseNanny }
+  function canEdit(appt: BookingAppointment, booking?: Booking): boolean {
+    // Only draft and pending can be edited
+    if (!['draft', 'pending'].includes(appt.status)) {
+      return false
+    }
+
+    // Admin can edit any
+    if (hasRole('admin')) {
+      return true
+    }
+
+    // Tutor can edit their own
+    if (hasRole('tutor') && booking) {
+      const bookingTutorId = normId(booking?.tutor?.user_id ?? (booking as any)?.tutor?.user?.ulid)
+      return bookingTutorId !== '' && bookingTutorId === userId
+    }
+
+    return false
+  }
+
+  return { canChooseNanny, canEdit }
 }

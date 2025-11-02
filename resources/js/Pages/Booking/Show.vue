@@ -6,12 +6,20 @@ import type { BookingAppointment } from '@/types/BookingAppointment'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useBookingView } from '@/services/BookingService'
 import { useBookingAppointmentPolicy } from '@/policies/bookingAppointmentPolicy'
 import GoogleMap from '@/components/GoogleMap.vue'
 import { computed, ref } from 'vue'
+import EditAppointmentDatesModal from './components/modals/EditAppointmentDatesModal.vue'
+import EditAppointmentAddressModal from './components/modals/EditAppointmentAddressModal.vue'
+import EditAppointmentChildrenModal from './components/modals/EditAppointmentChildrenModal.vue'
+import ConfirmUnassignModal from './components/modals/ConfirmUnassignModal.vue'
 
-const props = defineProps<{ booking: Booking }>()
+const props = defineProps<{ 
+  booking: Booking
+  kinkships: string[]
+}>()
 
 const v = useBookingView(props.booking)
 const policy = useBookingAppointmentPolicy()
@@ -42,6 +50,73 @@ const hasAnyRequirements = computed(() => {
 // Get children for selected appointment
 const appointmentChildren = computed(() => selectedAppointment.value?.children ?? [])
 const appointmentAddress = computed(() => selectedAppointment.value?.addresses?.[0] ?? null)
+
+// Modal states
+const showDatesModal = ref(false)
+const showAddressModal = ref(false)
+const showChildrenModal = ref(false)
+const showConfirmModal = ref(false)
+const pendingModalAction = ref<'dates' | 'address' | null>(null)
+
+// Check if appointment can be edited
+const canEditAppointment = computed(() => {
+  if (!selectedAppointment.value) return false
+  return policy.canEdit(selectedAppointment.value, props.booking)
+})
+
+// Check if editing needs confirmation (pending status with dates/address)
+function needsConfirmation(type: 'dates' | 'address' | 'children'): boolean {
+  if (!selectedAppointment.value) return false
+  if (selectedAppointment.value.status !== 'pending') return false
+  if (!selectedAppointment.value.nanny_id) return false
+  return type === 'dates' || type === 'address'
+}
+
+// Open edit modal with confirmation if needed
+function openEditModal(type: 'dates' | 'address' | 'children') {
+  if (!canEditAppointment.value) return
+  
+  if (needsConfirmation(type)) {
+    pendingModalAction.value = type
+    showConfirmModal.value = true
+  } else {
+    // Open modal directly
+    if (type === 'dates') showDatesModal.value = true
+    else if (type === 'address') showAddressModal.value = true
+    else if (type === 'children') showChildrenModal.value = true
+  }
+}
+
+// Confirm unassignment and open modal
+function confirmUnassign() {
+  showConfirmModal.value = false
+  if (pendingModalAction.value === 'dates') showDatesModal.value = true
+  else if (pendingModalAction.value === 'address') showAddressModal.value = true
+  pendingModalAction.value = null
+}
+
+// Close modals
+function closeDatesModal() { showDatesModal.value = false }
+function closeAddressModal() { showAddressModal.value = false }
+function closeChildrenModal() { showChildrenModal.value = false }
+function closeConfirmModal() { 
+  showConfirmModal.value = false 
+  pendingModalAction.value = null
+}
+
+// Handle modal save (reload page)
+function handleModalSaved() {
+  router.reload({ only: ['booking'] })
+}
+
+// Get reason why appointment can't be edited
+function getEditDisabledReason(appointment: BookingAppointment): string {
+  if (appointment.status === 'confirmed') return 'Cita confirmada - no editable'
+  if (appointment.status === 'in_progress') return 'Cita en progreso - no editable'
+  if (appointment.status === 'completed') return 'Cita completada - no editable'
+  if (appointment.status === 'cancelled') return 'Cita cancelada - no editable'
+  return ''
+}
 
 </script>
 
@@ -205,6 +280,20 @@ const appointmentAddress = computed(() => selectedAppointment.value?.addresses?.
                         </Badge>
                       </div>
                     </div>
+                    <div v-if="canEditAppointment">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        @click="openEditModal('dates')"
+                        :title="getEditDisabledReason(appointment) || 'Editar fechas'"
+                      >
+                        <Icon icon="lucide:calendar-clock" class="h-4 w-4 mr-2" />
+                        Editar fechas
+                      </Button>
+                    </div>
+                    <div v-else-if="getEditDisabledReason(appointment)" class="text-xs text-muted-foreground">
+                      {{ getEditDisabledReason(appointment) }}
+                    </div>
                   </div>
 
                   <div class="grid grid-cols-2 gap-4 mb-4">
@@ -281,9 +370,21 @@ const appointmentAddress = computed(() => selectedAppointment.value?.addresses?.
               <aside class="md:col-span-4 space-y-4">
                 <!-- Address -->
                 <div class="rounded-3xl border border-white/30 bg-white/25 dark:border-white/10 dark:bg-white/5 backdrop-blur-xl shadow-lg p-4 sm:p-5">
-                  <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
-                    <Icon icon="lucide:map-pin" class="h-4 w-4" /> Dirección
-                  </h3>
+                  <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold flex items-center gap-2">
+                      <Icon icon="lucide:map-pin" class="h-4 w-4" /> Dirección
+                    </h3>
+                    <Button
+                      v-if="canEditAppointment"
+                      variant="ghost"
+                      size="sm"
+                      @click="openEditModal('address')"
+                      class="h-7 text-xs"
+                    >
+                      <Icon icon="lucide:edit-3" class="h-3.5 w-3.5 mr-1" />
+                      Editar
+                    </Button>
+                  </div>
                   <div v-if="!appointmentAddress" class="text-[13px] text-muted-foreground">No especificada</div>
                   <div v-else class="space-y-3 text-[13px]">
                     <div class="space-y-1.5">
@@ -310,9 +411,21 @@ const appointmentAddress = computed(() => selectedAppointment.value?.addresses?.
 
                 <!-- Children -->
                 <div class="rounded-3xl border border-white/30 bg-white/25 dark:border-white/10 dark:bg-white/5 backdrop-blur-xl shadow-lg p-4 sm:p-5">
-                  <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
-                    <Icon icon="lucide:baby" class="h-4 w-4" /> Niños ({{ appointmentChildren.length }})
-                  </h3>
+                  <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold flex items-center gap-2">
+                      <Icon icon="lucide:baby" class="h-4 w-4" /> Niños ({{ appointmentChildren.length }})
+                    </h3>
+                    <Button
+                      v-if="canEditAppointment"
+                      variant="ghost"
+                      size="sm"
+                      @click="openEditModal('children')"
+                      class="h-7 text-xs"
+                    >
+                      <Icon icon="lucide:edit-3" class="h-3.5 w-3.5 mr-1" />
+                      Editar
+                    </Button>
+                  </div>
 
                   <div v-if="appointmentChildren.length === 0" class="text-[13px] text-muted-foreground">
                     No hay niños asignados
@@ -345,5 +458,58 @@ const appointmentAddress = computed(() => selectedAppointment.value?.addresses?.
         </Tabs>
       </section>
     </div>
+
+    <!-- Edit Modals -->
+    <Dialog :open="showDatesModal" @update:open="(val) => !val && closeDatesModal()">
+      <DialogContent class="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Editar fechas de la cita</DialogTitle>
+        </DialogHeader>
+        <EditAppointmentDatesModal
+          v-if="selectedAppointment"
+          :appointment="selectedAppointment"
+          :booking="booking"
+          @close="closeDatesModal"
+          @saved="handleModalSaved"
+        />
+      </DialogContent>
+    </Dialog>
+
+    <Dialog :open="showAddressModal" @update:open="(val) => !val && closeAddressModal()">
+      <DialogContent class="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Editar dirección de la cita</DialogTitle>
+        </DialogHeader>
+        <EditAppointmentAddressModal
+          v-if="selectedAppointment"
+          :appointment="selectedAppointment"
+          :booking="booking"
+          @close="closeAddressModal"
+          @saved="handleModalSaved"
+        />
+      </DialogContent>
+    </Dialog>
+
+    <Dialog :open="showChildrenModal" @update:open="(val) => !val && closeChildrenModal()">
+      <DialogContent class="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Editar niños de la cita</DialogTitle>
+        </DialogHeader>
+        <EditAppointmentChildrenModal
+          v-if="selectedAppointment"
+          :appointment="selectedAppointment"
+          :booking="booking"
+          :kinkships="kinkships"
+          @close="closeChildrenModal"
+          @saved="handleModalSaved"
+        />
+      </DialogContent>
+    </Dialog>
+
+    <ConfirmUnassignModal
+      :show="showConfirmModal"
+      @close="closeConfirmModal"
+      @confirm="confirmUnassign"
+    />
   </div>
 </template>

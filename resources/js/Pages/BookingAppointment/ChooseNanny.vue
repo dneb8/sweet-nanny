@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/composables/useToast'
 
-// Nuevos componentes
+// Componentes
 import Top3Dialog from './components/Top3Dialog.vue'
 import NannyCard from './components/NannyCard.vue'
 import NannyDetailDialog from './components/NannyDetailDialog.vue'
@@ -22,6 +22,7 @@ const props = defineProps<{
   qualities: Record<string, string>
   careers: Record<string, string>
   courseNames: Record<string, string>
+  forceShowTop3?: boolean
 }>()
 
 const showTop3Modal = ref(false)
@@ -30,9 +31,8 @@ const selectedNannyForDetail = ref<NannySelectionData | null>(null)
 const searchTerm = ref('')
 const availableNannies = ref<NannySelectionData[]>([])
 const isLoading = ref(false)
+const hasAutoOpened = ref(false)
 const { toast } = useToast()
-
-const top3Key = `sn_top3_shown_b${props.booking.id}_a${props.appointment.id}`
 
 const fetchNannies = async () => {
   isLoading.value = true
@@ -57,10 +57,8 @@ const fetchNannies = async () => {
 }
 
 onMounted(() => {
-  const alreadyShown = typeof window !== 'undefined' && sessionStorage.getItem(top3Key) === '1'
-  if (!alreadyShown && (props.top3Nannies?.length ?? 0) > 0) {
-    showTop3Modal.value = true
-    sessionStorage.setItem(top3Key, '1')
+  {
+    // showTop3Modal.value = true
   }
   fetchNannies()
 })
@@ -77,7 +75,6 @@ const closeDetail = () => {
 
 const closeTop3 = () => {
   showTop3Modal.value = false
-  if (typeof window !== 'undefined') sessionStorage.setItem(top3Key, '1')
 }
 
 const assignNanny = (nannyId: string) => {
@@ -91,15 +88,58 @@ const assignNanny = (nannyId: string) => {
     { onSuccess: () => {} }
   )
 }
+
 const formatDate = (dateString: string) =>
   new Date(dateString).toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' })
 
-const filteredNannies = computed(() => {
-  if (!searchTerm.value) return availableNannies.value
-  const term = searchTerm.value.toLowerCase()
-  return availableNannies.value.filter(n => n.name.toLowerCase().includes(term))
+/** IDs del Top 3 para resaltar y ordenar */
+const topIds = computed(() => new Set((props.top3Nannies ?? []).map(n => n.id)))
+
+/** Unión: top3 + disponibles, sin duplicados, orden: top3 primero */
+const allNannies = computed<NannySelectionData[]>(() => {
+  const byId = new Map<string, NannySelectionData>()
+  ;(props.top3Nannies ?? []).forEach(n => n?.id && byId.set(n.id, n))
+  ;(availableNannies.value ?? []).forEach(n => n?.id && !byId.has(n.id) && byId.set(n.id, n))
+  const list = Array.from(byId.values())
+  const idsTop = topIds.value
+  return list.sort((a, b) => {
+    const aTop = idsTop.has(a.id)
+    const bTop = idsTop.has(b.id)
+    return aTop === bTop ? 0 : aTop ? -1 : 1
+  })
 })
+
+/** Filtro por búsqueda sobre la lista unificada */
+const filteredNannies = computed(() => {
+  const term = (searchTerm.value || '').toLowerCase().trim()
+  if (!term) return allNannies.value
+  return allNannies.value.filter(n => n.name?.toLowerCase().includes(term))
+})
+
+/** Helper: clases de “brillo” para top 3 */
+function topHighlightClasses(isTop: boolean) {
+  if (!isTop) return ''
+  // Glow suave + anillo + animación sutil
+  return [
+    'relative',
+    'rounded-2xl',
+    'shadow-[0_0_0_0_rgba(244,63,94,0.0)]',
+    'before:absolute before:-inset-1 before:rounded-3xl',
+    'before:bg-gradient-to-r before:from-fuchsia-400/25 before:via-rose-300/20 before:to-purple-400/25',
+    'before:blur-xl before:content-[""]',
+    'after:pointer-events-none',
+    // Pulso muy sutil (custom): usa animate-pulse si prefieres algo estándar
+    'animate-[glow_2.8s_ease-in-out_infinite]',
+  ].join(' ')
+}
 </script>
+
+<style scoped>
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.25); transform: translateZ(0) scale(1);}
+  50% { box-shadow: 0 0 40px 6px rgba(244, 63, 94, 0.35);  transform: translateZ(0) scale(1.02);  }
+}
+</style>
 
 <template>
   <div class="min-h-[calc(100vh-80px)]">
@@ -114,13 +154,25 @@ const filteredNannies = computed(() => {
             Cita: {{ formatDate(props.appointment.start_date) }} - {{ formatDate(props.appointment.end_date) }}
           </p>
         </div>
-        <Button variant="outline" size="sm" @click="router.get(route('bookings.show', props.booking.id))">
-          <Icon icon="lucide:arrow-left" class="mr-2 h-4 w-4" />
-          Volver
-        </Button>
+        <div class="flex items-center gap-2">
+          <!-- Botón para reabrir Top 3 manualmente -->
+          <button
+            @click="showTop3Modal = true"
+            class="group relative overflow-hidden origin-left h-16 w-80 border bg-background text-left p-3 pr-5 rounded-lg
+                   text-base font-bold text-gray-500 dark:text-gray-50
+                   underline underline-offset-2 hover:underline hover:underline-offset-4 hover:decoration-2 hover:text-rose-300
+                   duration-500 hover:duration-500 before:duration-500 after:duration-500 group-hover:before:duration-500 group-hover:after:duration-500
+                   hover:border-rose-300 hover:before:[box-shadow:_20px_20px_20px_30px_#a21caf]
+                   hover:before:-bottom-8 hover:before:right-12 hover:after:-right-8
+                   before:absolute before:z-10 before:content-[''] before:w-12 before:h-12 before:right-1 before:top-1 before:bg-violet-500 before:rounded-full before:blur-lg
+                   after:absolute after:z-10 after:content-[''] after:w-20 after:h-20 after:right-8 after:top-3 after:bg-rose-300 after:rounded-full after:blur-lg"
+          >
+            <span class="relative z-20">Ver Mejores coincidencias</span>
+          </button>
+        </div>
       </header>
 
-      <!-- Top 3 (componente) -->
+      <!-- Top 3 (controlado SOLO por el padre) -->
       <Top3Dialog
         v-model:open="showTop3Modal"
         :top3="props.top3Nannies"
@@ -130,7 +182,7 @@ const filteredNannies = computed(() => {
         @choose="assignNanny"
       />
 
-      <!-- Dialog de Detalle (componente) -->
+      <!-- Dialog de Detalle -->
       <NannyDetailDialog
         v-model:open="showDetailModal"
         :nanny="selectedNannyForDetail"
@@ -165,15 +217,19 @@ const filteredNannies = computed(() => {
           </div>
 
           <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <NannyCard
+            <div
               v-for="nanny in filteredNannies"
               :key="nanny.id"
-              :nanny="nanny"
-              :qualities="props.qualities"
-              :careers="props.careers"
-              @see="openDetail"
-              @choose="(n: NannySelectionData) => assignNanny(n.id)"
-            />
+              :class="topHighlightClasses(topIds.has(nanny.id))"
+            >
+              <NannyCard
+                :nanny="nanny"
+                :qualities="props.qualities"
+                :careers="props.careers"
+                @see="openDetail"
+                @choose="(n: NannySelectionData) => assignNanny(n.id)"
+              />
+            </div>
           </div>
         </div>
       </section>

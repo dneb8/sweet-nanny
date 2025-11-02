@@ -51,10 +51,23 @@ class BookingController extends Controller
     public function show(Booking $booking): Response
     {
         $booking = Booking::useWritePdo()
-            ->with(['tutor.user', 'bookingAppointments.nanny.user', 'bookingAppointments.addresses', 'bookingAppointments.childrenWithTrashed', 'bookingAppointments.children'])
+            ->with([
+                'tutor.user',
+                'tutor.children',
+                'tutor.addresses',
+                'bookingAppointments.nanny.user',
+                'bookingAppointments.addresses',
+                'bookingAppointments.childrenWithTrashed',
+                'bookingAppointments.children'
+            ])
             ->findOrFail($booking->id);
 
-        return Inertia::render('Booking/Show', ['booking' => $booking]);
+        $kinkships = array_map(fn ($c) => $c->value, KinkshipEnum::cases());
+
+        return Inertia::render('Booking/Show', [
+            'booking' => $booking,
+            'kinkships' => $kinkships,
+        ]);
     }
 
     public function store(CreateBookingRequest $request, BookingService $service)
