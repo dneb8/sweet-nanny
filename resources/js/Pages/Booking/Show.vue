@@ -1,12 +1,18 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
+import { router } from '@inertiajs/vue3'
 import type { Booking } from '@/types/Booking'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useBookingView } from '@/services/BookingService'
+import { useBookingAppointmentPolicy } from '@/policies/bookingAppointmentPolicy'
 import GoogleMap from '@/components/GoogleMap.vue'
+import { computed } from 'vue'
+
 const props = defineProps<{ booking: Booking }>()
+
 const v = useBookingView(props.booking)
+const policy = useBookingAppointmentPolicy()
 
 const base =
   'group inline-flex items-center h-9 hover:gap-5 rounded-xl px-2 overflow-hidden w-9 ' +
@@ -18,6 +24,14 @@ const label =
   'opacity-0 -translate-x-1 max-w-0 ' +
   'group-hover:opacity-100 group-hover:translate-x-0 group-hover:max-w-[6rem] ' +
   'transition-all duration-900'
+
+const hasAnyRequirements = computed(() => {
+  const qs = v.qualities?.() ?? []
+  const cs = v.careers?.() ?? []
+  const ks = v.courses?.() ?? []
+  return qs.length || cs.length || ks.length
+})
+
 
 </script>
 
@@ -73,8 +87,9 @@ const label =
         <!-- PANEL PRINCIPAL (agenda + requisitos) -->
         <div class="md:col-span-8 space-y-4">
           <!-- Resumen compacto -->
-          <div class="rounded-3xl border border-white/30 bg-white/20 dark:border-white/10 dark:bg-white/5 backdrop-blur-xl shadow-lg p-4 sm:p-5"><h2 class="text-sm font-semibold flex items-center gap-2 mb-3">
-              <Icon icon="lucide:clipboard-check" class="h-4 w-4" /> Requisitos de la niñera
+          <div class="rounded-3xl border border-white/30 bg-white/20 dark:border-white/10 dark:bg-white/5 backdrop-blur-xl shadow-lg p-4 sm:p-5">
+            <h2 class="text-sm font-semibold flex items-center gap-2 mb-3">
+              <Icon icon="lucide:clipboard-check" class="h-4 w-4" /> Detalles del servicio
             </h2>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div class="space-y-1">
@@ -127,72 +142,132 @@ const label =
               <div
                 v-for="(a,i) in v.appointments()"
                 :key="a.id ?? i"
-                class="rounded-2xl border border-white/20 bg-white/40 dark:bg-white/10 backdrop-blur-md p-3 space-y-2 shadow"
+                class="rounded-2xl border border-white/20 bg-white/40 dark:bg-white/10 backdrop-blur-md p-4 space-y-3 shadow"
               >
-                <div class="grid grid-cols-2 gap-2 text-[13px]">
+                <!-- Fecha legible -->
+                <div class="space-y-1">
+                  <p class="text-[11px] text-muted-foreground">Fecha de la cita</p>
+                  <p class="font-semibold text-sm flex items-center gap-1.5">
+                    <Icon icon="lucide:calendar-days" class="h-4 w-4 opacity-70" />
+                    {{ v.fmtReadableDate(a.start_date ?? a.start_at) }}
+                  </p>
+                </div>
+
+                <!-- Horarios -->
+                <div class="grid grid-cols-2 gap-3 text-[13px]">
                   <div>
-                    <p class="text-[11px] text-muted-foreground">Inicio</p>
+                    <p class="text-[11px] text-muted-foreground mb-1">Hora inicio</p>
                     <p class="font-medium flex items-center gap-1">
-                      <Icon icon="lucide:calendar" class="h-4 w-4 opacity-70" />
-                      {{ v.fmtDateTime(a.start_date ?? a.start_at) }}
+                      <Icon icon="lucide:clock" class="h-3.5 w-3.5 opacity-70" />
+                      {{ new Date(a.start_date ?? a.start_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) }}
                     </p>
                   </div>
                   <div>
-                    <p class="text-[11px] text-muted-foreground">Fin</p>
+                    <p class="text-[11px] text-muted-foreground mb-1">Hora fin</p>
                     <p class="font-medium flex items-center gap-1">
-                      <Icon icon="lucide:calendar-check" class="h-4 w-4 opacity-70" />
-                      {{ v.fmtDateTime(a.end_date ?? a.end_at) }}
+                      <Icon icon="lucide:clock" class="h-3.5 w-3.5 opacity-70" />
+                      {{ new Date(a.end_date ?? a.end_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) }}
                     </p>
                   </div>
                 </div>
+
+                <!-- Status y duración -->
                 <div class="flex items-center justify-between">
-                  <Badge variant="outline" class="px-2 py-0.5 text-[11px]">{{ a.status ?? 'Pendiente' }}</Badge>
+                  <Badge :class="v.statusBadge(a.status)" class="px-2 py-0.5 text-[11px]">{{ a.status ?? 'Pendiente' }}</Badge>
                   <span v-if="a.duration" class="text-[11px] text-muted-foreground">{{ a.duration }} min</span>
                 </div>
+
                 <div v-if="a.nanny" class="text-[12px] text-muted-foreground">
-                  Niñera: <span class="text-foreground font-medium">{{ a.nanny.name }}</span>
+                  Niñera: <span class="text-foreground font-medium">{{ a.nanny.user.name + ' ' + a.nanny.user.surnames }}</span>
                 </div>
+
+                <!-- usa policy.canChooseNanny -->
+                <div v-else-if="policy.canChooseNanny(a, props.booking)" class="pt-2">
+                  <Button
+                    size="sm"
+                    variant="default"
+                    class="w-full text-[11px] h-7"
+                    @click="router.get(route('bookings.appointments.nannies.choose', { booking: props.booking.id, appointment: a.id }))"
+                  >
+                    <Icon icon="lucide:user-plus" class="mr-1.5 h-3.5 w-3.5" />
+                    Elegir niñera
+                  </Button>
+                </div>
+
                 <div v-if="a.notes" class="text-[12px] leading-snug pt-2 border-t border-white/20">
                   {{ a.notes }}
+                </div>
+
+                <!-- Cancel appointment button -->
+                <div v-if="a.status !== 'cancelled'" class="pt-2 border-t border-white/20">
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    class="w-full text-[11px] h-7"
+                    @click="v.cancelAppointment(a.id)"
+                  >
+                    <Icon icon="lucide:x-circle" class="mr-1.5 h-3.5 w-3.5" />
+                    Cancelar cita
+                  </Button>
+                </div>
+                <div v-else class="pt-2 border-t border-white/20">
+                  <div class="flex items-center justify-center gap-2 text-[11px] text-muted-foreground py-1">
+                    <Icon icon="lucide:ban" class="h-3.5 w-3.5" />
+                    <span>Cita cancelada</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Requisitos (chips) -->
+          <!-- Requisitos  -->
           <div class="rounded-3xl border border-white/30 bg-white/20 dark:border-white/10 dark:bg-white/5 backdrop-blur-xl shadow-lg p-4 sm:p-5">
-            <h2 class="text-sm font-semibold flex items-center gap-2 mb-3">
-              <Icon icon="lucide:clipboard-check" class="h-4 w-4" /> Requisitos de la niñera
+            <h2 class="mb-4 sm:mb-5 flex items-center gap-2 text-sm font-semibold">
+              <Icon icon="lucide:clipboard-check" class="h-4 w-4 shrink-0" /> Requisitos de la niñera
             </h2>
-            <div class="grid gap-3 sm:grid-cols-3">
+
+            <!-- Empty state -->
+            <div v-if="!hasAnyRequirements" class="flex items-center gap-3 rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">
+              <Icon icon="lucide:info" class="h-4 w-4" />
+              No hay requisitos establecidos para esta solicitud.
+            </div>
+
+            <!-- Grid de secciones -->
+            <div v-else class="grid grid-cols-1 gap-4 sm:gap-5">
               <!-- Qualities -->
-              <div>
-                <p class="text-[11px] text-muted-foreground mb-1">Cualidades</p>
-                <div v-if="v.qualities().length === 0" class="text-[13px] text-muted-foreground">—</div>
-                <div v-else class="flex flex-wrap gap-1.5">
-                  <Badge v-for="q in v.qualities()" :key="q" class="px-2 py-0.5 text-[11px]">{{ v.enumLabel(q,'quality') }}</Badge>
+              <section v-if="v.qualities() !== null">
+                <p class="mb-2 text-[11px] uppercase tracking-wide text-muted-foreground">Cualidades</p>
+                <div v-if="v.qualities().length===0" class="text-[13px] text-muted-foreground">—</div>
+                <div v-else class="flex flex-wrap gap-1.5 sm:gap-2 max-sm:overflow-x-auto max-sm:[&>*]:shrink-0 max-sm:pb-1">
+                  <Badge v-for="q in v.qualities()" :key="q" :class="[v.qualityBadge(),'px-2 py-0.5 text-[11px] sm:text-[12px] leading-5']">
+                    {{ v.enumLabel(q,'quality') }}
+                  </Badge>
                 </div>
-              </div>
+              </section>
+
               <!-- Careers -->
-              <div>
-                <p class="text-[11px] text-muted-foreground mb-1">Carreras</p>
-                <div v-if="v.careers().length === 0" class="text-[13px] text-muted-foreground">—</div>
-                <div v-else class="flex flex-wrap gap-1.5">
-                  <Badge v-for="c in v.careers()" :key="c" variant="secondary" class="px-2 py-0.5 text-[11px]">
-                    <Icon icon="lucide:graduation-cap" class="mr-1 h-3 w-3" /> {{ v.enumLabel(c,'career') }}
+              <section v-if="v.careers() !== null">
+                <p class="mb-2 text-[11px] uppercase tracking-wide text-muted-foreground">Carreras</p>
+                <div v-if="v.careers().length===0" class="text-[13px] text-muted-foreground">—</div>
+                <div v-else class="flex flex-wrap gap-1.5 sm:gap-2 max-sm:overflow-x-auto max-sm:[&>*]:shrink-0 max-sm:pb-1">
+                  <Badge v-for="c in v.careers()" :key="c" :class="[v.careerBadge(),'px-2 py-0.5 text-[11px] sm:text-[12px] leading-5 inline-flex items-center']">
+                    <Icon icon="lucide:graduation-cap" class="mr-1 h-3 w-3" />
+                    <span class="line-clamp-1">{{ v.enumLabel(c,'career') }}</span>
                   </Badge>
                 </div>
-              </div>
+              </section>
+
               <!-- Courses -->
-              <div>
-                <p class="text-[11px] text-muted-foreground mb-1">Cursos</p>
-                <div v-if="v.courses().length === 0" class="text-[13px] text-muted-foreground">—</div>
-                <div v-else class="flex flex-wrap gap-1.5">
-                  <Badge v-for="c in v.courses()" :key="c" variant="outline" class="px-2 py-0.5 text-[11px]">
-                    <Icon icon="lucide:book-open" class="mr-1 h-3 w-3" /> {{ v.enumLabel(c,'course') }}
+              <section v-if="v.courses() !== null">
+                <p class="mb-2 text-[11px] uppercase tracking-wide text-muted-foreground">Cursos</p>
+                <div v-if="v.courses().length===0" class="text-[13px] text-muted-foreground">—</div>
+                <div v-else class="flex flex-wrap gap-1.5 sm:gap-2 max-sm:overflow-x-auto max-sm:[&>*]:shrink-0 max-sm:pb-1">
+                  <Badge v-for="c in v.courses()" :key="c" :class="[v.courseBadge(),'px-2 py-0.5 text-[11px] sm:text-[12px] leading-5 inline-flex items-center']">
+                    <Icon icon="lucide:book-open" class="mr-1 h-3 w-3" />
+                    <span class="line-clamp-1">{{ v.enumLabel(c,'course') }}</span>
                   </Badge>
                 </div>
-              </div>
+              </section>
             </div>
           </div>
         </div>
