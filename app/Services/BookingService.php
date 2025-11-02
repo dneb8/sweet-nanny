@@ -64,7 +64,7 @@ class BookingService
                     'start_date' => Carbon::parse(data_get($a, 'start_date')),
                     'end_date' => Carbon::parse(data_get($a, 'end_date')),
                     'duration' => (int) data_get($a, 'duration', 0),
-                    'status' => (string) data_get($a, 'status', 'pending'),
+                    'status' => (string) data_get($a, 'status', 'draft'),
                     'payment_status' => (string) data_get($a, 'payment_status', 'unpaid'),
                     'extra_hours' => (int) data_get($a, 'extra_hours', 0),
                     'total_cost' => (float) data_get($a, 'total_cost', 0),

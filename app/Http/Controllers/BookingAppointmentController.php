@@ -71,7 +71,7 @@ class BookingAppointmentController extends Controller
     /**
      * Update appointment address
      */
-    public function updateAddress(Request $request, Booking $booking, BookingAppointment $appointment): RedirectResponse
+    public function updateAddress(Request $request, Booking $booking, BookingAppointment $appointment)
     {
         Gate::authorize('update', $appointment);
 

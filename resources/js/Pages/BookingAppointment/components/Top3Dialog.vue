@@ -5,16 +5,17 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Nanny } from '@/types/Nanny'
+import type { Nanny } from '@/types/Nanny'
+
+// Modelo v-model:open (evita props/emit manuales y bucles)
+const open = defineModel<boolean>('open', { required: true })
 
 const props = defineProps<{
-  open: boolean
   top3: Nanny[]
   qualities: Record<string, string>
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:open', v: boolean): void
   (e: 'close'): void
   (e: 'see', n: Nanny): void
   (e: 'choose', id: string): void
@@ -23,7 +24,7 @@ const emit = defineEmits<{
 const hasData = computed(() => (props.top3?.length ?? 0) > 0)
 
 function close() {
-  emit('update:open', false)
+  open.value = false
   emit('close')
 }
 function see(n: Nanny) {
@@ -33,13 +34,22 @@ function choose(id: string) {
   emit('choose', id)
 }
 function initials(name: string) {
-  return name.split(' ').map(s => s[0]).join('').toUpperCase().slice(0,2)
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .map(s => s[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
 }
 </script>
 
 <template>
-  <Dialog :open="open" @update:open="(v: boolean) => emit('update:open', v)">
-    <DialogContent class="sm:max-w-4xl" @escape-key-down="close" @pointer-down-outside="close">
+  <!-- Usamos v-model:open directo sobre Dialog -->
+  <Dialog v-model:open="open">
+    <!-- Importante: dejar que el Dialog controle su update:open.
+         Si quieres cerrar por fuera/escape, puedes reactivar eventos, pero no es necesario. -->
+    <DialogContent class="sm:max-w-4xl">
       <DialogHeader>
         <DialogTitle class="text-2xl">Niñeras con mayor coincidencia</DialogTitle>
         <DialogDescription>Estas son las niñeras más recomendadas para tu cita</DialogDescription>
@@ -74,7 +84,7 @@ function initials(name: string) {
             </div>
           </div>
           <div class="flex gap-2 w-full">
-            <Button size="sm" variant="outline" class="flex-1" @click="see(top3[1])">Ver más</Button>
+            <Button size="sm" variant="outline" class="flex-1" @click="see(top3[1])">Ver perfil</Button>
             <Button size="sm" class="flex-1" @click="choose(top3[1].id)">Elegir</Button>
           </div>
         </div>
@@ -91,13 +101,17 @@ function initials(name: string) {
           <div>
             <h3 class="font-semibold text-lg">{{ top3[0]?.name }}</h3>
             <div class="flex flex-wrap gap-1 justify-center mt-2">
-              <Badge v-for="q in (top3[0]?.qualities ?? []).slice(0, 3)" :key="q" class="text-[10px] bg-purple-200 text-purple-900 dark:text-purple-200 dark:bg-purple-900/60 dark:border-purple-200">
+              <Badge
+                v-for="q in (top3[0]?.qualities ?? []).slice(0, 3)"
+                :key="q"
+                class="text-[10px] bg-purple-200 text-purple-900 dark:text-purple-200 dark:bg-purple-900/60 dark:border-purple-200"
+              >
                 {{ qualities[q] || q }}
               </Badge>
             </div>
           </div>
           <div class="flex gap-2 w-full">
-            <Button size="sm" variant="outline" class="flex-1" @click="top3[0] && see(top3[0])">Ver más</Button>
+            <Button size="sm" variant="outline" class="flex-1" @click="top3[0] && see(top3[0])">Ver perfil</Button>
             <Button size="sm" class="flex-1" @click="top3[0] && choose(top3[0].id)">Elegir</Button>
           </div>
         </div>
@@ -124,7 +138,7 @@ function initials(name: string) {
             </div>
           </div>
           <div class="flex gap-2 w-full">
-            <Button size="sm" variant="outline" class="flex-1" @click="see(top3[2])">Ver más</Button>
+            <Button size="sm" variant="outline" class="flex-1" @click="see(top3[2])">Ver perfil</Button>
             <Button size="sm" class="flex-1" @click="choose(top3[2].id)">Elegir</Button>
           </div>
         </div>
