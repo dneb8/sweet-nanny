@@ -46,6 +46,11 @@ export function useBookingView(booking: Booking) {
     }
   }
 
+  // Consistent badge colors for Qualities, Careers, and Courses
+  const qualityBadge = () => 'bg-purple-200 text-purple-900 dark:text-purple-200 dark:bg-purple-900/60 dark:border-purple-200'
+  const careerBadge = () => 'bg-indigo-200 text-indigo-900 dark:text-indigo-100 dark:bg-indigo-500/40 dark:border-indigo-200'
+  const courseBadge = () => 'bg-emerald-200 text-emerald-900 dark:text-emerald-100 dark:bg-emerald-900/60 dark:border-emerald-200'
+
   // auto-scroll suave (si lo necesitas en una fila horizontal)
   const scrollContainer = ref<HTMLElement | null>(null)
   let scrollInterval: number | null = null
@@ -72,7 +77,7 @@ export function useBookingView(booking: Booking) {
     // actions
     showDeleteModal, goShow, goEdit, askDelete, confirmDelete,
     // format
-    fmtDateTime, fmtDate, enumLabel, statusBadge,
+    fmtDateTime, fmtDate, enumLabel, statusBadge, qualityBadge, careerBadge, courseBadge,
     // data accessors
     children, appointments, careers, qualities, courses,
     // scroll

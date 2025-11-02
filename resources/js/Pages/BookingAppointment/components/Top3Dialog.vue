@@ -67,8 +67,7 @@ function initials(name: string) {
               <Badge
                 v-for="q in top3[1].qualities.slice(0, 2)"
                 :key="q"
-                variant="secondary"
-                class="text-[10px]"
+                class="text-[10px] bg-purple-200 text-purple-900 dark:text-purple-200 dark:bg-purple-900/60 dark:border-purple-200"
               >
                 {{ qualities[q] || q }}
               </Badge>
@@ -92,7 +91,7 @@ function initials(name: string) {
           <div>
             <h3 class="font-semibold text-lg">{{ top3[0]?.name }}</h3>
             <div class="flex flex-wrap gap-1 justify-center mt-2">
-              <Badge v-for="q in (top3[0]?.qualities ?? []).slice(0, 3)" :key="q" class="text-[10px]">
+              <Badge v-for="q in (top3[0]?.qualities ?? []).slice(0, 3)" :key="q" class="text-[10px] bg-purple-200 text-purple-900 dark:text-purple-200 dark:bg-purple-900/60 dark:border-purple-200">
                 {{ qualities[q] || q }}
               </Badge>
             </div>
@@ -118,8 +117,7 @@ function initials(name: string) {
               <Badge
                 v-for="q in top3[2].qualities.slice(0, 2)"
                 :key="q"
-                variant="secondary"
-                class="text-[10px]"
+                class="text-[10px] bg-purple-200 text-purple-900 dark:text-purple-200 dark:bg-purple-900/60 dark:border-purple-200"
               >
                 {{ qualities[q] || q }}
               </Badge>

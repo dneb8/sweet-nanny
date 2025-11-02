@@ -63,7 +63,7 @@ function formatDate(s?: string) {
         <div v-if="(nanny?.qualities?.length ?? 0) > 0">
           <h4 class="font-semibold mb-2">Cualidades</h4>
           <div class="flex flex-wrap gap-2">
-            <Badge v-for="q in nanny!.qualities" :key="q">
+            <Badge v-for="q in nanny!.qualities" :key="q" class="bg-purple-200 text-purple-900 dark:text-purple-200 dark:bg-purple-900/60 dark:border-purple-200">
               {{ qualities[q] || q }}
             </Badge>
           </div>
@@ -72,7 +72,7 @@ function formatDate(s?: string) {
         <div v-if="(nanny?.careers?.length ?? 0) > 0">
           <h4 class="font-semibold mb-2">Carreras</h4>
           <div class="flex flex-wrap gap-2">
-            <Badge v-for="c in nanny!.careers" :key="c" variant="secondary">
+            <Badge v-for="c in nanny!.careers" :key="c" class="bg-indigo-200 text-indigo-900 dark:text-indigo-100 dark:bg-indigo-500/40 dark:border-indigo-200">
               <Icon icon="lucide:graduation-cap" class="mr-1 h-3 w-3" />
               {{ careers[c] || c }}
             </Badge>
@@ -82,7 +82,7 @@ function formatDate(s?: string) {
         <div v-if="(nanny?.courses?.length ?? 0) > 0">
           <h4 class="font-semibold mb-2">Cursos</h4>
           <div class="flex flex-wrap gap-2">
-            <Badge v-for="c in nanny!.courses" :key="c" variant="outline">
+            <Badge v-for="c in nanny!.courses" :key="c" class="bg-emerald-200 text-emerald-900 dark:text-emerald-100 dark:bg-emerald-900/60 dark:border-emerald-200">
               <Icon icon="lucide:book-open" class="mr-1 h-3 w-3" />
               {{ courseNames[c] || c }}
             </Badge>
