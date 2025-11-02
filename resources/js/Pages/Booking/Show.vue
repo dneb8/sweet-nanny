@@ -220,24 +220,24 @@ const label =
             <h3 class="text-sm font-semibold mb-2 flex items-center gap-2">
               <Icon icon="lucide:map-pin" class="h-4 w-4" /> Dirección
             </h3>
-            <div v-if="!props.booking.address" class="text-[13px] text-muted-foreground">No especificada</div>
+            <div v-if="!v.address()" class="text-[13px] text-muted-foreground">No especificada</div>
             <div v-else class="space-y-3 text-[13px]">
               <div class="space-y-1.5">
                 <p class="font-medium">
-                  {{ props.booking.address.street }}
-                  <span v-if="props.booking.address.internal_number">, Int. {{ props.booking.address.internal_number }}</span>
+                  {{ v.address().street }}
+                  <span v-if="v.address().internal_number">, Int. {{ v.address().internal_number }}</span>
                 </p>
-                <p class="text-muted-foreground">{{ props.booking.address.neighborhood }}</p>
-                <p class="text-muted-foreground">{{ props.booking.address.postal_code }}</p>
-                <Badge v-if="props.booking.address.type" variant="secondary" class="mt-1 px-2 py-0.5 text-[11px]">
-                  {{ props.booking.address.type }}
+                <p class="text-muted-foreground">{{ v.address().neighborhood }}</p>
+                <p class="text-muted-foreground">{{ v.address().postal_code }}</p>
+                <Badge v-if="v.address().type" variant="secondary" class="mt-1 px-2 py-0.5 text-[11px]">
+                  {{ v.address().type }}
                 </Badge>
               </div>
               
               <!-- Map -->
                <GoogleMap
-                :latitude="+(props.booking?.address?.latitude ?? 19.704)"
-                :longitude="+(props.booking?.address?.longitude ?? -103.344)"
+                :latitude="+(v.address()?.latitude ?? 19.704)"
+                :longitude="+(v.address()?.longitude ?? -103.344)"
                 :zoom="16"
                 height="320px"
                 :showMarker="true"
@@ -249,17 +249,17 @@ const label =
           <!-- Niños -->
           <div class="rounded-3xl border border-white/30 bg-white/25 dark:border-white/10 dark:bg-white/5 backdrop-blur-xl shadow-lg p-4 sm:p-5">
             <h3 class="text-sm font-semibold mb-2 flex items-center gap-2">
-              <Icon icon="lucide:baby" class="h-4 w-4" /> Niños ({{ (props.booking.childrenWithTrashed?.length || props.booking.children?.length || 0) }})
+              <Icon icon="lucide:baby" class="h-4 w-4" /> Niños ({{ v.children().length }})
             </h3>
 
-            <div v-if="(props.booking.childrenWithTrashed?.length || props.booking.children?.length) === 0"
+            <div v-if="v.children().length === 0"
                 class="text-[13px] text-muted-foreground">
               No hay niños asignados
             </div>
 
             <div v-else class="flex flex-col gap-2">
               <div
-                v-for="c in (props.booking.childrenWithTrashed?.length ? props.booking.childrenWithTrashed : props.booking.children)"
+                v-for="c in v.children()"
                 :key="c.id"
                 class="flex items-center justify-between rounded-xl border border-white/20 bg-white/40 dark:bg-white/10 backdrop-blur-md px-3 py-2"
               >
