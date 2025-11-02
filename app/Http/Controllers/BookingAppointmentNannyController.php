@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Classes\Fetcher\Fetcher;
+use App\Enums\Booking\StatusEnum;
 use App\Enums\Career\NameCareerEnum;
 use App\Enums\Course\NameEnum as CourseNameEnum;
 use App\Enums\Nanny\QualityEnum;
@@ -167,6 +168,7 @@ class BookingAppointmentNannyController extends Controller
 
         // Assign the nanny
         $appointment->nanny_id = $nanny->id;
+        $appointment->status = StatusEnum::PENDING->value;
         $appointment->save();
 
         return redirect()

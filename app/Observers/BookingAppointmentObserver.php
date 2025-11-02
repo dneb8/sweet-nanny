@@ -21,7 +21,7 @@ class BookingAppointmentObserver
     private function setStatus(BookingAppointment $appointment)
     {
         // Si ya está cancelado o completado, no cambiar
-        if (in_array($appointment->status, [StatusEnum::CANCELED, StatusEnum::COMPLETED])) {
+        if (in_array($appointment->status, [StatusEnum::CANCELLED, StatusEnum::COMPLETED])) {
             return;
         }
 

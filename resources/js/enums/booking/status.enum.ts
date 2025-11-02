@@ -1,17 +1,19 @@
 // Mismos valores que el enum de PHP
 export enum BookingStatusEnum {
+  DRAFT = 'draft',
   PENDING = 'pending',       // Tiene niñera asignada, pero aún no inicia
   CONFIRMED = 'confirmed',   // Confirmado por el sistema o admin
-  CANCELED = 'canceled',     // Cancelado
+  CANCELLED = 'cancelled',     // Cancelado
   IN_PROGRESS = 'in_progress', // Servicio actualmente en curso
   COMPLETED = 'completed',   // Servicio finalizado
 }
 
 // Etiquetas legibles (idénticas a PHP::label())
 export const BookingStatusLabels: Record<BookingStatusEnum, string> = {
+  [BookingStatusEnum.DRAFT]: 'Borrador',
   [BookingStatusEnum.PENDING]: 'Pendiente',
   [BookingStatusEnum.CONFIRMED]: 'Confirmado',
-  [BookingStatusEnum.CANCELED]: 'Cancelado',
+  [BookingStatusEnum.CANCELLED]: 'Cancelado',
   [BookingStatusEnum.IN_PROGRESS]: 'En curso',
   [BookingStatusEnum.COMPLETED]: 'Finalizado',
 };
@@ -46,6 +48,8 @@ export function isBookingStatus(value: string): value is BookingStatusEnum {
 // Clases para badges de estado (Tailwind + modo oscuro)
 export function getBookingStatusBadgeClass(status: BookingStatusEnum | string): string {
   switch (status) {
+    case BookingStatusEnum.DRAFT:
+      return 'bg-gray-200/70 text-gray-800 dark:bg-gray-600/50 dark:text-gray-200';
     case BookingStatusEnum.PENDING:
       return 'bg-yellow-200/70 text-yellow-700 dark:bg-yellow-400/50 dark:text-yellow-200';
     case BookingStatusEnum.CONFIRMED:
@@ -54,7 +58,7 @@ export function getBookingStatusBadgeClass(status: BookingStatusEnum | string): 
       return 'bg-indigo-200/70 text-indigo-700 dark:bg-indigo-400/50 dark:text-indigo-200';
     case BookingStatusEnum.COMPLETED:
       return 'bg-emerald-200/70 text-emerald-600 dark:bg-emerald-400/50 dark:text-emerald-200';
-    case BookingStatusEnum.CANCELED:
+    case BookingStatusEnum.CANCELLED:
       return 'bg-red-200/70 text-red-600 dark:bg-red-400/50 dark:text-red-200';
     default:
       return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200';

@@ -4,18 +4,20 @@ namespace App\Enums\Booking;
 
 enum StatusEnum: string
 {
-    case PENDING     = 'pending';      // Tiene niñera asignada, pero aún no inicia
-    case CONFIRMED   = 'confirmed';    // Confirmado (por el sistema o admin)
-    case CANCELED    = 'canceled';     // Cancelado
-    case IN_PROGRESS = 'in_progress';  // Servicio actualmente en curso
-    case COMPLETED   = 'completed';    // Servicio finalizado
+    case DRAFT      = 'draft';
+    case PENDING    = 'pending';      // Tiene niñera asignada, pero aún no inicia
+    case CONFIRMED  = 'confirmed';    // Confirmado (por el sistema o admin)
+    case CANCELLED   = 'cancelled';     // Cancelado
+    case IN_PROGRESS= 'in_progress';  // Servicio actualmente en curso
+    case COMPLETED  = 'completed';    // Servicio finalizado
 
     public function label(): string
     {
         return match ($this) {
+            self::DRAFT       => 'Borrador',
             self::PENDING     => 'Pendiente',
             self::CONFIRMED   => 'Confirmado',
-            self::CANCELED    => 'Cancelado',
+            self::CANCELLED    => 'Cancelado',
             self::IN_PROGRESS => 'En curso',
             self::COMPLETED   => 'Finalizado',
         };
