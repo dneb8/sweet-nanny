@@ -189,7 +189,7 @@ const label =
                 <p class="text-[11px] text-muted-foreground mb-1">Cualidades</p>
                 <div v-if="v.qualities().length === 0" class="text-[13px] text-muted-foreground">—</div>
                 <div v-else class="flex flex-wrap gap-1.5">
-                  <Badge v-for="q in v.qualities()" :key="q" class="px-2 py-0.5 text-[11px]">{{ v.enumLabel(q,'quality') }}</Badge>
+                  <Badge v-for="q in v.qualities()" :key="q" :class="v.qualityBadge()" class="px-2 py-0.5 text-[11px]">{{ v.enumLabel(q,'quality') }}</Badge>
                 </div>
               </div>
               <!-- Careers -->
@@ -197,7 +197,7 @@ const label =
                 <p class="text-[11px] text-muted-foreground mb-1">Carreras</p>
                 <div v-if="v.careers().length === 0" class="text-[13px] text-muted-foreground">—</div>
                 <div v-else class="flex flex-wrap gap-1.5">
-                  <Badge v-for="c in v.careers()" :key="c" variant="secondary" class="px-2 py-0.5 text-[11px]">
+                  <Badge v-for="c in v.careers()" :key="c" :class="v.careerBadge()" class="px-2 py-0.5 text-[11px]">
                     <Icon icon="lucide:graduation-cap" class="mr-1 h-3 w-3" /> {{ v.enumLabel(c,'career') }}
                   </Badge>
                 </div>
@@ -207,7 +207,7 @@ const label =
                 <p class="text-[11px] text-muted-foreground mb-1">Cursos</p>
                 <div v-if="v.courses().length === 0" class="text-[13px] text-muted-foreground">—</div>
                 <div v-else class="flex flex-wrap gap-1.5">
-                  <Badge v-for="c in v.courses()" :key="c" variant="outline" class="px-2 py-0.5 text-[11px]">
+                  <Badge v-for="c in v.courses()" :key="c" :class="v.courseBadge()" class="px-2 py-0.5 text-[11px]">
                     <Icon icon="lucide:book-open" class="mr-1 h-3 w-3" /> {{ v.enumLabel(c,'course') }}
                   </Badge>
                 </div>

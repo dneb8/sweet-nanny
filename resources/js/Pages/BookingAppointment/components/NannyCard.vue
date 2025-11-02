@@ -44,12 +44,12 @@ function formatDate(s?: string) {
 
     <div class="space-y-2">
       <div v-if="nanny.qualities.length > 0" class="flex flex-wrap gap-1">
-        <Badge v-for="q in nanny.qualities.slice(0, 3)" :key="q" class="text-[10px] px-1.5 py-0">
+        <Badge v-for="q in nanny.qualities.slice(0, 3)" :key="q" class="text-[10px] px-1.5 py-0 bg-purple-200 text-purple-900 dark:text-purple-200 dark:bg-purple-900/60 dark:border-purple-200">
           {{ qualities[q] || q }}
         </Badge>
       </div>
       <div v-if="nanny.careers.length > 0" class="flex flex-wrap gap-1">
-        <Badge v-for="c in nanny.careers.slice(0, 2)" :key="c" variant="secondary" class="text-[10px] px-1.5 py-0">
+        <Badge v-for="c in nanny.careers.slice(0, 2)" :key="c" class="text-[10px] px-1.5 py-0 bg-indigo-200 text-indigo-900 dark:text-indigo-100 dark:bg-indigo-500/40 dark:border-indigo-200">
           <Icon icon="lucide:graduation-cap" class="mr-0.5 h-2.5 w-2.5" />
           {{ careers[c] || c }}
         </Badge>
