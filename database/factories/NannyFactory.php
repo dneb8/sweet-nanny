@@ -2,7 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\{Nanny, User, Address};
+use App\Models\Nanny;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class NannyFactory extends Factory
@@ -12,7 +13,7 @@ class NannyFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(), 
+            'user_id' => User::factory(),
             'bio' => $this->faker->paragraph(),
             'availability' => $this->faker->boolean(),
             'start_date' => $this->faker->date(),
@@ -22,7 +23,7 @@ class NannyFactory extends Factory
     public function configure()
     {
         return $this->afterCreating(function (Nanny $nanny) {
-            $nanny->user->assignRole('nanny'); 
+            $nanny->user->assignRole('nanny');
         });
     }
 }

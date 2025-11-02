@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Course;
 
+use App\Enums\Course\NameEnum;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class UpdateCourseRequest extends FormRequest
 {
@@ -22,10 +24,10 @@ class UpdateCourseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', new Enum(NameEnum::class)],
             'organization' => ['nullable', 'string', 'max:255'],
             'date' => ['required', 'date'],
-            'nanny_id' => ['nullable', 'integer', 'exists:nannies,id'], 
+            'nanny_id' => ['nullable', 'integer', 'exists:nannies,id'],
         ];
     }
 

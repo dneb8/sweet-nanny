@@ -4,6 +4,7 @@ import type { Booking } from '@/types/Booking'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useBookingView } from '@/services/BookingService'
+import GoogleMap from '@/components/GoogleMap.vue'
 const props = defineProps<{ booking: Booking }>()
 const v = useBookingView(props.booking)
 
@@ -17,6 +18,7 @@ const label =
   'opacity-0 -translate-x-1 max-w-0 ' +
   'group-hover:opacity-100 group-hover:translate-x-0 group-hover:max-w-[6rem] ' +
   'transition-all duration-900'
+
 </script>
 
 <template>
@@ -219,16 +221,28 @@ const label =
               <Icon icon="lucide:map-pin" class="h-4 w-4" /> Dirección
             </h3>
             <div v-if="!props.booking.address" class="text-[13px] text-muted-foreground">No especificada</div>
-            <div v-else class="space-y-1.5 text-[13px]">
-              <p class="font-medium">
-                {{ props.booking.address.street }} {{ props.booking.address.ext_number }}
-                <span v-if="props.booking.address.int_number">, Int. {{ props.booking.address.int_number }}</span>
-              </p>
-              <p class="text-muted-foreground">{{ props.booking.address.neighborhood }}, {{ props.booking.address.city }}</p>
-              <p class="text-muted-foreground">{{ props.booking.address.state }}, {{ props.booking.address.postal_code }}</p>
-              <Badge v-if="props.booking.address.type" variant="secondary" class="mt-1 px-2 py-0.5 text-[11px]">
-                {{ props.booking.address.type }}
-              </Badge>
+            <div v-else class="space-y-3 text-[13px]">
+              <div class="space-y-1.5">
+                <p class="font-medium">
+                  {{ props.booking.address.street }}
+                  <span v-if="props.booking.address.internal_number">, Int. {{ props.booking.address.internal_number }}</span>
+                </p>
+                <p class="text-muted-foreground">{{ props.booking.address.neighborhood }}</p>
+                <p class="text-muted-foreground">{{ props.booking.address.postal_code }}</p>
+                <Badge v-if="props.booking.address.type" variant="secondary" class="mt-1 px-2 py-0.5 text-[11px]">
+                  {{ props.booking.address.type }}
+                </Badge>
+              </div>
+              
+              <!-- Map -->
+               <GoogleMap
+                :latitude="+(props.booking?.address?.latitude ?? 19.704)"
+                :longitude="+(props.booking?.address?.longitude ?? -103.344)"
+                :zoom="16"
+                height="320px"
+                :showMarker="true"
+              />
+
             </div>
           </div>
 

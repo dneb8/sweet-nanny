@@ -24,7 +24,7 @@ class AddressController extends Controller
             // SEE OTHER para formularios Inertia
             return back(303)->with([
                 'success' => 'Dirección creada correctamente.',
-                'recent'  => ['address' => $address->toArray()],
+                'recent' => ['address' => $address->toArray()],
             ]);
         }
 
@@ -45,7 +45,7 @@ class AddressController extends Controller
         if ($this->isInertia($request)) {
             return back(303)->with([
                 'success' => 'Dirección actualizada correctamente.',
-                'recent'  => ['address' => $updated->toArray()],
+                'recent' => ['address' => $updated->toArray()],
             ]);
         }
 

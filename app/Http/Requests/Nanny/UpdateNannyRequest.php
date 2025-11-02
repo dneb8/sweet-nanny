@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Nanny;
 
-use App\Enums\Nanny\RoleEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

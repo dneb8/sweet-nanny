@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Course\{CreateCourseRequest, UpdateCourseRequest};
+use App\Http\Requests\Course\CreateCourseRequest;
+use App\Http\Requests\Course\UpdateCourseRequest;
 use App\Models\Course;
 use App\Services\CourseService;
 use Illuminate\Http\RedirectResponse;
@@ -14,7 +15,7 @@ class CourseController extends Controller
      */
     public function store(CourseService $courseService, CreateCourseRequest $request): RedirectResponse
     {
-        //Gate::authorize('create', Course::class);
+        // Gate::authorize('create', Course::class);
 
         $courseService->createCourse($request);
 
@@ -29,7 +30,7 @@ class CourseController extends Controller
      */
     public function update(CourseService $courseService, UpdateCourseRequest $request, Course $course): RedirectResponse
     {
-        //Gate::authorize('edit', Course::class);
+        // Gate::authorize('edit', Course::class);
 
         $courseService->updateCourse($course, $request);
 
@@ -44,7 +45,7 @@ class CourseController extends Controller
      */
     public function destroy(Course $course): RedirectResponse
     {
-        //Gate::authorize('delete', Course::class);
+        // Gate::authorize('delete', Course::class);
 
         $course->delete();
 

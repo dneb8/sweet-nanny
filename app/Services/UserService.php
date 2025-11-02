@@ -2,13 +2,13 @@
 
 namespace App\Services;
 
-use App\Classes\Fetcher\{Fetcher, Filter};
+use App\Classes\Fetcher\Fetcher;
+use App\Classes\Fetcher\Filter;
 use App\Enums\User\RoleEnum;
 use App\Http\Requests\User\CreateUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class UserService
@@ -24,14 +24,14 @@ class UserService
                 'nanny',
                 'nanny.qualities',
                 'tutor',
-                // 'profilePhoto',
+                'media' => fn ($q) => $q->where('collection_name', 'images'),
             ])
             ->orderBy('created_at', 'desc');
 
-        $sortables = ['email','name','surnames'];
+        $sortables = ['email', 'name', 'surnames'];
         $searchables = ['email', 'name', 'surnames'];
 
-        $users = Fetcher::for($users)
+        return Fetcher::for($users)
             ->allowFilters([
                 'role' => [
                     'using' => fn (Filter $filter) => $filter->usingScope('filtrarPorRole'),
@@ -40,8 +40,6 @@ class UserService
             ->allowSort($sortables)
             ->allowSearch($searchables)
             ->paginate(12);
-
-        return $users;
     }
 
     /**

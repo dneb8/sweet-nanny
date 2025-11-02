@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Tutor\{CreateTutorRequest, UpdateTutorRequest};
+use App\Http\Requests\Tutor\CreateTutorRequest;
+use App\Http\Requests\Tutor\UpdateTutorRequest;
 use App\Models\Tutor;
 use App\Services\TutorService;
-use Inertia\{Inertia, Response};
-
+use Inertia\Inertia;
+use Inertia\Response;
 
 class TutorController extends Controller
 {
@@ -49,7 +50,6 @@ class TutorController extends Controller
      */
     public function show(Tutor $tutor, TutorService $tutorService): Response
     {
-        // Authorization check (if policy exists)
         // $this->authorize('view', $tutor);
 
         $tutorData = $tutorService->getShowData($tutor->ulid);

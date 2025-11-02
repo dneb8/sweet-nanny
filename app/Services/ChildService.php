@@ -2,26 +2,25 @@
 
 namespace App\Services;
 
+use App\Models\Child;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Carbon\Carbon;
-use App\Models\Child;
-use App\Models\Tutor;
 
 class ChildService
 {
     public function createChild(Request $request): Child
     {
         $data = $request->validate([
-            'tutor_id'  => ['required', 'integer', 'exists:tutors,id'],
-            'name'      => ['required', 'string', 'min:2', 'max:100'],
+            'tutor_id' => ['required', 'integer', 'exists:tutors,id'],
+            'name' => ['required', 'string', 'min:2', 'max:100'],
             'birthdate' => ['required', 'date'],
-            'kinkship'  => ['required', 'string', Rule::in(['hijo','sobrino','primo','hermano','otro'])],
+            'kinkship' => ['required', 'string', Rule::in(['hijo', 'sobrino', 'primo', 'hermano', 'otro'])],
         ], [], [
-            'tutor_id'  => 'tutor',
-            'name'      => 'nombre',
+            'tutor_id' => 'tutor',
+            'name' => 'nombre',
             'birthdate' => 'fecha de nacimiento',
-            'kinkship'  => 'parentesco',
+            'kinkship' => 'parentesco',
         ]);
 
         $data['birthdate'] = Carbon::parse($data['birthdate'])->toDateString();
@@ -35,15 +34,15 @@ class ChildService
     public function updateChild(Child $child, Request $request): Child
     {
         $data = $request->validate([
-            'tutor_id'  => ['sometimes', 'required', 'integer', 'exists:tutors,id'],
-            'name'      => ['sometimes', 'required', 'string', 'min:2', 'max:100'],
+            'tutor_id' => ['sometimes', 'required', 'integer', 'exists:tutors,id'],
+            'name' => ['sometimes', 'required', 'string', 'min:2', 'max:100'],
             'birthdate' => ['sometimes', 'required', 'date'],
-            'kinkship'  => ['sometimes', 'required', 'string', Rule::in(['hijo','sobrino','primo','hermano','otro'])],
+            'kinkship' => ['sometimes', 'required', 'string', Rule::in(['hijo', 'sobrino', 'primo', 'hermano', 'otro'])],
         ], [], [
-            'tutor_id'  => 'tutor',
-            'name'      => 'nombre',
+            'tutor_id' => 'tutor',
+            'name' => 'nombre',
             'birthdate' => 'fecha de nacimiento',
-            'kinkship'  => 'parentesco',
+            'kinkship' => 'parentesco',
         ]);
 
         if (array_key_exists('birthdate', $data)) {
@@ -51,6 +50,7 @@ class ChildService
         }
         if (empty($data)) {
             $child->refresh();
+
             return $child;
         }
 
@@ -64,7 +64,7 @@ class ChildService
     {
         $child->delete();
     }
-    //no eliminar si: 
+    // no eliminar si:
     // - tiene bookings futuras
     // - tiene bookings pasadas
     // - tiene citas asociadas

@@ -28,12 +28,12 @@ class Tutor extends Model
     {
         return $this->belongsTo(User::class);
     }
-    
+
     public function children()
     {
         return $this->hasMany(Child::class);
     }
-    
+
     // Polymorphic relation to addresses
     public function addresses()
     {
@@ -61,4 +61,11 @@ class Tutor extends Model
         return $this->morphMany(Review::class, 'reviewable');
     }
 
+    /**
+     * Get avatar URL from related User
+     */
+    public function avatarUrl(?int $minutes = 10): ?string
+    {
+        return $this->user?->avatarSignedOrPublicUrl($minutes);
+    }
 }

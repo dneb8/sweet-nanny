@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
+use App\Enums\Nanny\QualityEnum;
 use App\Models\Nanny;
 use App\Models\Quality;
-use App\Enums\Nanny\QualityEnum;
+use Illuminate\Database\Seeder;
 
 class NannyQualitySeeder extends Seeder
 {
@@ -17,7 +17,7 @@ class NannyQualitySeeder extends Seeder
         // 1️⃣ Crear las qualities en la BD según el enum
         foreach (QualityEnum::cases() as $case) {
             Quality::firstOrCreate([
-                'name' => $case->value
+                'name' => $case->value,
             ]);
         }
 

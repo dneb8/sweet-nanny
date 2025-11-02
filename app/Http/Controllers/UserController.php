@@ -3,28 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Enums\User\RoleEnum;
-use App\Http\Resources\UserResource;
-use App\Http\Requests\User\{CreateUserRequest, UpdateUserRequest};
-use App\Models\{User};
+use App\Http\Requests\User\CreateUserRequest;
+use App\Http\Requests\User\UpdateUserRequest;
+use App\Models\User;
 use App\Services\UserService;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Inertia\{Inertia, Response};
-use Spatie\Permission\Contracts\Role;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class UserController extends Controller
 {
     /**
      * Redirige al listado de usuarios
      */
-
     public function index(UserService $userService): Response
     {
         // Gate::authorize('viewAny', User::class);
 
-        $roles = array_map(fn($role) => $role->value, RoleEnum::cases());
-
+        $roles = array_map(fn ($role) => $role->value, RoleEnum::cases());
 
         $users = $userService->indexFetch();
 
@@ -41,6 +37,7 @@ class UserController extends Controller
     {
         // Gate::authorize('create', User::class);
         $roles = RoleEnum::cases();
+
         return Inertia::render('User/Create', [
             'roles' => $roles,
         ]);
@@ -73,6 +70,7 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('message', [
             'title' => 'Usuario creado',
             'description' => 'El usuario ha sido creado correctamente.',
+            'icon' => 'check',
         ]);
     }
 
@@ -82,7 +80,7 @@ class UserController extends Controller
     public function edit(User $user): Response
     {
         // Gate::authorize('update', $user);
-        
+
         return Inertia::render('User/Edit', [
             'user' => $user->load(['roles']),
             'roles' => RoleEnum::cases(),
@@ -124,7 +122,6 @@ class UserController extends Controller
         ]);
     }
 
-
     /**
      * Elimina un usuario
      */
@@ -138,7 +135,7 @@ class UserController extends Controller
             'message' => [
                 'title' => 'Usuario eliminado',
                 'description' => 'El usuario ha sido eliminado correctamente.',
-            ]
+            ],
         ]);
     }
 }

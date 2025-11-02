@@ -2,11 +2,11 @@
 
 namespace App\Http\Requests\Career;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Enum;
-use App\Enums\Career\StatusEnum;
 use App\Enums\Career\DegreeEnum;
 use App\Enums\Career\NameCareerEnum;
+use App\Enums\Career\StatusEnum;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class UpdateCareerRequest extends FormRequest
 {
@@ -18,7 +18,6 @@ class UpdateCareerRequest extends FormRequest
         return true;
     }
 
-
     /**
      * Reglas de validación para actualizar una carrera
      *
@@ -27,7 +26,7 @@ class UpdateCareerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            
+
             'name' => ['required', new Enum(NameCareerEnum::class)],
             'nanny_id' => ['nullable', 'integer', 'exists:nannies,id'],
             'degree' => ['nullable', new Enum(DegreeEnum::class)],
@@ -35,6 +34,7 @@ class UpdateCareerRequest extends FormRequest
             'institution' => ['nullable', 'string', 'max:255'],
         ];
     }
+
     /**
      * Nombres personalizados para mensajes de error
      *

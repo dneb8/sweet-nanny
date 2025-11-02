@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Review;
 use App\Services\ReviewService;
-use Illuminate\Http\Request;
 use Inertia\{Inertia, Response};
 
 class ReviewController extends Controller

@@ -4,17 +4,17 @@ namespace App\Enums\Address;
 
 enum TypeEnum: string
 {
-    case FRACCIONAMIENTO = 'fraccionamiento';      
-    case CASA = 'casa';                  
-    case EDIFICIO = 'edificio';          
-    case DEPARTAMENTO = 'departamento';         
-    case DUPLEX = 'dúplex';              
-    case LOCAL = 'local';                   
+    case FRACCIONAMIENTO = 'fraccionamiento';
+    case CASA = 'casa';
+    case EDIFICIO = 'edificio';
+    case DEPARTAMENTO = 'departamento';
+    case DUPLEX = 'dúplex';
+    case LOCAL = 'local';
     case PARQUE_DIVERSIONES = 'parque_de_diversiones';
     case HOTEL = 'hotel';
     case SALON_FIESTAS = 'salon_de_fiestas';
-    case CONDOMINIO = 'condominio';     
-    case OTRO = 'otro';                  
+    case CONDOMINIO = 'condominio';
+    case OTRO = 'otro';
 
     public function label(): string
     {
@@ -42,7 +42,7 @@ enum TypeEnum: string
     {
         return array_combine(
             self::values(),
-            array_map(fn($case) => $case->label(), self::cases())
+            array_map(fn ($case) => $case->label(), self::cases())
         );
     }
 }

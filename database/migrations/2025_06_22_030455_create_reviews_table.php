@@ -12,12 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('reviews', function (Blueprint $table) {
-             $table->id();
-             $table->string('reviewable_type'); // Ej: App\Models\Nanny o App\Models\Tutor CUANDO EXISTAN)
-             $table->unsignedBigInteger('reviewable_id');  
+            $table->id();
+            $table->string('reviewable_type'); // Ej: App\Models\Nanny o App\Models\Tutor CUANDO EXISTAN)
+            $table->unsignedBigInteger('reviewable_id');
 
-        // Contenido del review
-            $table->unsignedTinyInteger('rating'); 
+            // Contenido del review
+            $table->unsignedTinyInteger('rating');
             $table->text('comments')->nullable();
             $table->boolean('approved')->default(false);
             $table->timestamps();
