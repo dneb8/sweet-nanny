@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BookingAppointmentNannyController;
+use App\Http\Controllers\BookingAppointmentController;
 use App\Http\Controllers\BookingController;
 use Illuminate\Support\Facades\Route;
 

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { useBookingView } from '@/services/BookingService'
 import { useBookingAppointmentPolicy } from '@/policies/bookingAppointmentPolicy'
 import GoogleMap from '@/components/GoogleMap.vue'
+import { computed } from 'vue'
 
 const props = defineProps<{ booking: Booking }>()
 
@@ -23,6 +24,14 @@ const label =
   'opacity-0 -translate-x-1 max-w-0 ' +
   'group-hover:opacity-100 group-hover:translate-x-0 group-hover:max-w-[6rem] ' +
   'transition-all duration-900'
+
+const hasAnyRequirements = computed(() => {
+  const qs = v.qualities?.() ?? []
+  const cs = v.careers?.() ?? []
+  const ks = v.courses?.() ?? []
+  return qs.length || cs.length || ks.length
+})
+
 
 </script>
 
@@ -80,7 +89,7 @@ const label =
           <!-- Resumen compacto -->
           <div class="rounded-3xl border border-white/30 bg-white/20 dark:border-white/10 dark:bg-white/5 backdrop-blur-xl shadow-lg p-4 sm:p-5">
             <h2 class="text-sm font-semibold flex items-center gap-2 mb-3">
-              <Icon icon="lucide:clipboard-check" class="h-4 w-4" /> Requisitos de la niñera
+              <Icon icon="lucide:clipboard-check" class="h-4 w-4" /> Detalles del servicio
             </h2>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div class="space-y-1">
@@ -211,40 +220,54 @@ const label =
             </div>
           </div>
 
-          <!-- Requisitos (chips) -->
+          <!-- Requisitos  -->
           <div class="rounded-3xl border border-white/30 bg-white/20 dark:border-white/10 dark:bg-white/5 backdrop-blur-xl shadow-lg p-4 sm:p-5">
-            <h2 class="text-sm font-semibold flex items-center gap-2 mb-3">
-              <Icon icon="lucide:clipboard-check" class="h-4 w-4" /> Requisitos de la niñera
+            <h2 class="mb-4 sm:mb-5 flex items-center gap-2 text-sm font-semibold">
+              <Icon icon="lucide:clipboard-check" class="h-4 w-4 shrink-0" /> Requisitos de la niñera
             </h2>
-            <div class="grid gap-3 sm:grid-cols-3">
+
+            <!-- Empty state -->
+            <div v-if="!hasAnyRequirements" class="flex items-center gap-3 rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">
+              <Icon icon="lucide:info" class="h-4 w-4" />
+              No hay requisitos establecidos para esta solicitud.
+            </div>
+
+            <!-- Grid de secciones -->
+            <div v-else class="grid grid-cols-1 gap-4 sm:gap-5">
               <!-- Qualities -->
-              <div>
-                <p class="text-[11px] text-muted-foreground mb-1">Cualidades</p>
-                <div v-if="v.qualities().length === 0" class="text-[13px] text-muted-foreground">—</div>
-                <div v-else class="flex flex-wrap gap-1.5">
-                  <Badge v-for="q in v.qualities()" :key="q" :class="v.qualityBadge()" class="px-2 py-0.5 text-[11px]">{{ v.enumLabel(q,'quality') }}</Badge>
+              <section v-if="v.qualities() !== null">
+                <p class="mb-2 text-[11px] uppercase tracking-wide text-muted-foreground">Cualidades</p>
+                <div v-if="v.qualities().length===0" class="text-[13px] text-muted-foreground">—</div>
+                <div v-else class="flex flex-wrap gap-1.5 sm:gap-2 max-sm:overflow-x-auto max-sm:[&>*]:shrink-0 max-sm:pb-1">
+                  <Badge v-for="q in v.qualities()" :key="q" :class="[v.qualityBadge(),'px-2 py-0.5 text-[11px] sm:text-[12px] leading-5']">
+                    {{ v.enumLabel(q,'quality') }}
+                  </Badge>
                 </div>
-              </div>
+              </section>
+
               <!-- Careers -->
-              <div>
-                <p class="text-[11px] text-muted-foreground mb-1">Carreras</p>
-                <div v-if="v.careers().length === 0" class="text-[13px] text-muted-foreground">—</div>
-                <div v-else class="flex flex-wrap gap-1.5">
-                  <Badge v-for="c in v.careers()" :key="c" :class="v.careerBadge()" class="px-2 py-0.5 text-[11px]">
-                    <Icon icon="lucide:graduation-cap" class="mr-1 h-3 w-3" /> {{ v.enumLabel(c,'career') }}
+              <section v-if="v.careers() !== null">
+                <p class="mb-2 text-[11px] uppercase tracking-wide text-muted-foreground">Carreras</p>
+                <div v-if="v.careers().length===0" class="text-[13px] text-muted-foreground">—</div>
+                <div v-else class="flex flex-wrap gap-1.5 sm:gap-2 max-sm:overflow-x-auto max-sm:[&>*]:shrink-0 max-sm:pb-1">
+                  <Badge v-for="c in v.careers()" :key="c" :class="[v.careerBadge(),'px-2 py-0.5 text-[11px] sm:text-[12px] leading-5 inline-flex items-center']">
+                    <Icon icon="lucide:graduation-cap" class="mr-1 h-3 w-3" />
+                    <span class="line-clamp-1">{{ v.enumLabel(c,'career') }}</span>
                   </Badge>
                 </div>
-              </div>
+              </section>
+
               <!-- Courses -->
-              <div>
-                <p class="text-[11px] text-muted-foreground mb-1">Cursos</p>
-                <div v-if="v.courses().length === 0" class="text-[13px] text-muted-foreground">—</div>
-                <div v-else class="flex flex-wrap gap-1.5">
-                  <Badge v-for="c in v.courses()" :key="c" :class="v.courseBadge()" class="px-2 py-0.5 text-[11px]">
-                    <Icon icon="lucide:book-open" class="mr-1 h-3 w-3" /> {{ v.enumLabel(c,'course') }}
+              <section v-if="v.courses() !== null">
+                <p class="mb-2 text-[11px] uppercase tracking-wide text-muted-foreground">Cursos</p>
+                <div v-if="v.courses().length===0" class="text-[13px] text-muted-foreground">—</div>
+                <div v-else class="flex flex-wrap gap-1.5 sm:gap-2 max-sm:overflow-x-auto max-sm:[&>*]:shrink-0 max-sm:pb-1">
+                  <Badge v-for="c in v.courses()" :key="c" :class="[v.courseBadge(),'px-2 py-0.5 text-[11px] sm:text-[12px] leading-5 inline-flex items-center']">
+                    <Icon icon="lucide:book-open" class="mr-1 h-3 w-3" />
+                    <span class="line-clamp-1">{{ v.enumLabel(c,'course') }}</span>
                   </Badge>
                 </div>
-              </div>
+              </section>
             </div>
           </div>
         </div>
