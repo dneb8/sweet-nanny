@@ -127,7 +127,7 @@ class BookingService
                     'start_date' => Carbon::parse($a['start_date']),
                     'end_date' => Carbon::parse($a['end_date']),
                     'duration' => (int) ($a['duration'] ?? 0),
-                    'status' => Arr::get($a, 'status', 'pending'),
+                    'status' => Arr::get($a, 'status', 'draft'),
                     'payment_status' => Arr::get($a, 'payment_status', 'unpaid'),
                     'extra_hours' => (int) Arr::get($a, 'extra_hours', 0),
                     'total_cost' => (float) Arr::get($a, 'total_cost', 0),

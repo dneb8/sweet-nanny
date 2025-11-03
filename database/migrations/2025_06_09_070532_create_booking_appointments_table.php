@@ -20,7 +20,7 @@ return new class extends Migration
 
             // Enum de status
             $table->enum('status', StatusEnum::values())
-                  ->default(StatusEnum::PENDING->value);
+                  ->default(StatusEnum::DRAFT->value);
 
             $table->string('payment_status')->default('unpaid');
             $table->integer('extra_hours')->default(0);

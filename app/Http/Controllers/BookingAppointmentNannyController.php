@@ -7,7 +7,6 @@ use App\Enums\Booking\StatusEnum;
 use App\Enums\Career\NameCareerEnum;
 use App\Enums\Course\NameEnum as CourseNameEnum;
 use App\Enums\Nanny\QualityEnum;
-use App\Http\Requests\BookingAppointment\AssignNannyRequest;
 use App\Models\Booking;
 use App\Models\BookingAppointment;
 use App\Models\Nanny;

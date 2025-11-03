@@ -13,7 +13,6 @@ class BookingAppointment extends Model
     protected $fillable = [
         'booking_id',
         'nanny_id',
-        // 'price_id',
         'start_date',
         'end_date',
         'status',

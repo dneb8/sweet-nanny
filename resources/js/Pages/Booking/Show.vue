@@ -245,7 +245,7 @@ function getEditDisabledReason(appointment: BookingAppointment): string {
         </div>
 
         <Tabs v-else :default-value="String(v.appointments()[0]?.id)" class="w-full" @update:model-value="(val) => selectedAppointmentId = Number(val)">
-          <TabsList class="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 h-auto p-2 bg-white/20 backdrop-blur-xl border border-white/30 dark:border-white/10">
+          <TabsList class="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 h-auto p-2 bg-white/5 backdrop-blur-xl border border-white/30 dark:border-white/10">
             <TabsTrigger
               v-for="(appointment, idx) in v.appointments().slice(0, 10)"
               :key="appointment.id"

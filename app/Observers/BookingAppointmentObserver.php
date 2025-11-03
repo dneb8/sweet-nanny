@@ -17,25 +17,33 @@ class BookingAppointmentObserver
     {
         $this->setStatus($appointment);
     }
-
     private function setStatus(BookingAppointment $appointment)
     {
-        // Si ya está cancelado o completado, no cambiar
+        // Respetar terminales
         if (in_array($appointment->status, [StatusEnum::CANCELLED, StatusEnum::COMPLETED])) {
             return;
         }
 
-        if (!$appointment->nanny_id) {
-            $appointment->status = StatusEnum::PENDING;
-        } else {
-            $now = Carbon::now();
+        // Solo recalcular si cambian fechas
+        if (! $appointment->isDirty(['start_date', 'end_date'])) {
+            return;
+        }
+
+        // Si está PENDING, no promover por tiempo (falta confirmación de niñera)
+        if ($appointment->status === StatusEnum::PENDING->value) {
+            return;
+        }
+
+        // Con CONFIRMED: promover por tiempo
+        $now = now();
+        if ($appointment->status === StatusEnum::CONFIRMED->value) {
             if ($appointment->start_date <= $now && $appointment->end_date >= $now) {
-                $appointment->status = StatusEnum::IN_PROGRESS;
+                $appointment->status = StatusEnum::IN_PROGRESS->value;
             } elseif ($appointment->end_date < $now) {
-                $appointment->status = StatusEnum::COMPLETED;
-            } else {
-                $appointment->status = StatusEnum::CONFIRMED;
+                $appointment->status = StatusEnum::COMPLETED->value;
             }
         }
     }
+
+
 }

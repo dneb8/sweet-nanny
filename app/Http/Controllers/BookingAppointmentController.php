@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Booking\StatusEnum;
 use App\Models\Booking;
 use App\Models\BookingAppointment;
 use Illuminate\Http\RedirectResponse;
@@ -36,13 +37,14 @@ class BookingAppointmentController extends Controller
      */
     public function updateDates(Request $request, Booking $booking, BookingAppointment $appointment): RedirectResponse
     {
-        Gate::authorize('update', $appointment);
 
         $validator = Validator::make($request->all(), [
             'start_date' => ['required', 'date', 'after:now'],
             'end_date' => ['required', 'date', 'after:start_date'],
             'duration' => ['required', 'integer', 'min:1', 'max:8'],
         ]);
+
+        dd($request->all());
 
         if ($validator->fails()) {
             return back()
@@ -54,9 +56,9 @@ class BookingAppointmentController extends Controller
         $validated = $validator->validated();
 
         // If status is pending and we're editing dates, unassign nanny and revert to draft
-        if ($appointment->status === 'pending' && $appointment->nanny_id) {
+        if ($appointment->status === StatusEnum::PENDING->value && $appointment->nanny_id) {
             $appointment->nanny_id = null;
-            $appointment->status = 'draft';
+            $appointment->status = StatusEnum::DRAFT->value;
         }
 
         $appointment->update([
