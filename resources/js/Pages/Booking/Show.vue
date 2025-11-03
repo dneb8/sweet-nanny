@@ -84,6 +84,28 @@ const deleteMessage = computed(() => {
   return '¿Estás seguro de que deseas eliminar este servicio? Esta acción no se puede deshacer.'
 })
 
+// Function to check if can choose nanny for an appointment
+function canChooseNanny(appointment: BookingAppointment): boolean {
+  return policy.canChooseNanny(appointment, props.booking)
+}
+
+// Function to check if can change nanny for an appointment
+// Admin: always can change
+// Tutor: only when appointment is pending
+function canChangeNanny(appointment: BookingAppointment): boolean {
+  if (!appointment.nanny_id) return false
+  
+  // Check if user is admin from page props
+  const userRoles = (window as any).$page?.props?.auth?.roles || []
+  const isAdmin = userRoles.includes('admin')
+  
+  if (isAdmin) return true
+  
+  // Tutor can change only when pending
+  const isTutor = userRoles.includes('tutor')
+  return isTutor && appointment.status === 'pending'
+}
+
 // Helpers de fecha en TZ MX
 const MX_TZ = 'America/Mexico_City'
 function fmtDateTZ(iso: string) {
@@ -306,6 +328,8 @@ function getEditDisabledReason(appointment: BookingAppointment): string {
                 :appointment="appointment"
                 :booking="props.booking"
                 :can-edit-appointment="policy.canEdit(appointment, props.booking)"
+                :can-choose-nanny="canChooseNanny(appointment)"
+                :can-change-nanny="canChangeNanny(appointment)"
                 :get-edit-disabled-reason="getEditDisabledReason"
                 :fmt-readable-date-time="fmtReadableDateTime"
                 :fmt-time-tz="fmtTimeTZ"
@@ -323,6 +347,8 @@ function getEditDisabledReason(appointment: BookingAppointment): string {
               :appointment="v.appointments()[0]"
               :booking="props.booking"
               :can-edit-appointment="policy.canEdit(v.appointments()[0], props.booking)"
+              :can-choose-nanny="canChooseNanny(v.appointments()[0])"
+              :can-change-nanny="canChangeNanny(v.appointments()[0])"
               :get-edit-disabled-reason="getEditDisabledReason"
               :fmt-readable-date-time="fmtReadableDateTime"
               :fmt-time-tz="fmtTimeTZ"

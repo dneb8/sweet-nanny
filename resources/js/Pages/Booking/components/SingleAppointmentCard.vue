@@ -91,6 +91,8 @@ const props = defineProps<{
   booking: Booking
   appointment: BookingAppointment
   canEditAppointment: boolean
+  canChooseNanny?: boolean
+  canChangeNanny?: boolean
   getEditDisabledReason?: (a: BookingAppointment) => string
   fmtReadableDateTime?: (iso: string) => string
   fmtTimeTZ?: (iso: string) => string
@@ -171,18 +173,50 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
         <!-- Niñera -->
         <div class="pt-4 border-t border-white/20">
           <p class="text-[11px] text-muted-foreground mb-2">Niñera asignada</p>
-          <div v-if="props.appointment.nanny" class="flex items-center gap-3 p-3 rounded-xl bg-white/40 dark:bg-white/10">
-            <div class="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <Icon icon="lucide:user" class="h-5 w-5 text-primary" />
+          
+          <!-- Nanny assigned -->
+          <div v-if="props.appointment.nanny">
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-white/40 dark:bg-white/10">
+              <div class="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Icon icon="lucide:user" class="h-5 w-5 text-primary" />
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-medium">
+                  {{ props.appointment.nanny.user.name }} {{ props.appointment.nanny.user.surnames }}
+                </p>
+                <p class="text-[12px] text-muted-foreground">{{ props.appointment.nanny.user.email }}</p>
+              </div>
             </div>
-            <div>
-              <p class="text-sm font-medium">
-                {{ props.appointment.nanny.user.name }} {{ props.appointment.nanny.user.surnames }}
-              </p>
-              <p class="text-[12px] text-muted-foreground">{{ props.appointment.nanny.user.email }}</p>
+            
+            <!-- Change Nanny button -->
+            <div v-if="props.canChangeNanny" class="mt-3 text-center">
+              <Button
+                variant="outline"
+                size="sm"
+                class="w-full sm:w-auto"
+                @click="emit('routerGet', route('bookings.appointments.nannies.choose', { booking: props.booking.id, appointment: props.appointment.id }))"
+              >
+                <Icon icon="lucide:repeat" class="mr-2 h-4 w-4" />
+                Cambiar niñera
+              </Button>
             </div>
           </div>
-          <div v-else class="text-sm text-muted-foreground py-2">No hay niñera asignada</div>
+          
+          <!-- No nanny assigned -->
+          <div v-else>
+            <div v-if="props.canChooseNanny" class="text-center py-4">
+              <p class="text-sm text-muted-foreground mb-3">No hay niñera asignada</p>
+              <Button
+                variant="default"
+                class="w-full sm:w-auto"
+                @click="emit('routerGet', route('bookings.appointments.nannies.choose', { booking: props.booking.id, appointment: props.appointment.id }))"
+              >
+                <Icon icon="lucide:user-plus" class="mr-2 h-4 w-4" />
+                Elegir niñera
+              </Button>
+            </div>
+            <div v-else class="text-sm text-muted-foreground py-2">No hay niñera asignada</div>
+          </div>
         </div>
 
         <!-- Niños -->
