@@ -74,7 +74,7 @@ class BookingPolicy
 
         // Block edit if any appointment is not in draft status
         $allDraft = $booking->bookingAppointments->every(function ($appointment) {
-            return $appointment->status === 'draft';
+            return $appointment->status->value === 'draft';
         });
 
         if (! $allDraft) {
@@ -107,7 +107,7 @@ class BookingPolicy
         // Block delete if any appointment has a nanny assigned and is confirmed (not draft or pending)
         $hasConfirmedNanny = $booking->bookingAppointments->some(function ($appointment) {
             return $appointment->nanny_id !== null
-                && ! in_array($appointment->status, ['draft', 'pending']);
+                && ! in_array($appointment->status->value, ['draft', 'pending']);
         });
 
         if ($hasConfirmedNanny) {
