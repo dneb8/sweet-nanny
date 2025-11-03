@@ -20,15 +20,28 @@ class BookingController extends Controller
 {
     public function index(): Response
     {
-        $bookings = Booking::with(['tutor.user', 'bookingAppointments.addresses', 'bookingAppointments.children'])
-            ->latest('id')
-            ->paginate(12);
+        $this->authorize('viewAny', Booking::class);
+
+        $user = Auth::user();
+        $bookingsQuery = Booking::with(['tutor.user', 'bookingAppointments.addresses', 'bookingAppointments.children'])
+            ->latest('id');
+
+        // Filter by tutor if not admin
+        if (! $user->hasRole('admin')) {
+            $bookingsQuery->whereHas('tutor', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
+        }
+
+        $bookings = $bookingsQuery->paginate(12);
 
         return Inertia::render('Booking/Index', ['bookings' => $bookings]);
     }
 
     public function create(): Response
     {
+        $this->authorize('create', Booking::class);
+
         $user = User::with([
             'tutor' => fn ($q) => $q->select('id', 'user_id')->with([
                 'children',
@@ -50,6 +63,8 @@ class BookingController extends Controller
 
     public function show(Booking $booking): Response
     {
+        $this->authorize('view', $booking);
+
         $booking = Booking::useWritePdo()
             ->with([
                 'tutor.user',
@@ -58,7 +73,7 @@ class BookingController extends Controller
                 'bookingAppointments.nanny.user',
                 'bookingAppointments.addresses',
                 'bookingAppointments.childrenWithTrashed',
-                'bookingAppointments.children'
+                'bookingAppointments.children',
             ])
             ->findOrFail($booking->id);
 
@@ -67,11 +82,17 @@ class BookingController extends Controller
         return Inertia::render('Booking/Show', [
             'booking' => $booking,
             'kinkships' => $kinkships,
+            'can' => [
+                'update' => Auth::user()->can('update', $booking),
+                'delete' => Auth::user()->can('delete', $booking),
+            ],
         ]);
     }
 
     public function store(CreateBookingRequest $request, BookingService $service)
     {
+        $this->authorize('create', Booking::class);
+
         $request->merge(['booking' => ['tutor_id' => (int) $request->user()->tutor_id] + (array) $request->input('booking', [])]);
 
         $booking = $service->create($request->validated());
@@ -81,6 +102,8 @@ class BookingController extends Controller
 
     public function edit(Booking $booking): Response
     {
+        $this->authorize('update', $booking);
+
         $kinkships = array_map(fn ($c) => $c->value, KinkshipEnum::cases());
 
         $booking->load(['tutor.children', 'tutor.addresses', 'bookingAppointments.children', 'bookingAppointments.addresses']);
@@ -100,6 +123,8 @@ class BookingController extends Controller
 
     public function update(UpdateBookingRequest $request, Booking $booking, BookingService $service)
     {
+        $this->authorize('update', $booking);
+
         $service->update($booking, $request->validated());
 
         return redirect()
@@ -109,6 +134,8 @@ class BookingController extends Controller
 
     public function destroy(Booking $booking, BookingService $service)
     {
+        $this->authorize('delete', $booking);
+
         try {
             $service->delete($booking);
 

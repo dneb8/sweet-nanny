@@ -15,10 +15,15 @@ import EditAppointmentDatesModal from './components/modals/EditAppointmentDatesM
 import EditAppointmentAddressModal from './components/modals/EditAppointmentAddressModal.vue'
 import EditAppointmentChildrenModal from './components/modals/EditAppointmentChildrenModal.vue'
 import ConfirmUnassignModal from './components/modals/ConfirmUnassignModal.vue'
+import DeleteModal from '@/components/common/DeleteModal.vue'
 
 const props = defineProps<{ 
   booking: Booking
   kinkships: string[]
+  can?: {
+    update?: boolean
+    delete?: boolean
+  }
 }>()
 
 const v = useBookingView(props.booking)
@@ -45,6 +50,24 @@ const hasAnyRequirements = computed(() => {
   const cs = v.careers?.() ?? []
   const ks = v.courses?.() ?? []
   return qs.length || cs.length || ks.length
+})
+
+// Check if any appointment has a nanny assigned
+const hasAnyAppointmentWithNanny = computed(() => {
+  return v.appointments().some(a => a.nanny_id !== null)
+})
+
+// Check if any appointment is pending
+const hasPendingAppointments = computed(() => {
+  return v.appointments().some(a => a.status === 'pending')
+})
+
+// Delete modal message
+const deleteMessage = computed(() => {
+  if (hasPendingAppointments.value) {
+    return 'Este servicio tiene citas pendientes con niñeras asignadas. Al eliminarlo, se cancelarán todas las citas. ¿Deseas continuar?'
+  }
+  return '¿Estás seguro de que deseas eliminar este servicio? Esta acción no se puede deshacer.'
 })
 
 // Get children for selected appointment
@@ -139,6 +162,7 @@ function getEditDisabledReason(appointment: BookingAppointment): string {
           </div>
           <div class="flex gap-1.5">
             <Button
+              v-if="props.can?.update"
               size="sm" variant="ghost"
               :class="`${base} hover:w-28 border border-sky-200/80 dark:border-sky-500/10 bg-sky-100/30 hover:bg-sky-100/50 dark:bg-sky-800/10 dark:hover:bg-sky-900/20 text-sky-700 dark:text-sky-200`"
               @click="v.goEdit"
@@ -147,8 +171,17 @@ function getEditDisabledReason(appointment: BookingAppointment): string {
               <Icon icon="lucide:edit-3" class="h-4 w-4 shrink-0" />
               <span :class="label">Editar</span>
             </Button>
+            <div 
+              v-else-if="hasAnyAppointmentWithNanny"
+              class="text-xs text-muted-foreground px-3 py-2 rounded-lg bg-amber-50/50 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-800/40"
+              title="No se puede editar porque al menos un appointment tiene niñera asignada"
+            >
+              <Icon icon="lucide:info" class="h-3 w-3 inline-block mr-1" />
+              <span class="hidden sm:inline">No editable - tiene niñera asignada</span>
+            </div>
 
             <Button
+              v-if="props.can?.delete"
               size="sm" variant="secondary"
               :class="`${base} hover:w-32 border border-rose-300/60 dark:border-rose-800/40 bg-rose-50/40 hover:bg-rose-200/60 dark:bg-rose-900/20 dark:hover:bg-rose-900/30 text-rose-700 dark:text-rose-200`"
               @click="v.askDelete"
@@ -510,6 +543,15 @@ function getEditDisabledReason(appointment: BookingAppointment): string {
       :show="showConfirmModal"
       @close="closeConfirmModal"
       @confirm="confirmUnassign"
+    />
+
+    <!-- Delete Modal -->
+    <DeleteModal
+      :show="v.showDeleteModal.value"
+      :message="deleteMessage"
+      :onConfirm="v.confirmDelete"
+      :onCancel="() => v.showDeleteModal.value = false"
+      @update:show="(val) => v.showDeleteModal.value = val"
     />
   </div>
 </template>

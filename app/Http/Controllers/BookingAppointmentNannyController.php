@@ -10,6 +10,7 @@ use App\Enums\Nanny\QualityEnum;
 use App\Models\Booking;
 use App\Models\BookingAppointment;
 use App\Models\Nanny;
+use App\Notifications\NannyAssigned;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
@@ -79,12 +80,12 @@ class BookingAppointmentNannyController extends Controller
         $top3 = $randomCount > 0 ? $availableNannies->random($randomCount) : collect([]);
 
         return Inertia::render('BookingAppointment/ChooseNanny', [
-            'booking'      => $booking->load(['tutor.user']),
-            'appointment'  => $appointment->load(['addresses', 'children']),
-            'top3Nannies'  => $top3->map(fn ($nanny) => $this->formatNannyData($nanny)),
-            'qualities'    => QualityEnum::labels(),
-            'careers'      => NameCareerEnum::labels(),
-            'courseNames'  => CourseNameEnum::labels(),
+            'booking' => $booking->load(['tutor.user']),
+            'appointment' => $appointment->load(['addresses', 'children']),
+            'top3Nannies' => $top3->map(fn ($nanny) => $this->formatNannyData($nanny)),
+            'qualities' => QualityEnum::labels(),
+            'careers' => NameCareerEnum::labels(),
+            'courseNames' => CourseNameEnum::labels(),
         ]);
     }
 
@@ -169,6 +170,12 @@ class BookingAppointmentNannyController extends Controller
         $appointment->nanny_id = $nanny->id;
         $appointment->status = StatusEnum::PENDING->value;
         $appointment->save();
+
+        // Send notification to nanny
+        $nanny->loadMissing('user');
+        if ($nanny->user) {
+            $nanny->user->notify(new NannyAssigned($appointment));
+        }
 
         return redirect()
             ->route('bookings.show', $booking->id)
