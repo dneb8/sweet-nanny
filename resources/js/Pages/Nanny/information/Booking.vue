@@ -1,44 +1,40 @@
 <script setup lang="ts">
-import type { Nanny } from "@/types/Nanny"
-import { ref, computed, Ref } from "vue"
+import { ref, computed } from "vue"
 import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Icon } from "@iconify/vue"
 import { parseDateTime, type DateValue } from "@internationalized/date"
 
+import type { BookingAppointment } from '@/types/BookingAppointment'
+import { Nanny } from "@/types/Nanny"
+
 const props = defineProps<{
   nanny: Nanny
-  isOwner: boolean
+  isOwner?: boolean
 }>()
 
-// Paginación
-const currentPage = ref(1)
-const pageSize = 5
+const services = computed<BookingAppointment[]>(() => props.nanny?.booking_appointments ?? [])
 
-const totalPages = computed(() => {
-  return Math.ceil((props.nanny.booking_appointments?.length ?? 0) / pageSize)
-})
-
-const paginatedServices = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return props.nanny.booking_appointments?.slice(start, start + pageSize) ?? []
-})
-
-// Servicio seleccionado → mostrará calendario
 const selectedServiceId = ref<number | null>(null)
-const selectedDate: Ref<DateValue | null> = ref(null)
+const selectedDate = ref<DateValue | null>(null)
 const expandedService = ref<number | null>(null)
 
-function selectService(service: any) {
-  selectedServiceId.value = service.id
-  expandedService.value = service.id
-  selectedDate.value = parseDateTime(
-    service.start_date.replace(" ", "T")
-  ) as DateValue
+function toDateValue(dateTime: string | null | undefined): DateValue | null {
+  if (!dateTime) return null
+  // backend viene "YYYY-MM-DD HH:mm:ss" → Calendar pide "YYYY-MM-DDTHH:mm:ss"
+  try {
+    return parseDateTime(dateTime.replace(" ", "T")) as DateValue
+  } catch {
+    return null
+  }
 }
 
-// Mapear estatus a colores
+function selectService(service: BookingAppointment) {
+  selectedServiceId.value = service.id
+  expandedService.value = service.id
+  selectedDate.value = toDateValue(service.start_date)
+}
+
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-500",
   unpaid: "bg-rose-500",
@@ -48,7 +44,7 @@ const statusColors: Record<string, string> = {
 </script>
 
 <template>
-  <Card class="bg-transparent border-none shadow-sm">
+  <Card class="bg-white/10 border-none shadow-sm">
     <CardHeader>
       <CardTitle class="flex items-center gap-2">
         <Icon icon="lucide:calendar" />
@@ -57,8 +53,7 @@ const statusColors: Record<string, string> = {
     </CardHeader>
 
     <CardContent>
-      <div v-if="nanny.booking_appointments?.length">
-        <!-- Layout responsivo -->
+      <div v-if="services.length">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <!-- Calendario -->
           <div class="flex justify-center">
@@ -81,69 +76,39 @@ const statusColors: Record<string, string> = {
 
           <!-- Lista de servicios -->
           <div class="space-y-3 lg:col-span-2">
-              <div
-                v-for="service in paginatedServices"
-                :key="service.id"
-                class="p-3 border rounded-lg cursor-pointer transition hover:bg-muted/40"
-                @click="selectService(service)"
-              >
-                <div class="flex items-start gap-3">
-                  <div
-                    class="size-3 rounded-full mt-1.5"
-                    :class="statusColors[service.status] ?? 'bg-gray-400'"
-                  ></div>
-                  <div class="flex-1">
-                    <!-- Básico -->
-                    <div class="font-semibold">
-                      Servicio #{{ service.id }}
-                    </div>
-                    <div class="text-xs text-muted-foreground">
-                      {{ service.start_date }} → {{ service.end_date }}
-                    </div>
-                    <div class="text-xs">
-                      Estado: <span class="capitalize">{{ service.status }}</span>
-                    </div>
+            <div
+              v-for="service in services"
+              :key="service.id"
+              class="p-3 border rounded-lg cursor-pointer transition hover:bg-muted/40"
+              @click="selectService(service)"
+            >
+              <div class="flex items-start gap-3">
+                <div
+                  class="size-3 rounded-full mt-1.5"
+                  :class="statusColors[service.status] ?? 'bg-gray-400'"
+                />
+                <div class="flex-1">
+                  <div class="font-semibold">Servicio #{{ service.id }}</div>
 
-                    <!-- Extra al seleccionar -->
-                    <Transition name="expand">
-                      <div
-                        v-if="expandedService === service.id"
-                        class="mt-2 space-y-1 text-sm"
-                      >
-                        <div class="text-muted-foreground">
-                          {{ service.booking?.description ?? "Sin descripción" }}
-                        </div>
-                        <div>Costo: ${{ service.total_cost }}</div>
-                      </div>
-                    </Transition>
+                  <div class="text-xs text-muted-foreground">
+                    {{ service.start_date }} → {{ service.end_date }}
                   </div>
+
+                  <div class="text-xs">
+                    Estado: <span class="capitalize">{{ service.status }}</span>
+                  </div>
+
+                  <Transition name="expand">
+                    <div v-if="expandedService === service.id" class="mt-2 space-y-1 text-sm">
+                      <div class="text-muted-foreground">
+                        {{ service.booking?.description ?? "Sin descripción" }}
+                      </div>
+                    </div>
+                  </Transition>
                 </div>
               </div>
-
-            <!-- Paginación -->
-            <div class="flex justify-between items-center mt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                :disabled="currentPage === 1"
-                @click="currentPage--"
-              >
-                Anterior
-              </Button>
-
-              <span class="text-sm text-muted-foreground">
-                Página {{ currentPage }} de {{ totalPages }}
-              </span>
-
-              <Button
-                variant="outline"
-                size="sm"
-                :disabled="currentPage === totalPages"
-                @click="currentPage++"
-              >
-                Siguiente
-              </Button>
             </div>
+
           </div>
         </div>
       </div>
@@ -156,38 +121,3 @@ const statusColors: Record<string, string> = {
     </CardContent>
   </Card>
 </template>
-
-<style scoped>
-/* Transiciones */
-.fade-slide-enter-active,
-.fade-slide-leave-active {
-  transition: all 0.3s ease;
-}
-.fade-slide-enter-from {
-  opacity: 0;
-  transform: translateY(10px);
-}
-.fade-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.expand-enter-active,
-.expand-leave-active {
-  transition: all 0.25s ease;
-}
-.expand-enter-from,
-.expand-leave-to {
-  opacity: 0;
-  max-height: 0;
-}
-.expand-enter-to,
-.expand-leave-from {
-  opacity: 1;
-  max-height: 200px;
-}
-
-.list-move {
-  transition: transform 0.3s ease;
-}
-</style>

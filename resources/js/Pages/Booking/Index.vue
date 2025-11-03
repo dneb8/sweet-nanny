@@ -23,7 +23,6 @@ defineProps<{
             </Button>
         </Link>
     </div>
-
     <BookingTable :resource="bookings" />
 </template>
 

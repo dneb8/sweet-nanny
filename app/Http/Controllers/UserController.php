@@ -3,22 +3,28 @@
 namespace App\Http\Controllers;
 
 use App\Enums\User\RoleEnum;
+use App\Http\Requests\UpdateAvatarRequest;
 use App\Http\Requests\User\CreateUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
+use App\Http\Traits\HandlesAvatarValidation;
 use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Gate;
 
 class UserController extends Controller
 {
+    use HandlesAvatarValidation;
     /**
      * Redirige al listado de usuarios
      */
     public function index(UserService $userService): Response
     {
-        // Gate::authorize('viewAny', User::class);
+        Gate::authorize('viewAny', User::class);
 
         $roles = array_map(fn ($role) => $role->value, RoleEnum::cases());
 
@@ -35,7 +41,7 @@ class UserController extends Controller
      */
     public function create(): Response
     {
-        // Gate::authorize('create', User::class);
+        Gate::authorize('create', User::class);
         $roles = RoleEnum::cases();
 
         return Inertia::render('User/Create', [
@@ -49,6 +55,8 @@ class UserController extends Controller
      */
     public function store(UserService $userService, CreateUserRequest $request): RedirectResponse
     {
+        Gate::authorize('create', User::class);
+        
         $user = $userService->createUser($request);
 
         if ($user->hasRole(RoleEnum::NANNY->value)) {
@@ -79,7 +87,7 @@ class UserController extends Controller
      */
     public function edit(User $user): Response
     {
-        // Gate::authorize('update', $user);
+        Gate::authorize('update', $user);
 
         return Inertia::render('User/Edit', [
             'user' => $user->load(['roles']),
@@ -92,7 +100,7 @@ class UserController extends Controller
      */
     public function update(UserService $userService, UpdateUserRequest $request, User $user): RedirectResponse
     {
-        // Gate::authorize('update', $user);
+        Gate::authorize('update', $user);
 
         $userService->updateUser($user, $request);
 
@@ -109,6 +117,8 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
+        Gate::authorize('viewAny', User::class);
+        
         if ($user->hasRole(RoleEnum::NANNY->value)) {
             return redirect()->route('nannies.show', $user->nanny);
         }
@@ -127,7 +137,7 @@ class UserController extends Controller
      */
     public function destroy(User $user): RedirectResponse
     {
-        // Gate::authorize('delete', $user);
+        Gate::authorize('delete', $user);
 
         User::destroy($user->id);
 
@@ -137,5 +147,56 @@ class UserController extends Controller
                 'description' => 'El usuario ha sido eliminado correctamente.',
             ],
         ]);
+    }
+
+    /**
+     * Update a user's avatar image.
+     * Allows the user themselves or an admin to upload an avatar.
+     */
+    public function updateAvatar(Request $request, User $user): RedirectResponse
+    {
+        // Authorization: only the user themselves or admin can update avatar
+        if (Auth::id() !== $user->id && ! Auth::user()?->hasRole('admin')) {
+            abort(403, 'No tienes permiso para actualizar el avatar de este usuario.');
+        }
+
+        // Validate the avatar
+        $request->validate([
+            'avatar' => [
+                'required',
+                'image',
+                'mimes:jpg,jpeg,png',
+                'max:4096', // 4MB in KB
+            ],
+        ]);
+
+        // Save the image immediately (collection 'images' on disk 's3')
+        $user->addMediaFromRequest('avatar')
+            ->withCustomProperties([
+                'status' => 'pending',
+                'note' => 'En validación',
+            ])
+            ->toMediaCollection('images', 's3');
+
+        // Trigger validation if needed
+        $this->kickoffAvatarValidationIfNeeded($user);
+
+        return redirect()->back()->with('info', 'Tu imagen se subió. Te notificaremos cuando esté validada.');
+    }
+
+    /**
+     * Delete a user's avatar image.
+     * Allows the user themselves or an admin to delete an avatar.
+     */
+    public function deleteAvatar(Request $request, User $user): RedirectResponse
+    {
+        // Authorization: only the user themselves or admin can delete avatar
+        if (Auth::id() !== $user->id && ! Auth::user()?->hasRole('admin')) {
+            abort(403, 'No tienes permiso para eliminar el avatar de este usuario.');
+        }
+
+        $user->clearMediaCollection('images');
+
+        return redirect()->back()->with('success', 'Foto de perfil eliminada correctamente.');
     }
 }

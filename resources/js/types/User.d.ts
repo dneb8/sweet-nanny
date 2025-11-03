@@ -1,6 +1,7 @@
 import Nanny from "./Nanny";
 import { Rol } from "./Rol";
 export interface User {
+  id: number;
   ulid: string;
   name: string;
   surnames: string;

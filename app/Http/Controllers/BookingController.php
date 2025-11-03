@@ -12,6 +12,7 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Services\BookingService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 use Throwable;
@@ -27,6 +28,8 @@ class BookingController extends Controller
 
     public function create(): Response
     {
+        Gate::authorize('create', Booking::class);
+
         $user = User::with([
             'tutor' => fn ($q) => $q->select('id', 'user_id')->with([
                 'children',
@@ -48,18 +51,39 @@ class BookingController extends Controller
 
     public function show(Booking $booking, BookingStatusService $statusService): Response
     {
+        Gate::authorize('view', $booking);
+
         $booking = Booking::useWritePdo()
-            ->with(['tutor.user', 'address', 'bookingAppointments.nanny', 'childrenWithTrashed', 'children'])
+            ->with([
+                'tutor.user',
+                'tutor.children',
+                'tutor.addresses',
+                'bookingAppointments.nanny.user',
+                'bookingAppointments.addresses',
+                'bookingAppointments.childrenWithTrashed',
+                'bookingAppointments.children',
+            ])
             ->findOrFail($booking->id);
 
         // Actualizar estado basado en horarios de citas
         $statusService->updateStatus($booking);
 
-        return Inertia::render('Booking/Show', ['booking' => $booking]);
+        $kinkships = array_map(fn ($c) => $c->value, KinkshipEnum::cases());
+
+        return Inertia::render('Booking/Show', [
+            'booking' => $booking,
+            'kinkships' => $kinkships,
+            'can' => [
+                'update' => Auth::user()->can('update', $booking),
+                'delete' => Auth::user()->can('delete', $booking),
+            ],
+        ]);
     }
 
     public function store(CreateBookingRequest $request, BookingService $service)
     {
+        Gate::authorize('create', Booking::class);
+
         $request->merge(['booking' => ['tutor_id' => (int) $request->user()->tutor_id] + (array) $request->input('booking', [])]);
 
         $booking = $service->create($request->validated());
@@ -69,9 +93,11 @@ class BookingController extends Controller
 
     public function edit(Booking $booking): Response
     {
+        Gate::authorize('update', $booking);
+
         $kinkships = array_map(fn ($c) => $c->value, KinkshipEnum::cases());
 
-        $booking->load(['tutor.children', 'tutor.addresses', 'children', 'bookingAppointments', 'address']);
+        $booking->load(['tutor.children', 'tutor.addresses', 'bookingAppointments.children', 'bookingAppointments.addresses']);
 
         return Inertia::render('Booking/Edit', [
             'booking' => $booking,
@@ -88,6 +114,8 @@ class BookingController extends Controller
 
     public function update(UpdateBookingRequest $request, Booking $booking, BookingService $service)
     {
+        Gate::authorize('update', $booking);
+
         $service->update($booking, $request->validated());
 
         return redirect()
@@ -97,6 +125,8 @@ class BookingController extends Controller
 
     public function destroy(Booking $booking, BookingService $service)
     {
+        Gate::authorize('delete', $booking);
+
         try {
             $service->delete($booking);
 

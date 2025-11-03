@@ -29,6 +29,11 @@ class Tutor extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class);
+    }
+
     public function children()
     {
         return $this->hasMany(Child::class);
@@ -38,6 +43,11 @@ class Tutor extends Model
     public function addresses()
     {
         return $this->morphMany(Address::class, 'addressable');
+    }
+
+    public function reviews()
+    {
+        return $this->morphMany(Review::class, 'reviewable');
     }
 
     public function uniqueIds()
