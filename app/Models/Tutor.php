@@ -66,11 +66,6 @@ class Tutor extends Model
         return 'ulid';
     }
 
-    public function reviews()
-    {
-        return $this->morphMany(Review::class, 'reviewable');
-    }
-
     /**
      * Get avatar URL from related User
      */
