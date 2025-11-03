@@ -12,6 +12,7 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Services\BookingService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 use Throwable;
@@ -20,7 +21,7 @@ class BookingController extends Controller
 {
     public function index(): Response
     {
-        $this->authorize('viewAny', Booking::class);
+        Gate::authorize('viewAny', Booking::class);
 
         $user = Auth::user();
         $bookingsQuery = Booking::with(['tutor.user', 'bookingAppointments.addresses', 'bookingAppointments.children'])
@@ -40,7 +41,7 @@ class BookingController extends Controller
 
     public function create(): Response
     {
-        $this->authorize('create', Booking::class);
+        Gate::authorize('create', Booking::class);
 
         $user = User::with([
             'tutor' => fn ($q) => $q->select('id', 'user_id')->with([
@@ -63,7 +64,7 @@ class BookingController extends Controller
 
     public function show(Booking $booking): Response
     {
-        $this->authorize('view', $booking);
+        Gate::authorize('view', $booking);
 
         $booking = Booking::useWritePdo()
             ->with([
@@ -91,7 +92,7 @@ class BookingController extends Controller
 
     public function store(CreateBookingRequest $request, BookingService $service)
     {
-        $this->authorize('create', Booking::class);
+        Gate::authorize('create', Booking::class);
 
         $request->merge(['booking' => ['tutor_id' => (int) $request->user()->tutor_id] + (array) $request->input('booking', [])]);
 
@@ -102,7 +103,7 @@ class BookingController extends Controller
 
     public function edit(Booking $booking): Response
     {
-        $this->authorize('update', $booking);
+        Gate::authorize('update', $booking);
 
         $kinkships = array_map(fn ($c) => $c->value, KinkshipEnum::cases());
 
@@ -123,7 +124,7 @@ class BookingController extends Controller
 
     public function update(UpdateBookingRequest $request, Booking $booking, BookingService $service)
     {
-        $this->authorize('update', $booking);
+        Gate::authorize('update', $booking);
 
         $service->update($booking, $request->validated());
 
@@ -134,7 +135,7 @@ class BookingController extends Controller
 
     public function destroy(Booking $booking, BookingService $service)
     {
-        $this->authorize('delete', $booking);
+        Gate::authorize('delete', $booking);
 
         try {
             $service->delete($booking);
