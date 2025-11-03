@@ -75,7 +75,6 @@ class BookingAppointmentController extends Controller
      */
     public function updateAddress(Request $request, Booking $booking, BookingAppointment $appointment)
     {
-        Gate::authorize('update', $appointment);
 
         $validator = Validator::make($request->all(), [
             'address_id' => ['required', 'integer', 'exists:addresses,id'],
@@ -108,7 +107,6 @@ class BookingAppointmentController extends Controller
      */
     public function updateChildren(Request $request, Booking $booking, BookingAppointment $appointment): RedirectResponse
     {
-        Gate::authorize('update', $appointment);
 
         $validator = Validator::make($request->all(), [
             'child_ids' => ['required', 'array', 'min:1', 'max:4'],
