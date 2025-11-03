@@ -44,8 +44,6 @@ class BookingAppointmentController extends Controller
             'duration' => ['required', 'integer', 'min:1', 'max:8'],
         ]);
 
-        dd($request->all());
-
         if ($validator->fails()) {
             return back()
                 ->withErrors($validator)
