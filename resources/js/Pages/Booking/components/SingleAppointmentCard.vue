@@ -124,8 +124,8 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
               {{ safeFmtReadable(props.appointment.start_date) }}
             </h3>
             <div class="flex items-center gap-2">
-              <Badge :class="v.statusBadge(props.booking.status ?? 'pending')" class="px-2 py-0.5 text-[11px]">
-                {{ props.appointment.status ?? 'Pendiente' }}
+              <Badge :class="v.statusBadge(props.booking.status)" class="px-2 py-0.5 text-[11px]">
+                {{ props.appointment.status }}
               </Badge>
             </div>
           </div>
@@ -272,11 +272,12 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
         <div v-else class="space-y-3 text-[13px]">
           <div class="space-y-1.5">
             <p class="font-medium">
-              {{ appointmentAddress.street }}
+                {{ appointmentAddress.name }}
               <span v-if="appointmentAddress.internal_number">, Int. {{ appointmentAddress.internal_number }}</span>
+              
             </p>
-            <p class="text-muted-foreground">{{ appointmentAddress.neighborhood }}</p>
-            <p class="text-muted-foreground">{{ appointmentAddress.postal_code }}</p>
+            <p class="text-muted-foreground">{{ appointmentAddress.street }} {{ appointmentAddress.external_number }},{{ appointmentAddress.neighborhood }}</p>
+            <p class="text-muted-foreground">CP: {{ appointmentAddress.postal_code }}</p>
             <Badge v-if="appointmentAddress.type" variant="secondary" class="mt-1 px-2 py-0.5 text-[11px]">
               {{ appointmentAddress.type }}
             </Badge>
@@ -286,7 +287,7 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
             :latitude="+(appointmentAddress?.latitude ?? 19.704)"
             :longitude="+(appointmentAddress?.longitude ?? -103.344)"
             :zoom="16"
-            height="240px"
+            height="300px"
             :showMarker="true"
           />
         </div>

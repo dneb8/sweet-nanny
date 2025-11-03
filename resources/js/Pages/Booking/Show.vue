@@ -14,11 +14,8 @@ import EditAppointmentDatesModal from './components/modals/EditAppointmentDatesM
 import EditAppointmentAddressModal from './components/modals/EditAppointmentAddressModal.vue'
 import EditAppointmentChildrenModal from './components/modals/EditAppointmentChildrenModal.vue'
 import ConfirmUnassignModal from './components/modals/ConfirmUnassignModal.vue'
-<<<<<<< Updated upstream
 import DeleteModal from '@/components/common/DeleteModal.vue'
-=======
 import SingleAppointmentCard from './components/SingleAppointmentCard.vue'
->>>>>>> Stashed changes
 
 const props = defineProps<{ 
   booking: Booking
@@ -69,7 +66,6 @@ const hasAnyRequirements = computed(() => {
   return qs.length || cs.length || ks.length
 })
 
-<<<<<<< Updated upstream
 // Check if any appointment has a nanny assigned
 const hasAnyAppointmentWithNanny = computed(() => {
   return v.appointments().some(a => a.nanny_id !== null)
@@ -88,10 +84,6 @@ const deleteMessage = computed(() => {
   return '¿Estás seguro de que deseas eliminar este servicio? Esta acción no se puede deshacer.'
 })
 
-// Get children for selected appointment
-const appointmentChildren = computed(() => selectedAppointment.value?.children ?? [])
-const appointmentAddress = computed(() => selectedAppointment.value?.addresses?.[0] ?? null)
-=======
 // Helpers de fecha en TZ MX
 const MX_TZ = 'America/Mexico_City'
 function fmtDateTZ(iso: string) {
@@ -105,7 +97,6 @@ function fmtReadableDateTime(iso: string) {
   const t = fmtTimeTZ(iso)
   return `${d} · ${t} h`
 }
->>>>>>> Stashed changes
 
 // Modals
 const showDatesModal = ref(false)
