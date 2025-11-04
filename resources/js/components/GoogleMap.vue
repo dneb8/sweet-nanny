@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch, computed, nextTick } from "vue"
 
-// Declara el objeto global 'google' para TypeScript
+// --- Declaraciones globales ---
 declare global {
   interface Window {
     google: typeof google
@@ -10,14 +10,13 @@ declare global {
 }
 declare const google: any
 
+// --- Props ---
 interface Props {
   latitude: number | string | null | undefined
   longitude: number | string | null | undefined
   zoom?: number
   height?: string
   showMarker?: boolean
-
-  // Opciones del botón "Ver en Google Maps"
   showOpenButton?: boolean
   buttonLabel?: string
   openInNewTab?: boolean
@@ -31,13 +30,15 @@ const props = withDefaults(defineProps<Props>(), {
   openInNewTab: true,
 })
 
+// --- Refs ---
+const rootEl = ref<HTMLDivElement | null>(null)
 const mapEl = ref<HTMLDivElement | null>(null)
 const configError = ref<string | null>(null)
 let map: any = null
 let marker: any = null
 let scriptEl: HTMLScriptElement | null = null
 
-// --- Helpers de coordenadas ---
+// --- Helpers ---
 function toNumber(value: unknown): number {
   const n =
     typeof value === "string" ? parseFloat(value) :
@@ -54,40 +55,33 @@ const latNum = computed(() => toNumber(props.latitude))
 const lngNum = computed(() => toNumber(props.longitude))
 const hasValidCoords = computed(() => isFiniteLatLng(latNum.value, lngNum.value))
 
-// URL para abrir en Google Maps
 const googleMapsUrl = computed(() => {
   if (!hasValidCoords.value) return "#"
   return `https://www.google.com/maps/search/?api=1&query=${latNum.value},${lngNum.value}`
 })
 
-// Lee la API key y map ID desde variables de entorno (Vite expone las que empiezan con VITE_)
+// --- ENV ---
 const GMAPS_API_KEY = (import.meta.env.VITE_GMAPS || import.meta.env.VITE_GMAPS_API_KEY) as string | undefined
 const GMAPS_MAP_ID = import.meta.env.VITE_GMAPS_MAP_ID as string | undefined
 
-// Validate configuration on load
 function validateConfig(): string | null {
-  if (!GMAPS_API_KEY) {
-    return "Falta configurar VITE_GMAPS_API_KEY en variables de entorno"
-  }
-  if (!GMAPS_MAP_ID) {
-    return "Falta configurar VITE_GMAPS_MAP_ID en variables de entorno. Es requerido para usar Advanced Markers."
-  }
+  if (!GMAPS_API_KEY) return "Falta configurar VITE_GMAPS_API_KEY en .env"
+  if (!GMAPS_MAP_ID) return "Falta configurar VITE_GMAPS_MAP_ID (requerido para AdvancedMarkers)"
   return null
 }
 
-// Helper functions for marker operations (Advanced Markers only)
+// --- Marker helpers ---
 function createMarker(position: google.maps.LatLngLiteral, mapInstance: any) {
   return new google.maps.marker.AdvancedMarkerElement({ position, map: mapInstance })
 }
-
 function updateMarkerPosition(markerInstance: any, position: google.maps.LatLngLiteral) {
   markerInstance.position = position
 }
-
 function removeMarker(markerInstance: any) {
   markerInstance.map = null
 }
 
+// --- Cargar Google Maps SDK ---
 function loadGoogleMaps(apiKey: string, mapId: string): Promise<void> {
   if ((window as any).google?.maps) return Promise.resolve()
 
@@ -102,101 +96,156 @@ function loadGoogleMaps(apiKey: string, mapId: string): Promise<void> {
     scriptEl.async = true
     scriptEl.defer = true
     scriptEl.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&map_ids=${mapId}&callback=initMapReady&loading=async&libraries=marker`
-    scriptEl.onerror = (e) => {
-      console.error("[GoogleMaps] Error cargando el SDK:", e)
-      reject(e)
-    }
+    scriptEl.onerror = (e) => reject(e)
     document.head.appendChild(scriptEl)
   })
 }
 
+// --- Inicializar mapa ---
 async function initMap() {
   if (!mapEl.value) return
-  
-  // Wait for next tick to ensure DOM is ready
   await nextTick()
-  
+
   const center = hasValidCoords.value
     ? { lat: latNum.value, lng: lngNum.value }
-    : { lat: 19.704, lng: -103.344 } // fallback visual
+    : { lat: 19.704, lng: -103.344 }
 
-  // Configure map options with required mapId for AdvancedMarkerElement
   const mapConfig: google.maps.MapOptions = {
     center,
     zoom: props.zoom,
     mapTypeControl: false,
     streetViewControl: false,
     fullscreenControl: true,
-    mapId: GMAPS_MAP_ID, // Required for AdvancedMarkerElement
+    mapId: GMAPS_MAP_ID,
   }
 
   map = new google.maps.Map(mapEl.value, mapConfig)
-
-  // Trigger resize event to ensure proper rendering on mobile
-  google.maps.event.addListenerOnce(map, 'idle', () => {
-    google.maps.event.trigger(map, 'resize')
+  google.maps.event.addListenerOnce(map, "idle", () => {
+    google.maps.event.trigger(map, "resize")
     map.setCenter(center)
   })
 
-  // Only create markers if we have valid coordinates
   if (props.showMarker && hasValidCoords.value) {
     marker = createMarker(center, map)
   }
 }
 
+// --- Actualizar posición ---
 function updatePosition() {
-  if (!map) return
-  if (!hasValidCoords.value) return
+  if (!map || !hasValidCoords.value) return
   const pos = { lat: latNum.value, lng: lngNum.value }
   map.setCenter(pos)
   if (typeof props.zoom === "number") map.setZoom(props.zoom)
   if (props.showMarker) {
-    if (!marker) {
-      marker = createMarker(pos, map)
-    } else {
-      updateMarkerPosition(marker, pos)
-    }
+    if (!marker) marker = createMarker(pos, map)
+    else updateMarkerPosition(marker, pos)
   } else if (marker) {
     removeMarker(marker)
     marker = null
   }
 }
 
+// --- Resize / rebuild ---
+let ro: ResizeObserver | null = null
+let resizeTimer: number | null = null
+
+function hardRebuildMap() {
+  if (!mapEl.value) return
+  const center = hasValidCoords.value
+    ? { lat: latNum.value, lng: lngNum.value }
+    : map?.getCenter?.() ?? { lat: 19.704, lng: -103.344 }
+  if (marker) { removeMarker(marker); marker = null }
+  map = null
+
+  const mapConfig: google.maps.MapOptions = {
+    center,
+    zoom: props.zoom,
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: true,
+    mapId: GMAPS_MAP_ID,
+  }
+  map = new google.maps.Map(mapEl.value, mapConfig)
+  if (props.showMarker && hasValidCoords.value) {
+    marker = createMarker(center, map)
+  }
+}
+
+function softResize() {
+  if (!map || !mapEl.value) return
+  google.maps.event.trigger(map, "resize")
+  const pos = hasValidCoords.value
+    ? { lat: latNum.value, lng: lngNum.value }
+    : map.getCenter()
+  if (pos) map.setCenter(pos)
+}
+
+function scheduleResize(hard = false) {
+  if (resizeTimer) window.clearTimeout(resizeTimer)
+  resizeTimer = window.setTimeout(async () => {
+    await nextTick()
+    const rect = mapEl.value?.getBoundingClientRect()
+    if (hard || !rect || rect.width < 80 || rect.height < 80) {
+      hardRebuildMap()
+    } else {
+      softResize()
+    }
+  }, 120)
+}
+
 onMounted(async () => {
-  // Validate configuration first
   const error = validateConfig()
   if (error) {
     configError.value = error
-    console.error("[GoogleMaps]", error)
     return
   }
-  
-  try {
-    await loadGoogleMaps(GMAPS_API_KEY!, GMAPS_MAP_ID!)
-    await initMap()
-  } catch (err) {
-    configError.value = "No se pudo cargar Google Maps. Revisa tu API key y restricciones."
-    console.error("[GoogleMaps] Error al inicializar:", err)
+
+  if (rootEl.value) {
+    rootEl.value.style.height = props.height
+    rootEl.value.style.minHeight = props.height
   }
+
+  await loadGoogleMaps(GMAPS_API_KEY!, GMAPS_MAP_ID!)
+  await initMap()
+
+  // Observers
+  ro = new ResizeObserver(() => scheduleResize(false))
+  if (rootEl.value) ro.observe(rootEl.value)
+
+  window.addEventListener("resize", () => scheduleResize(false))
+  window.addEventListener("orientationchange", () => scheduleResize(true))
+
+  setTimeout(() => scheduleResize(false), 50)
+  setTimeout(() => scheduleResize(false), 250)
 })
 
 onUnmounted(() => {
-  if (marker) {
-    removeMarker(marker)
-    marker = null
-  }
+  window.removeEventListener("resize", () => scheduleResize(false))
+  window.removeEventListener("orientationchange", () => scheduleResize(true))
+  if (ro && rootEl.value) ro.unobserve(rootEl.value)
+  ro = null
+  if (marker) { removeMarker(marker); marker = null }
   map = null
 })
 
 watch(() => [latNum.value, lngNum.value, props.zoom, props.showMarker], () => {
   updatePosition()
 })
+
+// --- Expose manual refresh desde el padre ---
+defineExpose({
+  refresh: () => scheduleResize(false),
+  rebuild: () => scheduleResize(true),
+})
 </script>
 
 <template>
-  <div class="rounded-lg overflow-hidden border border-border" :style="{ height: props.height, minHeight: props.height }">
-    <!-- Configuration Error -->
-    <div v-if="configError" class="flex flex-col items-center justify-center h-full p-4 bg-muted/50 text-center">
+  <div
+    ref="rootEl"
+    class="rounded-lg overflow-hidden border border-border flex flex-col"
+    :style="{ height: props.height, minHeight: props.height }"
+  >
+    <div v-if="configError" class="flex flex-col items-center justify-center flex-1 p-4 bg-muted/50 text-center">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-destructive mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
         <path d="M12 8v4m0 4h.01"/>
@@ -205,10 +254,8 @@ watch(() => [latNum.value, lngNum.value, props.zoom, props.showMarker], () => {
       <p class="text-xs text-muted-foreground">{{ configError }}</p>
     </div>
 
-    <!-- Map Container -->
     <template v-else>
-      <!-- Barra superior con botón -->
-      <div class="flex items-center justify-end gap-2 p-2 border-b border-border bg-background/80 pointer-events-auto">
+      <div class="flex items-center justify-end gap-2 p-2 border-b border-border bg-background/80">
         <slot name="left-actions" />
         <div class="flex-1" />
         <slot name="right-actions" />
@@ -217,8 +264,7 @@ watch(() => [latNum.value, lngNum.value, props.zoom, props.showMarker], () => {
           :href="googleMapsUrl"
           :target="props.openInNewTab ? '_blank' : undefined"
           :rel="props.openInNewTab ? 'noopener noreferrer' : undefined"
-          class="inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-sm border border-input shadow-xs hover:shadow-sm transition disabled:opacity-50 disabled:pointer-events-none"
-          :aria-disabled="!hasValidCoords"
+          class="inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-sm border border-input shadow-xs hover:shadow-sm transition"
           :class="hasValidCoords ? 'cursor-pointer bg-card hover:bg-accent' : 'cursor-not-allowed bg-muted'"
           :tabindex="hasValidCoords ? 0 : -1"
         >
@@ -229,8 +275,7 @@ watch(() => [latNum.value, lngNum.value, props.zoom, props.showMarker], () => {
         </a>
       </div>
 
-      <!-- Contenedor del mapa con altura mínima para móviles -->
-      <div ref="mapEl" class="w-full h-[calc(100%-44px)]" style="touch-action: pan-x pan-y;"></div>
+      <div ref="mapEl" class="w-full flex-1" style="touch-action: pan-x pan-y;"></div>
     </template>
   </div>
 </template>
