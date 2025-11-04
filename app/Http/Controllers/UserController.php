@@ -126,11 +126,11 @@ class UserController extends Controller
         $user->load(['nanny', 'tutor']);
         
         if ($user->hasRole(RoleEnum::NANNY->value) && $user->nanny) {
-            return redirect()->route('nannies.show', $user->nanny->id);
+            return redirect()->route('nannies.show', $user->nanny->ulid);
         }
 
         if ($user->hasRole(RoleEnum::TUTOR->value) && $user->tutor) {
-            return redirect()->route('tutors.show', $user->tutor->id);
+            return redirect()->route('tutors.show', $user->tutor->ulid);
         }
 
         return Inertia::render('User/Show', [

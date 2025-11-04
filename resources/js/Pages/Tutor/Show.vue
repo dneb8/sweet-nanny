@@ -15,6 +15,7 @@ const props = defineProps<{ tutor: Tutor }>();
             <ProfileCard :tutor="props.tutor" />
             <div class="grid md:grid-cols-2 gap-5">
                 <AddressCard :tutor="props.tutor" />
+                <AddressCard :tutor="props.tutor" />
             </div>
         </div>
     </div>
