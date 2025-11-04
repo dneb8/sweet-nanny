@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import DataTable from '@/components/datatable/Main.vue';
 import Column from '@/components/datatable/Column.vue';
 import type { FetcherResponse } from '@/types/FetcherResponse';
@@ -6,10 +7,12 @@ import type { BookingAppointment } from '@/types/BookingAppointment';
 import { BookingAppointmentTableService } from '@/services/bookingAppointmentTableService';
 import BookingAppointmentFiltros from './BookingAppointmentFiltros.vue';
 import BookingAppointmentCard from './BookingAppointmentCard.vue';
+import ReviewFormDialog from '@/Pages/Review/components/ReviewFormDialog.vue';
 import Badge from '@/components/common/Badge.vue';
-import { Users } from 'lucide-vue-next';
+import { Users, Star } from 'lucide-vue-next';
 import { getUserInitials } from '@/utils/getUserInitials';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { router } from '@inertiajs/vue3';
 
 defineProps<{
     resource: FetcherResponse<BookingAppointment>;
@@ -17,6 +20,11 @@ defineProps<{
 
 // Servicio que expone estado + handlers
 const { filtros, visibleColumns, verUsuarioPerfil, verBooking, getStatusColor, getStatusLabel } = new BookingAppointmentTableService();
+
+// Review dialog state
+const reviewDialogOpen = ref(false);
+const selectedTutorId = ref<number | string | null>(null);
+const selectedTutorName = ref<string>('');
 
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-ES', {
@@ -26,6 +34,19 @@ const formatDate = (dateString: string) => {
         hour: '2-digit',
         minute: '2-digit',
     });
+};
+
+const openReviewModal = (appointment: BookingAppointment) => {
+    if (appointment?.booking?.tutor?.id) {
+        selectedTutorId.value = appointment.booking.tutor.id;
+        selectedTutorName.value = `${appointment.booking.tutor.user?.name || ''} ${appointment.booking.tutor.user?.surnames || ''}`.trim();
+        reviewDialogOpen.value = true;
+    }
+};
+
+const handleReviewSaved = () => {
+    // Refresh the page to show updated data
+    router.reload({ only: ['bookingAppointments'] });
 };
 </script>
 
@@ -160,5 +181,33 @@ const formatDate = (dateString: string) => {
                 <span v-else class="text-muted-foreground">Sin asignar</span>
             </template>
         </Column>
+
+        <!-- Columna Acciones -->
+        <Column header="Acciones">
+            <template #body="{ record }">
+                <div class="flex gap-2">
+                    <!-- Calificar tutor (only for completed appointments) -->
+                    <div
+                        v-if="record?.status === 'completed'"
+                        @click="openReviewModal(record)"
+                        class="flex justify-center items-center w-max text-yellow-600 dark:text-yellow-500 hover:text-yellow-600/80 dark:hover:text-yellow-400 hover:cursor-pointer"
+                        title="Calificar tutor"
+                    >
+                        <Star class="w-5 h-5" />
+                    </div>
+                    <span v-else class="text-sm text-muted-foreground">—</span>
+                </div>
+            </template>
+        </Column>
     </DataTable>
+
+    <!-- Review Form Dialog -->
+    <ReviewFormDialog
+        v-model:open="reviewDialogOpen"
+        reviewable-type="tutor"
+        :reviewable-id="selectedTutorId!"
+        :reviewable-name="selectedTutorName"
+        @saved="handleReviewSaved"
+        @close="reviewDialogOpen = false"
+    />
 </template>

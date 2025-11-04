@@ -24,6 +24,7 @@ export class BookingAppointmentTableService {
         'Start Date',
         'End Date',
         'Niñera',
+        'Acciones',
     ]);
 
     public constructor() {
