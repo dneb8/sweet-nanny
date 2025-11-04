@@ -56,46 +56,28 @@ const {
             </template>
         </Column>
 
-        <!-- Columna Tutor -->
-<Column header="Tutor">
-  <template #body="{ record }">
-    <div
-      class="flex items-center gap-3 cursor-pointer group"
-      @click="verUsuarioPerfil(record?.tutor?.user)"
-    >
-      <!-- Avatar -->
-      <Avatar shape="square" size="sm" class="overflow-hidden">
-        <AvatarImage
-          v-if="record?.tutor?.user?.avatar_url"
-          :src="record.tutor.user.avatar_url"
-          :alt="record?.tutor?.user?.name ?? 'avatar'"
-          class="h-8 w-8 object-cover"
-        />
-        <AvatarFallback v-else>
-          {{ getUserInitials(record?.tutor?.user) }}
-        </AvatarFallback>
-      </Avatar>
+        <!-- Columna Tutor (ULID) -->
+        <Column header="Tutor">
+        <template #body="{ record }">
+            <div class="flex items-center gap-3 cursor-pointer group"
+                @click="verUsuarioPerfil({ ...record?.tutor?.user, ulid: record?.tutor?.ulid ?? record?.tutor?.user?.ulid })">
+            <Avatar shape="square" size="sm" class="overflow-hidden">
+                <AvatarImage v-if="record?.tutor?.user?.avatar_url"
+                            :src="record.tutor.user.avatar_url"
+                            :alt="record?.tutor?.user?.name ?? 'avatar'"
+                            class="h-8 w-8 object-cover" />
+                <AvatarFallback v-else>{{ getUserInitials(record?.tutor?.user) }}</AvatarFallback>
+            </Avatar>
 
-      <!-- Nombre (con enlace opcional) -->
-      <div class="min-w-0">
-        <a
-          :href="`/tutors/${record?.tutor?.id}`"
-          class="truncate hover:underline group-hover:text-rose-400 dark:group-hover:text-rose-300"
-          @click.stop
-        >
-          {{ record?.tutor?.user?.name ?? '—' }}
-          {{ record?.tutor?.user?.surnames ?? '' }}
-        </a>
-        <!-- opcional: subtítulo/email -->
-        <!-- <p class="text-xs text-muted-foreground truncate">
-          {{ record?.tutor?.user?.email }}
-        </p> -->
-      </div>
-    </div>
-  </template>
-</Column>
-
-
+            <a :href="`/tutors/${record?.tutor?.ulid ?? record?.tutor?.user?.ulid}`"
+                class="min-w-0 truncate hover:underline group-hover:text-rose-400 dark:group-hover:text-rose-300"
+                @click.stop>
+                {{ record?.tutor?.user?.name ?? '—' }} {{ record?.tutor?.user?.surnames ?? '' }}
+            </a>
+            </div>
+        </template>
+        </Column>
+        
         <!-- Columna Tipo -->
         <Column header="Tipo">
             <template #body="slotProps">
