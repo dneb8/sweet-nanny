@@ -403,7 +403,8 @@ function getEditDisabledReason(appointment: BookingAppointment): string {
                       :latitude="+(appointmentAddress?.latitude ?? 19.704)"
                       :longitude="+(appointmentAddress?.longitude ?? -103.344)"
                       :zoom="16"
-                      height="240px"
+                      class="min-h-[280px] sm:min-h-[320px]"
+                      height="320px"
                       :showMarker="true"
                     />
                   </div>
