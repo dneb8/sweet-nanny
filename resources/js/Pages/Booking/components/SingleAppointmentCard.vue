@@ -165,10 +165,10 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
           </div>
         </div>
 
-        <div v-if="props.appointment.total_cost" class="mb-4">
+        <!-- <div v-if="props.appointment.total_cost" class="mb-4">
           <p class="text-[11px] text-muted-foreground mb-1">Costo total</p>
           <p class="text-xl font-semibold">${{ props.appointment.total_cost }}</p>
-        </div>
+        </div> -->
 
         <!-- Niñera -->
         <div class="pt-4 border-t border-white/20">
