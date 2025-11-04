@@ -30,6 +30,43 @@ class BookingAppointmentController extends Controller
             'bookingAppointments' => $bookingAppointments,
         ]);
     }
+
+    /**
+     * Accept a booking appointment (pending -> confirmed)
+     */
+    public function accept(BookingAppointment $appointment): RedirectResponse
+    {
+        Gate::authorize('view', $appointment);
+
+        if ($appointment->status !== StatusEnum::PENDING->value) {
+            return back()->with('error', 'Solo se pueden aceptar citas en estado pendiente');
+        }
+
+        $appointment->update([
+            'status' => StatusEnum::CONFIRMED->value,
+        ]);
+
+        return back()->with('success', 'Cita aceptada exitosamente');
+    }
+
+    /**
+     * Cancel a booking appointment directly (confirmed -> cancelled)
+     */
+    public function cancelDirect(BookingAppointment $appointment): RedirectResponse
+    {
+        Gate::authorize('view', $appointment);
+
+        if ($appointment->status !== StatusEnum::CONFIRMED->value) {
+            return back()->with('error', 'Solo se pueden cancelar citas en estado confirmado');
+        }
+
+        $appointment->update([
+            'status' => StatusEnum::CANCELLED->value,
+        ]);
+
+        return back()->with('success', 'Cita cancelada exitosamente');
+    }
+
     /**
      * Cancel a booking appointment
      */

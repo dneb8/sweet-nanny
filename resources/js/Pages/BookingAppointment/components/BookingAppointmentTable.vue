@@ -4,22 +4,30 @@ import DataTable from '@/components/datatable/Main.vue';
 import Column from '@/components/datatable/Column.vue';
 import type { FetcherResponse } from '@/types/FetcherResponse';
 import type { BookingAppointment } from '@/types/BookingAppointment';
+import type { Tutor } from '@/types/Tutor';
 import { BookingAppointmentTableService } from '@/services/bookingAppointmentTableService';
 import BookingAppointmentFiltros from './BookingAppointmentFiltros.vue';
 import BookingAppointmentCard from './BookingAppointmentCard.vue';
+import TutorDetailDialog from './TutorDetailDialog.vue';
 import ReviewFormDialog from '@/Pages/Review/components/ReviewFormDialog.vue';
 import Badge from '@/components/common/Badge.vue';
-import { Users, Star } from 'lucide-vue-next';
+import { Users, Star, Check, X } from 'lucide-vue-next';
 import { getUserInitials } from '@/utils/getUserInitials';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { router } from '@inertiajs/vue3';
+import { getBookingStatusBadgeClass, getBookingStatusLabelByString } from '@/enums/booking/status.enum';
+import { getZoneLabel, getZoneBadgeClass } from '@/enums/addresses/zone.enum';
 
 defineProps<{
     resource: FetcherResponse<BookingAppointment>;
 }>();
 
 // Servicio que expone estado + handlers
-const { filtros, visibleColumns, verUsuarioPerfil, verBooking, getStatusColor, getStatusLabel } = new BookingAppointmentTableService();
+const { filtros, visibleColumns, verBooking } = new BookingAppointmentTableService();
+
+// Tutor dialog state
+const tutorDialogOpen = ref(false);
+const selectedTutor = ref<Tutor | null>(null);
 
 // Review dialog state
 const reviewDialogOpen = ref(false);
@@ -31,9 +39,17 @@ const formatDate = (dateString: string) => {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
-        hour: '2-digit',
+        hour: 'numeric',
         minute: '2-digit',
+        hour12: true,
     });
+};
+
+const openTutorDialog = (tutor: Tutor | undefined) => {
+    if (tutor) {
+        selectedTutor.value = tutor;
+        tutorDialogOpen.value = true;
+    }
 };
 
 const openReviewModal = (appointment: BookingAppointment) => {
@@ -41,6 +57,34 @@ const openReviewModal = (appointment: BookingAppointment) => {
         selectedTutorId.value = appointment.booking.tutor.id;
         selectedTutorName.value = `${appointment.booking.tutor.user?.name || ''} ${appointment.booking.tutor.user?.surnames || ''}`.trim();
         reviewDialogOpen.value = true;
+    }
+};
+
+const acceptAppointment = (appointmentId: number) => {
+    router.patch(
+        route('booking-appointments.accept', appointmentId),
+        {},
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                // Optional: show success toast
+            },
+        }
+    );
+};
+
+const cancelAppointment = (appointmentId: number) => {
+    if (confirm('¿Estás seguro de que quieres cancelar esta cita?')) {
+        router.patch(
+            route('booking-appointments.cancel', appointmentId),
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    // Optional: show success toast
+                },
+            }
+        );
     }
 };
 
@@ -72,7 +116,7 @@ const handleReviewSaved = () => {
         <!-- Columna Tutor -->
         <Column header="Tutor">
             <template #body="{ record }">
-                <div class="flex items-center gap-3 cursor-pointer group" @click="verUsuarioPerfil(record?.booking?.tutor?.user)">
+                <div class="flex items-center gap-3 cursor-pointer group" @click="openTutorDialog(record?.booking?.tutor)">
                     <!-- Avatar -->
                     <Avatar shape="square" size="sm" class="overflow-hidden">
                         <AvatarImage
@@ -125,17 +169,25 @@ const handleReviewSaved = () => {
             </template>
         </Column>
 
-        <!-- Columna Dirección (Zona) -->
+        <!-- Columna Zona -->
         <Column header="Zona">
             <template #body="slotProps">
-                <span class="text-sm">{{ slotProps.record?.addresses?.[0]?.zone ?? '—' }}</span>
+                <Badge
+                    v-if="slotProps.record?.addresses?.[0]?.zone"
+                    :label="getZoneLabel(slotProps.record.addresses[0].zone)"
+                    :customClass="getZoneBadgeClass(slotProps.record.addresses[0].zone)"
+                />
+                <span v-else class="text-sm text-muted-foreground">—</span>
             </template>
         </Column>
 
         <!-- Columna Status -->
         <Column header="Status">
             <template #body="slotProps">
-                <Badge :label="getStatusLabel(slotProps.record?.status ?? '')" :customClass="getStatusColor(slotProps.record?.status ?? '')" />
+                <Badge
+                    :label="getBookingStatusLabelByString(slotProps.record?.status ?? '')"
+                    :customClass="getBookingStatusBadgeClass(slotProps.record?.status ?? '')"
+                />
             </template>
         </Column>
 
@@ -186,7 +238,27 @@ const handleReviewSaved = () => {
         <Column header="Acciones">
             <template #body="{ record }">
                 <div class="flex gap-2">
-                    <!-- Calificar tutor (only for completed appointments) -->
+                    <!-- Aceptar (pending → confirmed) -->
+                    <div
+                        v-if="record?.status === 'pending'"
+                        @click="acceptAppointment(record.id)"
+                        class="flex justify-center items-center w-max text-green-600 dark:text-green-500 hover:text-green-600/80 dark:hover:text-green-400 hover:cursor-pointer"
+                        title="Aceptar cita"
+                    >
+                        <Check class="w-5 h-5" />
+                    </div>
+
+                    <!-- Cancelar (confirmed → cancelled) -->
+                    <div
+                        v-if="record?.status === 'confirmed'"
+                        @click="cancelAppointment(record.id)"
+                        class="flex justify-center items-center w-max text-rose-600 dark:text-rose-500 hover:text-rose-600/80 dark:hover:text-rose-400 hover:cursor-pointer"
+                        title="Cancelar cita"
+                    >
+                        <X class="w-5 h-5" />
+                    </div>
+
+                    <!-- Calificar tutor -->
                     <div
                         v-if="record?.status === 'completed'"
                         @click="openReviewModal(record)"
@@ -195,11 +267,13 @@ const handleReviewSaved = () => {
                     >
                         <Star class="w-5 h-5" />
                     </div>
-                    <span v-else class="text-sm text-muted-foreground">—</span>
                 </div>
             </template>
         </Column>
     </DataTable>
+
+    <!-- Tutor Detail Dialog -->
+    <TutorDetailDialog v-model:open="tutorDialogOpen" :tutor="selectedTutor" @close="tutorDialogOpen = false" />
 
     <!-- Review Form Dialog -->
     <ReviewFormDialog

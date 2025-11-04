@@ -5,9 +5,11 @@ use App\Http\Controllers\BookingAppointmentController;
 use App\Http\Controllers\BookingController;
 use Illuminate\Support\Facades\Route;
 
-// Booking Appointments index route
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/booking-appointments', [BookingAppointmentController::class, 'index'])->name('booking-appointments.index');
+// Booking Appointments routes
+Route::middleware(['auth', 'verified'])->prefix('booking-appointments')->name('booking-appointments.')->group(function () {
+    Route::get('/', [BookingAppointmentController::class, 'index'])->name('index');
+    Route::patch('/{appointment}/accept', [BookingAppointmentController::class, 'accept'])->name('accept');
+    Route::patch('/{appointment}/cancel', [BookingAppointmentController::class, 'cancelDirect'])->name('cancel');
 });
 
 Route::middleware(['auth', 'verified'])->prefix('bookings')->name('bookings.')->group(function () {

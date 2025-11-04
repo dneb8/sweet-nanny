@@ -23,6 +23,15 @@ const emit = defineEmits<{
 
 const hasNanny = computed(() => !!props.nanny)
 
+// Calculate average rating
+const averageRating = computed(() => {
+  if (!props.nanny?.reviews || props.nanny.reviews.length === 0) return null
+  const sum = props.nanny.reviews.reduce((acc, r) => acc + (r.rating || 0), 0)
+  return (sum / props.nanny.reviews.length).toFixed(1)
+})
+
+const reviewCount = computed(() => props.nanny?.reviews?.length || 0)
+
 function close() {
   emit('update:open', false)
   emit('close')
@@ -45,10 +54,15 @@ function formatDate(s?: string) {
             <AvatarImage :src="nanny?.profile_photo_url || undefined" />
             <AvatarFallback>{{ nanny ? initials(nanny.name) : '—' }}</AvatarFallback>
           </Avatar>
-          <div>
+          <div class="flex-1">
             <DialogTitle class="text-2xl">{{ nanny?.name }}</DialogTitle>
-            <DialogDescription v-if="nanny?.experience">
+            <DialogDescription v-if="nanny?.experience" class="mt-1">
               Experiencia desde {{ formatDate(nanny?.experience?.start_date) }}
+            </DialogDescription>
+            <DialogDescription v-if="averageRating" class="flex items-center gap-2 mt-1">
+              <Icon icon="lucide:star" class="h-4 w-4 text-yellow-500" />
+              <span class="font-semibold">{{ averageRating }}</span>
+              <span class="text-muted-foreground">({{ reviewCount }} {{ reviewCount === 1 ? 'reseña' : 'reseñas' }})</span>
             </DialogDescription>
           </div>
         </div>
