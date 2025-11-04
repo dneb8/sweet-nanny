@@ -4,8 +4,14 @@ namespace Database\Seeders;
 
 use App\Models\Booking;
 use App\Models\Tutor;
+use App\Models\BookingAppointment;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
+
+// Enums
+use App\Enums\Nanny\QualityEnum;
+use App\Enums\Career\NameCareerEnum;
+use App\Enums\Course\NameEnum as CourseNameEnum;
 
 class BookingSeeder extends Seeder
 {
@@ -34,38 +40,51 @@ class BookingSeeder extends Seeder
             'Cuidado general con énfasis en hábitos saludables y juego creativo',
         ];
 
-        $qualitiesList = [
-            'empatica','creativa','paciente','carinosa','observadora',
-            'asertiva','proactiva','flexible','ludica','bilingue'
-        ];
+        $qualitiesValues = array_map(fn($c) => $c->value, QualityEnum::cases());
+        $careersValues   = array_map(fn($c) => $c->value, NameCareerEnum::cases());
+        $coursesValues   = array_map(fn($c) => $c->value, CourseNameEnum::cases());
 
-        $careersList = [
-            'pedagogia','psicologia','enfermeria','docencia','nutricion',
-            'trabajo_social','psicopedagogia','terapia_psicomotriz','pediatria','artes_escenicas_danza'
-        ];
-
-        $coursesList = [
-            'primeros_auxilios','cuidado_infantil','desarrollo_infantil',
-            'nutricion_y_alimentacion','educacion_y_aprendizaje','psicologia_infantil',
-            'disciplina_y_comportamiento','lactancia_y_cuidado_bebes','inclusion_y_diversidad','comunicacion_y_lenguaje'
-        ];
-
-        for ($i = 0; $i < 20; $i++) {
-            $tutor = Tutor::with('addresses')->inRandomOrder()->first();
-
-            if ($tutor && $tutor->addresses->isNotEmpty()) {
-                $address = $tutor->addresses()->inRandomOrder()->first();
-
-                Booking::factory()->create([
-                    'tutor_id' => $tutor->id,
-                    'address_id' => $address->id,
-                    'description' => $descriptions[$i],
-                    'recurrent' => $i % 2 === 0,
-                    'qualities' => Arr::random($qualitiesList, rand(1, 8)),
-                    'careers' => Arr::random($careersList, rand(1, 2)),
-                    'courses' => Arr::random($coursesList, rand(1, 2)),
-                ]);
+        foreach ($descriptions as $desc) {
+            // Tutor con al menos una dirección
+            $tutor = Tutor::with(['addresses', 'children'])->inRandomOrder()->first();
+            if (! $tutor || $tutor->addresses->isEmpty()) {
+                continue;
             }
+
+            /** @var \App\Models\Booking $booking */
+            $booking = Booking::factory()->create([
+                'tutor_id'    => $tutor->id,
+                'description' => $desc,
+                'qualities'   => Arr::random($qualitiesValues, rand(1, min(8, count($qualitiesValues)))),
+                'careers'     => Arr::random($careersValues,   rand(1, min(2, count($careersValues)))),
+                'courses'     => Arr::random($coursesValues,   rand(1, min(2, count($coursesValues)))),
+            ]);
+
+            // 1–5 citas por booking
+            $appointmentsCount = rand(1, 5);
+
+            for ($k = 0; $k < $appointmentsCount; $k++) {
+                /** @var \App\Models\BookingAppointment $appointment */
+                $appointment = BookingAppointment::factory()->create([
+                    'booking_id' => $booking->id,
+                ]);
+
+                // Address: una del tutor
+                $address = $tutor->addresses()->inRandomOrder()->first();
+                if ($address) {
+                    $appointment->addresses()->syncWithoutDetaching([$address->id]);
+                }
+
+                // Children: 1–4 que pertenezcan al tutor
+                if ($tutor->children && $tutor->children->isNotEmpty()) {
+                    $childrenCount = rand(1, min(4, $tutor->children->count()));
+                    $childIds = $tutor->children->random($childrenCount)->pluck('id')->all();
+                    $appointment->children()->syncWithoutDetaching($childIds);
+                }
+            }
+
+            $booking->recurrent = $appointmentsCount >= 2;
+            $booking->save();
         }
     }
 }

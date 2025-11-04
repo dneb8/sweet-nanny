@@ -16,10 +16,8 @@ class BookingService
             $bookingData = data_get($payload, 'booking', []);
             $appointments = data_get($payload, 'appointments', []);
 
-            // Handle address_id - store reference to tutor's address
+            // Handle address_id - validate it belongs to the tutor
             $addressId = data_get($bookingData, 'address_id');
-
-            // Validate that address belongs to the tutor
             if ($addressId) {
                 $tutorId = (int) data_get($bookingData, 'tutor_id');
                 $address = Address::where('id', $addressId)
@@ -32,10 +30,9 @@ class BookingService
                 }
             }
 
-            // Create booking with address_id reference
+            // Create booking (header metadata only - no address or children)
             $booking = Booking::create([
                 'tutor_id' => (int) data_get($bookingData, 'tutor_id'),
-                'address_id' => $addressId, // Store reference to tutor's address
                 'description' => (string) data_get($bookingData, 'description', ''),
                 'recurrent' => (bool) data_get($bookingData, 'recurrent', false),
                 'qualities' => data_get($bookingData, 'qualities', []),
@@ -43,7 +40,7 @@ class BookingService
                 'courses' => data_get($bookingData, 'courses', []),
             ]);
 
-            // Children: acepta booking.children (preferido) o booking.child_ids
+            // Extract children IDs from booking data
             $rawChildren = data_get($bookingData, 'child_ids', data_get($bookingData, 'children', []));
             $childIds = collect($rawChildren)
                 ->map(function ($c) {
@@ -56,35 +53,35 @@ class BookingService
 
                     return (int) $c;
                 })
-                ->filter()   // quita 0 / null
+                ->filter()   // Remove 0 / null
                 ->unique()
                 ->values()
                 ->all();
 
-            if (! empty($childIds)) {
-                $booking->children()->sync($childIds);
-            }
-
-            // Appointments
-            $rows = [];
+            // Create appointments and apply address + children to each
             foreach ($appointments as $a) {
-                $rows[] = [
+                $appointment = $booking->bookingAppointments()->create([
                     'start_date' => Carbon::parse(data_get($a, 'start_date')),
                     'end_date' => Carbon::parse(data_get($a, 'end_date')),
                     'duration' => (int) data_get($a, 'duration', 0),
-                    'status' => (string) data_get($a, 'status', 'pending'),
+                    'status' => (string) data_get($a, 'status', 'draft'),
                     'payment_status' => (string) data_get($a, 'payment_status', 'unpaid'),
                     'extra_hours' => (int) data_get($a, 'extra_hours', 0),
                     'total_cost' => (float) data_get($a, 'total_cost', 0),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            }
-            if ($rows) {
-                $booking->bookingAppointments()->createMany($rows);
+                ]);
+
+                // Apply address to this appointment
+                if ($addressId) {
+                    $appointment->addresses()->sync([$addressId]);
+                }
+
+                // Apply children to this appointment
+                if (! empty($childIds)) {
+                    $appointment->children()->sync($childIds);
+                }
             }
 
-            return $booking->fresh(['children', 'bookingAppointments', 'address']);
+            return $booking->fresh(['bookingAppointments.addresses', 'bookingAppointments.children']);
         });
     }
 
@@ -93,33 +90,24 @@ class BookingService
         return DB::transaction(function () use ($booking, $payload) {
             $bookingData = $payload['booking'] ?? [];
             $appointments = $payload['appointments'] ?? [];
-            $addressData = $payload['address'] ?? null;
 
-            // Handle address polymorphically
+            // Handle address_id - validate it belongs to the tutor
             $addressId = $bookingData['address_id'] ?? null;
+            if ($addressId) {
+                $tutorId = (int) ($bookingData['tutor_id'] ?? $booking->tutor_id);
+                $address = Address::where('id', $addressId)
+                    ->where('addressable_type', 'App\\Models\\Tutor')
+                    ->where('addressable_id', $tutorId)
+                    ->first();
 
-            // Handle address_id - validate and update
-            if (isset($bookingData['address_id'])) {
-                $addressId = $bookingData['address_id'];
-
-                // Validate that address belongs to the tutor
-                if ($addressId) {
-                    $tutorId = (int) ($bookingData['tutor_id'] ?? $booking->tutor_id);
-                    $address = Address::where('id', $addressId)
-                        ->where('addressable_type', 'App\\Models\\Tutor')
-                        ->where('addressable_id', $tutorId)
-                        ->first();
-
-                    if (! $address) {
-                        throw new \Exception('address_id inválido: la dirección no pertenece al tutor');
-                    }
+                if (! $address) {
+                    throw new \Exception('address_id inválido: la dirección no pertenece al tutor');
                 }
             }
 
-            // Update booking (including address_id if provided)
+            // Update booking (header metadata only - no address or children)
             $booking->update([
                 'tutor_id' => (int) ($bookingData['tutor_id'] ?? $booking->tutor_id),
-                'address_id' => $bookingData['address_id'] ?? $booking->address_id,
                 'description' => $bookingData['description'] ?? $booking->description,
                 'recurrent' => (bool) ($bookingData['recurrent'] ?? $booking->recurrent),
                 'qualities' => $bookingData['qualities'] ?? $booking->qualities,
@@ -127,41 +115,44 @@ class BookingService
                 'courses' => $bookingData['courses'] ?? $booking->courses,
             ]);
 
-            // 4) Sincronizar niños (admite strings o ints)
+            // Extract children IDs from booking data
             $childIds = array_map('intval', $bookingData['child_ids'] ?? []);
-            $booking->children()->sync($childIds);
 
-            // 5) Reemplazar citas:
-            //    Usa SIEMPRE la relación correcta 'bookingAppointments' (igual que en create()).
+            // Delete existing appointments (they will be recreated with new address/children)
             $booking->bookingAppointments()->delete();
 
-            $rows = array_map(function ($a) {
-                return [
+            // Recreate appointments and apply address + children to each
+            foreach ($appointments as $a) {
+                $appointment = $booking->bookingAppointments()->create([
                     'start_date' => Carbon::parse($a['start_date']),
                     'end_date' => Carbon::parse($a['end_date']),
                     'duration' => (int) ($a['duration'] ?? 0),
-                    'status' => Arr::get($a, 'status', 'pending'),
+                    'status' => Arr::get($a, 'status', 'draft'),
                     'payment_status' => Arr::get($a, 'payment_status', 'unpaid'),
                     'extra_hours' => (int) Arr::get($a, 'extra_hours', 0),
                     'total_cost' => (float) Arr::get($a, 'total_cost', 0),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            }, $appointments);
+                ]);
 
-            if (! empty($rows)) {
-                $booking->bookingAppointments()->createMany($rows);
+                // Apply address to this appointment
+                if ($addressId) {
+                    $appointment->addresses()->sync([$addressId]);
+                }
+
+                // Apply children to this appointment
+                if (! empty($childIds)) {
+                    $appointment->children()->sync($childIds);
+                }
             }
 
-            return $booking->fresh(['children', 'bookingAppointments', 'address']);
+            return $booking->fresh(['bookingAppointments.addresses', 'bookingAppointments.children']);
         });
     }
 
     public function delete(Booking $booking): void
     {
         DB::transaction(function () use ($booking) {
+            // Delete appointments (cascade will handle children and addresses via pivot tables)
             $booking->bookingAppointments()->delete();
-            $booking->children()->detach();
             $booking->delete();
         });
     }

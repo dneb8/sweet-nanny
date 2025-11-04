@@ -13,7 +13,6 @@ import TimePicker from "@/components/ui/Timepicker.vue"
 import { useBoundField } from "@/services/bookingFormService"
 import { DateFormatter, getLocalTimeZone, fromDate, today } from "@internationalized/date"
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious } from "@/components/ui/carousel"
-// ⚠️ Usa TU botón expuesto con otro nombre para no chocar
 import CarouselNextButton from "@/components/ui/carousel/CarouselNext.vue"
 import { Icon } from "@iconify/vue"
 
@@ -37,13 +36,34 @@ const maxCitas = 10
 
 const toJsDate = (val: any): Date | null => val?.toDate?.(tz) ?? (val instanceof Date ? val : null)
 
+// =====================
+//  ⚙️ Helpers de fecha (LOCAL, sin Z) para evitar +6h
+// =====================
+
+// ISO local sin timezone (no convierte a UTC)
+function toLocalISO(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0")
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:00`
+}
+
+// Parseador que trata cualquier ISO (con o sin Z/offset) como LOCAL
+function parseToLocalDateTime(s: string): Date {
+  // Si viene con zona, la quitamos para interpretarlo como local
+  const match = s?.match?.(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})(?::\d{2})?(?:\.\d+)?(?:Z|[+\-]\d{2}:\d{2})?$/)
+  const base = match ? match[1] + ":00" : s
+  const d = new Date(base)
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), 0, 0)
+}
+
 function isoToRow(startISO?: string, endISO?: string): Row {
   if (!startISO || !endISO) return { dateVal: null, time: "08:00", duration: 1 }
-  const start = new Date(startISO)
-  const end = new Date(endISO)
+
+  const start = parseToLocalDateTime(startISO)
+  const end = parseToLocalDateTime(endISO)
+
   const durH = Math.max(1, Math.round((+end - +start) / 36e5))
   const dateVal = fromDate(new Date(start), tz)
-  const time = start.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", hour12: false })
+  const time = `${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}`
   return { dateVal, time, duration: durH }
 }
 
@@ -53,7 +73,8 @@ function rowToIso(r: Row) {
   const [h, m] = r.time.split(":").map(Number)
   const start = new Date(base); start.setHours(h, m, 0, 0)
   const end = new Date(start); end.setHours(end.getHours() + r.duration)
-  return { startISO: start.toISOString(), endISO: end.toISOString() }
+  // devolver LOCAL sin Z
+  return { startISO: toLocalISO(start), endISO: toLocalISO(end) }
 }
 
 const isComplete = (r: Row) => !!(r.dateVal && r.time && r.duration > 0)
@@ -97,8 +118,8 @@ function syncRow(i: number) {
   const { startISO, endISO } = rowToIso(r)
   list[i] = {
     ...(list[i] || {}),
-    start_date: startISO,
-    end_date: endISO,
+    start_date: startISO,     
+    end_date: endISO,         
     duration: Math.max(1, Number(r.duration || 1)),
     status: list[i]?.status ?? "pending",
     payment_status: list[i]?.payment_status ?? "unpaid",
@@ -119,7 +140,7 @@ const canAdd = computed(
     isComplete(rows.value[rows.value.length - 1])
 )
 
-// 👉 ref al botón de carrusel que expone su propio scrollNext
+// ref al botón de carrusel que expone su propio scrollNext
 const carouselNextRef = ref<{ scrollNext: () => void } | null>(null)
 
 async function addRow() {
@@ -163,6 +184,7 @@ watch(
   }
 )
 </script>
+
 
 <template>
   <Card class="bg-transparent shadow-none border-none">

@@ -20,7 +20,7 @@ class BookingController extends Controller
 {
     public function index(): Response
     {
-        $bookings = Booking::with(['tutor.user', 'address', 'bookingAppointments', 'children'])
+        $bookings = Booking::with(['tutor.user', 'bookingAppointments.addresses', 'bookingAppointments.children'])
             ->latest('id')
             ->paginate(12);
 
@@ -51,10 +51,23 @@ class BookingController extends Controller
     public function show(Booking $booking): Response
     {
         $booking = Booking::useWritePdo()
-            ->with(['tutor.user', 'address', 'bookingAppointments.nanny', 'childrenWithTrashed', 'children'])
+            ->with([
+                'tutor.user',
+                'tutor.children',
+                'tutor.addresses',
+                'bookingAppointments.nanny.user',
+                'bookingAppointments.addresses',
+                'bookingAppointments.childrenWithTrashed',
+                'bookingAppointments.children'
+            ])
             ->findOrFail($booking->id);
 
-        return Inertia::render('Booking/Show', ['booking' => $booking]);
+        $kinkships = array_map(fn ($c) => $c->value, KinkshipEnum::cases());
+
+        return Inertia::render('Booking/Show', [
+            'booking' => $booking,
+            'kinkships' => $kinkships,
+        ]);
     }
 
     public function store(CreateBookingRequest $request, BookingService $service)
@@ -70,7 +83,7 @@ class BookingController extends Controller
     {
         $kinkships = array_map(fn ($c) => $c->value, KinkshipEnum::cases());
 
-        $booking->load(['tutor.children', 'tutor.addresses', 'children', 'bookingAppointments', 'address']);
+        $booking->load(['tutor.children', 'tutor.addresses', 'bookingAppointments.children', 'bookingAppointments.addresses']);
 
         return Inertia::render('Booking/Edit', [
             'booking' => $booking,

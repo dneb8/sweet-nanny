@@ -26,7 +26,7 @@ const page = usePage();
             </SidebarMenuItem>
         </SidebarMenu>
     </SidebarGroup>
-    <SidebarGroup class="pl-4 py-0">
+    <SidebarGroup v-if="adminItems && adminItems.length > 0" class="pl-4 py-0">
         <SidebarGroupLabel>Administración</SidebarGroupLabel>
         <SidebarMenu>
             <SidebarMenuItem v-for="item in adminItems" :key="item.title">

@@ -1,5 +1,6 @@
 import User from '.User';
 import Address from '.Address';
+import { Child } from './Child';
 
 export interface Tutor {
   id: string;
@@ -9,5 +10,7 @@ export interface Tutor {
   emergency_contact?: string;
   emergency_number?: string;
   address?: Address; 
-  user?: User; 
+  user?: User;
+  children?: Child[];
+  addresses?: Address[];
 }

@@ -1,30 +1,39 @@
-import { PageProps } from '@/types/UsePage';
-import { usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3'
+import type { PageProps } from '@/types/UsePage'
 
-export function can(permissions: string): boolean {
-    const page = usePage<PageProps>();
-    const permissionsArray = permissions.split('|').map(permission => permission.trim());
-    const { permisos : permisosUsuario }  = page.props.auth;
-
-    if (!permisosUsuario) return false;
-
-    for (const permission of permissionsArray) {
-        if (permisosUsuario.includes(permission)) return true;
-    }
-
-    return false;
+export function getRoles(): string[] {
+  const user = usePage<PageProps>().props.auth?.user as any
+  const roles = user?.roles ?? []
+  return Array.isArray(roles)
+    ? roles.map(r => (typeof r === 'string' ? r : r?.name)).filter(Boolean) as string[]
+    : []
 }
 
-export function role(roles: string): boolean {
-    const page = usePage<PageProps>();
-    const rolesArray = roles.split('|').map(role => role.trim());
-    const { roles : rolesUsuario }  = page.props.auth;
+export function getPermissions(): string[] {
+  const user = usePage<PageProps>().props.auth?.user as any
+  const perms = user?.permissions ?? []
+  return Array.isArray(perms)
+    ? perms.map(p => (typeof p === 'string' ? p : p?.name)).filter(Boolean) as string[]
+    : []
+}
 
-    if (!rolesUsuario) return false;
+export function hasRole(roleName: string): boolean {
+  return getRoles().includes(roleName)
+}
 
-    for (const role of rolesArray) {
-        if (rolesUsuario.includes(role)) return true;
-    }
+// Alias for hasRole to maintain backward compatibility
+export const role = hasRole
 
-    return false;
+export function can(permissionName: string): boolean {
+  return getPermissions().includes(permissionName)
+}
+
+/**
+ * Si NO hay permisos cargados en el frontend, usa un fallback (por rol).
+ * Si sí hay permisos, respeta el permiso explícito.
+ */
+export function canOrRole(permissionName: string, roleFallback: boolean): boolean {
+  const perms = getPermissions()
+  if (perms.length === 0) return roleFallback
+  return perms.includes(permissionName)
 }

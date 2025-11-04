@@ -1,67 +1,59 @@
-import { User } from "@/types/User";
-import { RoleEnum } from "@/enums/role.enum";
-import { usePage } from "@inertiajs/vue3";
-import { Rol } from "@/types/Rol";
-import { can, role } from "@/helpers/permissionHelper";
-import { PageProps } from "@/types/UsePage";
+import { usePage } from '@inertiajs/vue3';
+import type { PageProps } from '@/types/UsePage';
+import type { User } from '@/types/User';
+import type { Rol } from '@/types/Rol';
+import { can, role } from '@/helpers/permissionHelper';
+import { RoleEnum } from '@/enums/role.enum';
 
-export class UserPolicy {
-    // Usuario autenticado
-    private authUser = usePage<PageProps>().props.auth.user;
+class UserPolicy {
+    private get authUser() {
+        return usePage<PageProps>().props.auth?.user;
+    }
 
-    // Método para determinar si un usuario es desarrollador
-    private esDesarrollador = (user: User) => {
-        return user.persona.roles.filter((rol: Rol) => rol.name === RoleEnum.DESARROLLADOR).length > 0;
+    // Helper para determinar si un usuario es admin
+    private isAdmin = (user: User): boolean => {
+        if (!user || !user.roles) return false;
+        return user.roles.some((r: Rol) => r.name === RoleEnum.ADMIN);
     };
 
-    // Método para determinar si un usuario es administrador
-    private esAdministrador = (user: User) => {
-        return user.persona.roles.filter((rol: Rol) => rol.name === RoleEnum.ADMINISTRADOR).length > 0;
+    // Helper para determinar si un usuario es tutor
+    private isTutor = (user: User): boolean => {
+        if (!user || !user.roles) return false;
+        return user.roles.some((r: Rol) => r.name === RoleEnum.TUTOR);
     };
 
-    // Método para determinar si se puede editar un usuario
-    public canUpdateUser = (user: User) => {
-        if (! can('user.update')) {
-            return false;
-        }
+    // Helper para determinar si un usuario es nanny
+    private isNanny = (user: User): boolean => {
+        if (!user || !user.roles) return false;
+        return user.roles.some((r: Rol) => r.name === RoleEnum.NANNY);
+    };
 
-        if (role(RoleEnum.DESARROLLADOR) && this.esDesarrollador(user) && this.authUser.id !== user.id) {
-            return false;
-        }
+    // Solo admin puede actualizar usuarios
+    public canUpdateUser = (user: User): boolean => {
+        if (!this.authUser || !user) return false;
+        if (!can('user.update')) return false;
+        if (!role(RoleEnum.ADMIN)) return false;
 
-        if (role(RoleEnum.ADMINISTRADOR) && this.esDesarrollador(user)) {
-            return false;
-        }
-
-        if (role(RoleEnum.ADMINISTRADOR) && this.esAdministrador(user) && this.authUser.id !== user.id) {
-            return false;
-        }
-
+        // Admin puede editar a cualquiera incluyéndose a sí mismo
         return true;
     };
 
-    // Método para determinar si se puede eliminar un usuario
-    public canDeleteUser = (user: User) => {
-        if (! can('user.delete')) {
-            return false;
-        }
+    // Solo admin puede eliminar usuarios, pero no a sí mismo
+    // Evita que Admin elimine a otro Admin salvo a sí mismo (aunque no puede)
+    public canDeleteUser = (user: User): boolean => {
+        if (!this.authUser || !user) return false;
+        if (!can('user.delete')) return false;
+        if (!role(RoleEnum.ADMIN)) return false;
 
-        if (this.authUser.id === user.id) {
-            return false;
-        }
+        // No puede eliminarse a sí mismo
+        if (this.authUser.ulid === user.ulid) return false;
 
-        if (role(RoleEnum.DESARROLLADOR) && this.esDesarrollador(user)) {
-            return false;
-        }
-
-        if (role(RoleEnum.ADMINISTRADOR) && this.esDesarrollador(user)) {
-            return false;
-        }
-
-        if (role(RoleEnum.ADMINISTRADOR) && this.esAdministrador(user)) {
-            return false;
-        }
+        // Admin no puede eliminar a otro Admin
+        if (this.isAdmin(user)) return false;
 
         return true;
     };
 }
+
+// Export a singleton instance for use across the application
+export const userPolicy = new UserPolicy();
