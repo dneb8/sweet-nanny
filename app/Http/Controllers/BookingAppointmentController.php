@@ -45,7 +45,7 @@ class BookingAppointmentController extends Controller
         ]);
 
         if ($v->fails()) {
-            return back()->withErrors($v)->withInput()->with('error', 'Error al actualizar las fechas');
+            return redirect()->back()->withErrors($v)->withInput()->with('error', 'Error al actualizar las fechas');
         }
 
         $data = $v->validated();
@@ -70,7 +70,7 @@ class BookingAppointmentController extends Controller
             $appointment->update($payload);
         });
 
-        return back()->with('success', 'Fechas actualizadas exitosamente');
+        return redirect()->back()->with('success', 'Fechas actualizadas exitosamente');
     }
 
     /**
@@ -105,7 +105,7 @@ class BookingAppointmentController extends Controller
             $appointment->addresses()->sync([$validated['address_id']]);
         });
 
-        return back()->with('success', 'Dirección actualizada exitosamente');
+        return redirect()->back()->with('success', 'Dirección actualizada exitosamente');
     }
 
     /**
@@ -131,6 +131,6 @@ class BookingAppointmentController extends Controller
         // Sync children
         $appointment->children()->sync($validated['child_ids']);
 
-        return back()->with('success', 'Niños actualizados exitosamente');
+        return redirect()->back()->with('success', 'Niños actualizados exitosamente');
     }
 }

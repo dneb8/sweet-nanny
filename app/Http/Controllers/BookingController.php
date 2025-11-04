@@ -66,17 +66,15 @@ class BookingController extends Controller
     {
         Gate::authorize('view', $booking);
 
-        $booking = Booking::useWritePdo()
-            ->with([
-                'tutor.user',
-                'tutor.children',
-                'tutor.addresses',
-                'bookingAppointments.nanny.user',
-                'bookingAppointments.addresses',
-                'bookingAppointments.childrenWithTrashed',
-                'bookingAppointments.children',
-            ])
-            ->findOrFail($booking->id);
+        $booking->refresh()->load([
+            'tutor.user',
+            'tutor.children',
+            'tutor.addresses',
+            'bookingAppointments.nanny.user',
+            'bookingAppointments.addresses',
+            'bookingAppointments.childrenWithTrashed',
+            'bookingAppointments.children',
+        ]);
 
         $kinkships = array_map(fn ($c) => $c->value, KinkshipEnum::cases());
 
@@ -84,8 +82,8 @@ class BookingController extends Controller
             'booking' => $booking,
             'kinkships' => $kinkships,
             'can' => [
-                'update' => Auth::user()->can('update', $booking),
-                'delete' => Auth::user()->can('delete', $booking),
+                'update' => Gate::allows('update', $booking),
+                'delete' => Gate::allows('delete', $booking),
             ],
         ]);
     }
