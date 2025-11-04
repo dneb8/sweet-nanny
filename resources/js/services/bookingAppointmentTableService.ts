@@ -27,7 +27,7 @@ export class BookingAppointmentTableService {
     ]);
 
     public constructor() {
-        // Providers para comunicación con DataTable
+        // Providers for DataTable communication
         provide('booking_appointments_filters', computed(() => this.getFilters()));
         provide('clear_booking_appointments_filters', () => {
             this.filtros.value = {

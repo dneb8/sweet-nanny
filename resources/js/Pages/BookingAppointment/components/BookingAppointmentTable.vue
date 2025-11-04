@@ -95,13 +95,12 @@ const formatDate = (dateString: string) => {
         <!-- Columna Servicio -->
         <Column header="Servicio">
             <template #body="slotProps">
-                <a
-                    :href="`/bookings/${slotProps.record?.booking_id}`"
-                    class="text-primary hover:underline font-mono text-sm"
+                <span
+                    class="text-primary hover:underline font-mono text-sm cursor-pointer"
                     @click.stop="verBooking(slotProps.record?.booking_id)"
                 >
                     #{{ slotProps.record?.booking_id }}
-                </a>
+                </span>
             </template>
         </Column>
 

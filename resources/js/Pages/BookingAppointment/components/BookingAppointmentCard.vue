@@ -51,13 +51,12 @@ const formatDate = (dateString: string) => {
         <div class="grid grid-cols-2 gap-2">
             <div>
                 <div class="text-sm font-medium">Servicio</div>
-                <a
-                    :href="`/bookings/${appointment?.booking_id}`"
-                    class="text-sm text-primary hover:underline"
-                    @click.stop
+                <span
+                    class="text-sm text-primary hover:underline cursor-pointer"
+                    @click.stop="service.verBooking(appointment?.booking_id)"
                 >
                     #{{ appointment?.booking_id }}
-                </a>
+                </span>
             </div>
             <div>
                 <div class="text-sm font-medium">Niños</div>

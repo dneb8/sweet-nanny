@@ -111,8 +111,11 @@ class BookingAppointmentPolicy
 
         // Nanny can only view appointments assigned to them
         if ($user->hasRole(RoleEnum::NANNY->value)) {
+            if ($appointment->nanny_id === null) {
+                return false;
+            }
             $appointment->loadMissing('nanny');
-            return $appointment->nanny_id !== null && (int)$appointment->nanny?->user_id === (int)$user->id;
+            return (int)$appointment->nanny->user_id === (int)$user->id;
         }
 
         // Tutor can view their own appointments
