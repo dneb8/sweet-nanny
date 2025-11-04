@@ -67,17 +67,8 @@ const {
             </template>
         </Column>
 
-        <!-- Columna Descripción -->
-        <Column header="Descripción">
-            <template #body="slotProps">
-                <div class="max-w-xs truncate" :title="slotProps.record.description">
-                    {{ slotProps.record.description || '—' }}
-                </div>
-            </template>
-        </Column>
-
-        <!-- Columna Recurrente -->
-        <Column header="Recurrente">
+        <!-- Columna Tipo -->
+        <Column header="Tipo">
             <template #body="slotProps">
                 <Badge
                     v-if="slotProps.record.recurrent"
@@ -89,7 +80,7 @@ const {
         </Column>
 
         <!-- Columna Citas con Badge e Ícono -->
-        <Column header="Citas">
+        <Column header="No. Citas">
             <template #body="slotProps">
                 <Badge
                     v-if="slotProps.record?.booking_appointments && slotProps.record.booking_appointments.length > 0"
@@ -101,13 +92,6 @@ const {
                     </template>
                 </Badge>
                 <span v-else class="text-muted-foreground">Sin citas</span>
-            </template>
-        </Column>
-
-        <!-- Columna Estado -->
-        <Column header="Estado" field="status" :sortable="true">
-            <template #body="slotProps">
-                <Badge :label="getStatusLabel(slotProps.record.status)" :customClass="getStatusColor(slotProps.record.status)" />
             </template>
         </Column>
 

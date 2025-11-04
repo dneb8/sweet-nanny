@@ -25,7 +25,7 @@ export class BookingTableService {
     });
 
     // Constante reactiva que contiene las columnas visibles
-    public visibleColumns = ref<Array<string>>(['Tutor', 'Dirección', 'Niños', 'Citas', 'Estado', 'Fecha Creación', 'Acciones']);
+    public visibleColumns = ref<Array<string>>(['ID','Tutor','Tipo', 'No. Citas', 'Fecha Creación', 'Acciones']);
 
     public constructor() {
         // Providers para comunicación con DataTable
