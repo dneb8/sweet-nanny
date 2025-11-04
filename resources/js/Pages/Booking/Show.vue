@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useBookingView } from '@/services/BookingService'
 import { useBookingAppointmentPolicy } from '@/policies/bookingAppointmentPolicy'
-import { computed, ref } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 import EditAppointmentDatesModal from './components/modals/EditAppointmentDatesModal.vue'
 import EditAppointmentAddressModal from './components/modals/EditAppointmentAddressModal.vue'
 import EditAppointmentChildrenModal from './components/modals/EditAppointmentChildrenModal.vue'
@@ -30,6 +30,7 @@ const props = defineProps<{
 const v = useBookingView(props.booking)
 const policy = useBookingAppointmentPolicy()
 
+// ----------------- selección de cita activa -----------------
 const firstId = v.appointments()[0]?.id ?? null
 const selectedAppointmentId = ref<number | null>(firstId)
 
@@ -37,6 +38,19 @@ const selectedAppointment = computed<BookingAppointment | null>(() => {
   const id = selectedAppointmentId.value
   return v.appointments().find(a => a.id === id) ?? null
 })
+
+// Si las citas cambian (por reload), asegura que haya una seleccionada válida
+watch(
+  () => v.appointments().map(a => a.id).join(','), // firma mínima de cambios
+  async () => {
+    await nextTick()
+    const ids = v.appointments().map(a => a.id)
+    if (!ids.includes(selectedAppointmentId.value as number)) {
+      selectedAppointmentId.value = ids[0] ?? null
+    }
+  },
+  { immediate: false }
+)
 
 const tabsModel = computed<string>({
   get() {
@@ -49,6 +63,7 @@ const tabsModel = computed<string>({
   },
 })
 
+// ----------------- estilos botones header -----------------
 const base =
   'group inline-flex items-center h-9 hover:gap-5 rounded-xl px-2 overflow-hidden w-9 ' +
   'transition-all duration-900 backdrop-blur-sm ' +
@@ -60,6 +75,7 @@ const label =
   'group-hover:opacity-100 group-hover:translate-x-0 group-hover:max-w-[6rem] ' +
   'transition-all duration-900'
 
+// ----------------- datos derivados -----------------
 const hasAnyRequirements = computed(() => {
   const qs = v.qualities?.() ?? []
   const cs = v.careers?.() ?? []
@@ -67,17 +83,14 @@ const hasAnyRequirements = computed(() => {
   return qs.length || cs.length || ks.length
 })
 
-// Check if any appointment has a nanny assigned
 const hasAnyAppointmentWithNanny = computed(() => {
   return v.appointments().some(a => a.nanny_id !== null)
 })
 
-// Check if any appointment is pending
 const hasPendingAppointments = computed(() => {
   return v.appointments().some(a => a.status === 'pending')
 })
 
-// Delete modal message
 const deleteMessage = computed(() => {
   if (hasPendingAppointments.value) {
     return 'Este servicio tiene citas pendientes con niñeras asignadas. Al eliminarlo, se cancelarán todas las citas. ¿Deseas continuar?'
@@ -85,36 +98,36 @@ const deleteMessage = computed(() => {
   return '¿Estás seguro de que deseas eliminar este servicio? Esta acción no se puede deshacer.'
 })
 
-// Function to check if can choose nanny for an appointment
+// ----------------- permisos helpers -----------------
 function canChooseNanny(appointment: BookingAppointment): boolean {
   return policy.canChooseNanny(appointment, props.booking)
 }
 
-// Function to check if can change nanny for an appointment
-// Admin: can change when status is not cancelled or completed
-// Tutor: can change when status is not cancelled, completed, or confirmed
 function canChangeNanny(appointment: BookingAppointment): boolean {
-  if (!appointment.nanny_id) return false
-  
-  const status = appointment.status
-  const userRoles = (window as any).$page?.props?.auth?.roles || []
-  const isAdmin = userRoles.includes('admin')
-  const isTutor = userRoles.includes('tutor')
-  
-  // Admin: show button except when cancelled or completed
+  // Debe existir una niñera asignada para "cambiar"
+  if (!appointment?.nanny_id) return false
+
+  const roles = (window as any)?.$page?.props?.auth?.roles || []
+  const isAdmin = roles.includes('admin')
+  const isTutor = roles.includes('tutor')
+  const status = appointment?.status
+
+  // Admin: permitido salvo estados terminales
   if (isAdmin) {
     return status !== 'cancelled' && status !== 'completed'
   }
-  
-  // Tutor: show button except when cancelled, completed, or confirmed
+
+  // Tutor: estrictamente cuando está pendiente
   if (isTutor) {
-    return status !== 'cancelled' && status !== 'completed' && status !== 'confirmed'
+    return status === 'pending'
   }
-  
+
+  // Otros roles: no
   return false
 }
 
-// Helpers de fecha en TZ MX
+
+// ----------------- fechas helpers -----------------
 const MX_TZ = 'America/Mexico_City'
 function fmtDateTZ(iso: string) {
   return new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium', timeZone: MX_TZ }).format(new Date(iso))
@@ -128,7 +141,7 @@ function fmtReadableDateTime(iso: string) {
   return `${d} · ${t} h`
 }
 
-// Modals
+// ----------------- modals -----------------
 const showDatesModal = ref(false)
 const showAddressModal = ref(false)
 const showChildrenModal = ref(false)
@@ -194,8 +207,28 @@ function confirmChangeNanny() {
   closeConfirmChangeNannyModal()
 }
 
+// ----------------- RELOAD FORZADO tras guardar -----------------
+// Llama este método desde los modales al terminar la acción en servidor
 function handleModalSaved() {
-  router.reload({ only: ['booking'] })
+  // Cierra modales abiertos primero
+  showDatesModal.value = false
+  showAddressModal.value = false
+  showChildrenModal.value = false
+  showConfirmModal.value = false
+  pendingModalAction.value = null
+
+  // Visita explícitamente el show para evitar props “stale”
+  router.visit(route('bookings.show', { booking: props.booking.id }), {
+    replace: true,           // no contamina el historial
+    preserveScroll: true,    // evita salto de scroll
+    preserveState: false,    // NO conservar estado cacheado
+    only: ['booking'],       // pide solo el prop necesario
+    onSuccess: () => {
+      // Opcional: asegura que la pestaña activa exista tras el reload
+      const first = v.appointments()[0]?.id ?? null
+      selectedAppointmentId.value = selectedAppointmentId.value ?? first
+    },
+  })
 }
 
 function getEditDisabledReason(appointment: BookingAppointment): string {
@@ -335,7 +368,6 @@ function getEditDisabledReason(appointment: BookingAppointment): string {
 
         <!-- Recurrente: Tabs -->
         <template v-if="props.booking.recurrent && v.appointments().length > 0">
-          <!-- Usa v-model para no tocar el ref directamente desde el template -->
           <Tabs v-model="tabsModel" class="w-full">
             <TabsList class="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 h-auto p-2 bg-white/5 backdrop-blur-xl border border-white/30 dark:border-white/10">
               <TabsTrigger

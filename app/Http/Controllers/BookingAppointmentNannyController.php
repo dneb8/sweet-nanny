@@ -226,12 +226,10 @@ class BookingAppointmentNannyController extends Controller
                     'appointment_id' => $appointment->id
                 ]);
             }
-            $message = 'Niñera asignada correctamente.';
+            $message = 'Niñera asignada correctamente';
         }
 
-        return redirect()
-            ->route('bookings.show', $booking->id)
-            ->with('notification', $message);
+        return redirect()->route('bookings.show', $booking->id)->with('success', $message);
     }
 
     /**

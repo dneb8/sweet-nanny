@@ -19,7 +19,7 @@ class CourseController extends Controller
 
         $courseService->createCourse($request);
 
-        return redirect()->back()->with('message', [
+        return redirect()->back()->with('success', [
             'title' => 'Curso creado',
             'description' => 'El curso ha sido creado correctamente.',
         ]);
@@ -34,7 +34,7 @@ class CourseController extends Controller
 
         $courseService->updateCourse($course, $request);
 
-        return redirect()->back()->with('message', [
+        return redirect()->back()->with('success', [
             'title' => 'Curso actualizado',
             'description' => 'El curso ha sido actualizado correctamente.',
         ]);
@@ -49,7 +49,7 @@ class CourseController extends Controller
 
         $course->delete();
 
-        return redirect()->back()->with('message', [
+        return redirect()->back()->with('success', [
             'title' => 'Curso eliminado',
             'description' => 'El curso ha sido eliminado correctamente.',
         ]);
