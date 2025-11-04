@@ -3,6 +3,7 @@ import { Head, Link } from "@inertiajs/vue3";
 import AuthLayout from "@/layouts/AuthLayout.vue";
 import HeaderLanding from '@/components/landing/HeaderLanding.vue'
 import HeroSection from '@/components/landing/HeroSection.vue'
+import WhatOfferSection from '@/components/landing/WhatOfferSection.vue'
 
 defineOptions({
   layout: false,
@@ -22,100 +23,9 @@ defineOptions({
       <HeaderLanding />
       <!--HOME DE LANDING-->
       <HeroSection />
+      <!--WHATOFFER DE LANDING-->
+      <WhatOfferSection />
 
-      <!-- What We Offer Section -->
-      <section id="services" class="py-20 bg-white">
-        <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 class="text-3xl sm:text-4xl font-extrabold text-center mb-12 text-gray-800">
-            What We Offer
-          </h2>
-          <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            <!-- Service card 1 -->
-            <div class="p-8 bg-gray-50 rounded-xl shadow-sm hover:shadow-lg transition">
-              <div
-              class="w-16 h-16 flex items-center justify-center rounded-full bg-[#FFE3EF] mx-auto mb-4"
-              >
-                <!-- Cradle icon -->
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="w-8 h-8 text-pink-500"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M3.75 9.75h16.5M4.5 7.5h15a3 3 0 013 3v1.5a3 3 0 01-3 3h-15a3 3 0 01-3-3V10.5a3 3 0 013-3z"
-                  />
-                </svg>
-              </div>
-              <h3 class="text-xl font-semibold text-center mb-2">Babysitting</h3>
-              <p class="text-sm text-gray-600 text-center">
-                Trusted sitters available whenever you need them – day or night.
-              </p>
-            </div>
-            <!-- Service card 2 -->
-            <div class="p-8 bg-gray-50 rounded-xl shadow-sm hover:shadow-lg transition">
-              <div
-              class="w-16 h-16 flex items-center justify-center rounded-full bg-[#DCEBFF] mx-auto mb-4"
-              >
-                <!-- Gift icon for baby shower parties -->
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="w-8 h-8 text-blue-500"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M4.5 13.5V7.5A3 3 0 017.5 4.5h9a3 3 0 013 3v6m-15 0h15m-15 0v6a3 3 0 003 3h9a3 3 0 003-3v-6"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 12v9"
-                  />
-                </svg>
-              </div>
-              <h3 class="text-xl font-semibold text-center mb-2">Baby Shower</h3>
-              <p class="text-sm text-gray-600 text-center">
-                Make your celebration extra special with our fun-filled shower planning.
-              </p>
-            </div>
-            <!-- Service card 3 -->
-            <div class="p-8 bg-gray-50 rounded-xl shadow-sm hover:shadow-lg transition">
-              <div
-              class="w-16 h-16 flex items-center justify-center rounded-full bg-[#EAE2FF] mx-auto mb-4"
-              >
-                <!-- Night moon icon for evening babysitting -->
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="w-8 h-8 text-purple-500"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M21 12.79A9 9 0 1111.21 3c.1 0 .19-.01.29-.01a9 9 0 009.5 9.5z"
-                  />
-                </svg>
-              </div>
-              <h3 class="text-xl font-semibold text-center mb-2">Evening Care</h3>
-              <p class="text-sm text-gray-600 text-center">
-                Enjoy a worry‑free night out while your little ones are safe and sound.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <!-- Childcare Services Section -->
       <!--
