@@ -5,15 +5,31 @@ namespace App\Http\Controllers;
 use App\Enums\Booking\StatusEnum;
 use App\Models\Booking;
 use App\Models\BookingAppointment;
+use App\Services\BookingAppointmentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class BookingAppointmentController extends Controller
 {
+    /**
+     * Display a listing of booking appointments
+     */
+    public function index(BookingAppointmentService $service): Response
+    {
+        Gate::authorize('viewAny', BookingAppointment::class);
+
+        $bookingAppointments = $service->indexFetch();
+
+        return Inertia::render('BookingAppointment/Index', [
+            'bookingAppointments' => $bookingAppointments,
+        ]);
+    }
     /**
      * Cancel a booking appointment
      */

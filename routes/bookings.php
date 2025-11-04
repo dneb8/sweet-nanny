@@ -5,6 +5,11 @@ use App\Http\Controllers\BookingAppointmentController;
 use App\Http\Controllers\BookingController;
 use Illuminate\Support\Facades\Route;
 
+// Booking Appointments index route
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/booking-appointments', [BookingAppointmentController::class, 'index'])->name('booking-appointments.index');
+});
+
 Route::middleware(['auth', 'verified'])->prefix('bookings')->name('bookings.')->group(function () {
     Route::get('/', [BookingController::class, 'index'])->name('index');
     Route::get('/create', [BookingController::class, 'create'])->name('create');

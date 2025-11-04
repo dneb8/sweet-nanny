@@ -80,4 +80,48 @@ class BookingAppointmentPolicy
 
         return false;
     }
+
+    /**
+     * Determine if the user can view any booking appointments
+     */
+    public function viewAny(User $user): bool
+    {
+        // Admin can view all
+        if ($user->hasRole(RoleEnum::ADMIN->value)) {
+            return true;
+        }
+
+        // Nanny can view their own appointments
+        if ($user->hasRole(RoleEnum::NANNY->value)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine if the user can view a specific booking appointment
+     */
+    public function view(User $user, BookingAppointment $appointment): bool
+    {
+        // Admin can view any appointment
+        if ($user->hasRole(RoleEnum::ADMIN->value)) {
+            return true;
+        }
+
+        // Nanny can only view appointments assigned to them
+        if ($user->hasRole(RoleEnum::NANNY->value)) {
+            $appointment->loadMissing('nanny');
+            return $appointment->nanny_id !== null && (int)$appointment->nanny?->user_id === (int)$user->id;
+        }
+
+        // Tutor can view their own appointments
+        if ($user->hasRole(RoleEnum::TUTOR->value)) {
+            $appointment->loadMissing('booking.tutor');
+            $bookingTutorUserId = $appointment->booking?->tutor?->user_id;
+            return $bookingTutorUserId !== null && (int)$bookingTutorUserId === (int)$user->id;
+        }
+
+        return false;
+    }
 }

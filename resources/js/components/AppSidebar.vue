@@ -86,6 +86,15 @@ const bookingsNavItems = computed(() => {
         });
     }
 
+    // Admin and Nanny can see "Citas"
+    if (isAdmin.value || isNanny.value) {
+        items.push({
+            title: 'Citas',
+            href: '/booking-appointments',
+            icon: 'ph:calendar-check',
+        });
+    }
+
     return items;
 });
 
