@@ -36,11 +36,7 @@ const isTutor = computed(() => roleNames.value.includes('tutor'))
 const isNanny = computed(() => roleNames.value.includes('nanny'))
 
 const mainNavItems: NavItem[] = [
-  {
-    title: 'Inicio',
-    href: '/dashboard',
-    icon: 'proicons:home',
-  },
+  { title: 'Inicio', href: '/dashboard', icon: 'proicons:home' },
 ]
 
 const adminNavItems: NavItem[] = [
@@ -48,11 +44,33 @@ const adminNavItems: NavItem[] = [
   { title: 'Reseñas', href: '/reviews', icon: 'proicons:star' },
 ]
 
-// Bookings nav items - "Crear Servicio" solo visible para tutores
+/**
+ * Bookings nav items
+ * - "Servicios" solo si es admin o tutor (en tutor se llama "Mis servicios")
+ * - "Citas" (/booking-appointments) solo si es tutor o nanny
+ */
 const bookingsNavItems = computed<NavItem[]>(() => {
-  const items: NavItem[] = [
-    { title: 'Servicios', href: '/bookings', icon: 'ph:baby-carriage' },
-  ]
+  const items: NavItem[] = []
+
+  // Servicios / Mis servicios
+  if (isAdmin.value || isTutor.value) {
+    items.push({
+      title: isTutor.value ? 'Mis servicios' : 'Servicios',
+      href: '/bookings',
+      icon: 'ph:baby-carriage',
+    })
+  }
+
+  // Citas (para tutor y nanny)
+  if (isTutor.value || isNanny.value) {
+    items.push({
+      title: 'Citas',
+      href: '/booking-appointments',
+      icon: 'fluent:calendar-24-regular', // calendario
+    })
+  }
+
+  // "Crear Servicio" solo visible para tutor
   if (isTutor.value) {
     items.push({
       title: 'Crear Servicio',
@@ -60,14 +78,13 @@ const bookingsNavItems = computed<NavItem[]>(() => {
       icon: 'fluent:calendar-add-24-regular',
     })
   }
+
   return items
 })
 
 // Profile nav items - “Mi perfil público” directo a tutors/nannies por ULID
 const profileNavItems = computed<NavItem[]>(() => {
   const items: NavItem[] = []
-
-  // Tutor: /tutors/{ulid}
   if (isTutor.value) {
     items.push({
       title: 'Mi perfil público',
@@ -75,7 +92,6 @@ const profileNavItems = computed<NavItem[]>(() => {
       icon: 'proicons:person',
     })
   }
-  // Nanny: /nannies/{ulid}
   if (isNanny.value) {
     items.push({
       title: 'Mi perfil público',

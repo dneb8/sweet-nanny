@@ -105,9 +105,9 @@ const formatDate = (dateString: string) => {
         </Column>
 
         <!-- Columna Dirección (Zona) -->
-        <Column header="Dirección">
+        <Column header="Zona">
             <template #body="slotProps">
-                <span class="text-sm">{{ slotProps.record?.addresses?.[0]?.neighborhood ?? '—' }}</span>
+                <span class="text-sm">{{ slotProps.record?.addresses?.[0]?.zone ?? '—' }}</span>
             </template>
         </Column>
 

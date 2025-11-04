@@ -19,7 +19,7 @@ export class BookingAppointmentTableService {
         'Tutor',
         'Niños',
         'Servicio',
-        'Dirección',
+        'Zona',
         'Status',
         'Start Date',
         'End Date',
