@@ -12,6 +12,7 @@ import { useBookingView } from '@/services/BookingService'
 const emit = defineEmits<{
   (e: 'openEditModal', section: 'dates' | 'children' | 'address'): void
   (e: 'routerGet', url: string): void
+  (e: 'changeNanny'): void
 }>()
 
 /* ==== Helpers base ==== */
@@ -194,7 +195,7 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
                 variant="outline"
                 size="sm"
                 class="w-full sm:w-auto"
-                @click="emit('routerGet', route('bookings.appointments.nannies.choose', { booking: props.booking.id, appointment: props.appointment.id }))"
+                @click="emit('changeNanny')"
               >
                 <Icon icon="lucide:repeat" class="mr-2 h-4 w-4" />
                 Cambiar niñera

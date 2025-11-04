@@ -12,8 +12,10 @@ use App\Models\BookingAppointment;
 use App\Models\Nanny;
 use App\Notifications\NannyAssigned;
 use App\Notifications\NannyChanged;
+use App\Notifications\NannyUnassigned;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -178,12 +180,26 @@ class BookingAppointmentNannyController extends Controller
 
         // Send appropriate notifications
         if ($isChanging && $oldNanny) {
-            // Changing nanny - notify tutor
+            // Changing nanny
             $oldNanny->loadMissing('user');
             $tutorUser = $appointment->booking?->tutor?->user;
-            if ($tutorUser) {
+            $currentUser = Auth::user();
+            
+            // Notify the old nanny that their appointment was cancelled
+            if ($oldNanny->user) {
+                $oldNanny->user->notify(new NannyUnassigned($appointment));
+            }
+            
+            // If admin made the change, notify the tutor
+            if ($currentUser && $currentUser->hasRole('admin') && $tutorUser && $tutorUser->id !== $currentUser->id) {
                 $tutorUser->notify(new NannyChanged($appointment, $oldNanny, $nanny));
             }
+            
+            // Notify the new nanny
+            if ($nanny->user) {
+                $nanny->user->notify(new NannyAssigned($appointment));
+            }
+            
             $message = 'Niñera cambiada correctamente.';
         } else {
             // First assignment - notify nanny
