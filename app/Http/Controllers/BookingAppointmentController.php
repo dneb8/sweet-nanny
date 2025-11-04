@@ -40,36 +40,38 @@ class BookingAppointmentController extends Controller
     public function updateDates(Request $request, Booking $booking, BookingAppointment $appointment): RedirectResponse
     {
         $v = Validator::make($request->all(), [
-            'start_date' => ['required','date','after:now'],
-            'end_date'   => ['required','date','after:start_date'],
-            'duration'   => ['nullable','integer','min:1','max:8'],
+            'start_date' => ['required', 'date', 'after:now'],
+            'end_date' => ['required', 'date', 'after:start_date'],
+            'duration' => ['nullable', 'integer', 'min:1', 'max:8'],
         ]);
 
         if ($v->fails()) {
-            return back()->withErrors($v)->withInput()->with('error','Error al actualizar las fechas');
+            return back()->withErrors($v)->withInput()->with('error', 'Error al actualizar las fechas');
         }
 
-        $data  = $v->validated();
+        $data = $v->validated();
         $start = Carbon::parse($data['start_date']);
-        $end   = Carbon::parse($data['end_date']);
-        $dur   = $data['duration'] ?? max(1, (int) ceil($start->floatDiffInHours($end)));
+        $end = Carbon::parse($data['end_date']);
+        $dur = $data['duration'] ?? max(1, (int) ceil($start->floatDiffInHours($end)));
 
         DB::transaction(function () use ($appointment, $start, $end, $dur) {
             // Si tenía niñera, desasigna y vuelve a DRAFT
-            if (!is_null($appointment->nanny_id)) {
+            if (! is_null($appointment->nanny_id)) {
                 $appointment->forceFill([
                     'nanny_id' => null,
-                    'status'   => StatusEnum::DRAFT, 
+                    'status' => StatusEnum::DRAFT,
                 ])->save();
             }
 
             $payload = ['start_date' => $start, 'end_date' => $end];
-            if ($appointment->isFillable('duration')) $payload['duration'] = $dur;
+            if ($appointment->isFillable('duration')) {
+                $payload['duration'] = $dur;
+            }
 
             $appointment->update($payload);
         });
 
-        return back()->with('success','Fechas actualizadas exitosamente.');
+        return Inertia::location(route('bookings.show', $booking->id));
     }
 
     /**
@@ -100,8 +102,7 @@ class BookingAppointmentController extends Controller
         // Sync the address (replace existing)
         $appointment->addresses()->sync([$validated['address_id']]);
 
-        return back()
-            ->with('success', 'Dirección actualizada exitosamente');
+        return Inertia::location(route('bookings.show', $booking->id));
     }
 
     /**
@@ -127,7 +128,6 @@ class BookingAppointmentController extends Controller
         // Sync children
         $appointment->children()->sync($validated['child_ids']);
 
-        return back()
-            ->with('success', 'Niños actualizados exitosamente');
+        return Inertia::location(route('bookings.show', $booking->id));
     }
 }

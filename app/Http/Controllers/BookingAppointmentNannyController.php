@@ -184,18 +184,14 @@ class BookingAppointmentNannyController extends Controller
             if ($tutorUser) {
                 $tutorUser->notify(new NannyChanged($appointment, $oldNanny, $nanny));
             }
-            $message = 'Niñera cambiada correctamente.';
         } else {
             // First assignment - notify nanny
             if ($nanny->user) {
                 $nanny->user->notify(new NannyAssigned($appointment));
             }
-            $message = 'Niñera asignada correctamente.';
         }
 
-        return redirect()
-            ->route('bookings.show', $booking->id)
-            ->with('notification', $message);
+        return Inertia::location(route('bookings.show', $booking->id));
     }
 
     /**
