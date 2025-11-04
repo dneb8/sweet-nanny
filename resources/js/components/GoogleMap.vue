@@ -36,6 +36,31 @@ let map: any = null
 let marker: any = null
 let scriptEl: HTMLScriptElement | null = null
 
+// Helper functions for marker operations
+function createMarker(position: google.maps.LatLngLiteral, mapInstance: any) {
+  if (GMAPS_MAP_ID) {
+    return new google.maps.marker.AdvancedMarkerElement({ position, map: mapInstance })
+  } else {
+    return new google.maps.Marker({ position, map: mapInstance })
+  }
+}
+
+function updateMarkerPosition(markerInstance: any, position: google.maps.LatLngLiteral) {
+  if (GMAPS_MAP_ID) {
+    markerInstance.position = position
+  } else {
+    markerInstance.setPosition(position)
+  }
+}
+
+function removeMarker(markerInstance: any) {
+  if (GMAPS_MAP_ID) {
+    markerInstance.map = null
+  } else {
+    markerInstance.setMap(null)
+  }
+}
+
 // --- Helpers de coordenadas ---
 function toNumber(value: unknown): number {
   const n =
@@ -108,20 +133,11 @@ function initMap() {
   map = new google.maps.Map(mapEl.value, mapConfig)
 
   if (props.showMarker && hasValidCoords.value) {
-    // Only use AdvancedMarkerElement if mapId is available
-    if (GMAPS_MAP_ID) {
-      marker = new google.maps.marker.AdvancedMarkerElement({
-        position: center,
-        map,
-      })
-    } else {
-      // Fallback to legacy Marker if no mapId is provided
+    // Fallback to legacy Marker if no mapId is provided
+    if (!GMAPS_MAP_ID) {
       console.warn("[GoogleMaps] VITE_GMAPS_MAP_ID no está definido. Usando Marker legacy (deprecado). Define VITE_GMAPS_MAP_ID en tu .env para usar AdvancedMarkerElement.")
-      marker = new google.maps.Marker({
-        position: center,
-        map,
-      })
     }
+    marker = createMarker(center, map)
   }
 }
 
@@ -133,27 +149,12 @@ function updatePosition() {
   if (typeof props.zoom === "number") map.setZoom(props.zoom)
   if (props.showMarker) {
     if (!marker) {
-      // Create new marker
-      if (GMAPS_MAP_ID) {
-        marker = new google.maps.marker.AdvancedMarkerElement({ position: pos, map })
-      } else {
-        marker = new google.maps.Marker({ position: pos, map })
-      }
+      marker = createMarker(pos, map)
     } else {
-      // Update existing marker position
-      if (GMAPS_MAP_ID) {
-        marker.position = pos
-      } else {
-        marker.setPosition(pos)
-      }
+      updateMarkerPosition(marker, pos)
     }
   } else if (marker) {
-    // Remove marker
-    if (GMAPS_MAP_ID) {
-      marker.map = null
-    } else {
-      marker.setMap(null)
-    }
+    removeMarker(marker)
     marker = null
   }
 }
@@ -173,11 +174,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   if (marker) {
-    if (GMAPS_MAP_ID) {
-      marker.map = null
-    } else {
-      marker.setMap(null)
-    }
+    removeMarker(marker)
     marker = null
   }
   map = null
