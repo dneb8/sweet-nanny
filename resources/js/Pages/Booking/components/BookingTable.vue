@@ -9,6 +9,9 @@ import BookingCard from './BookingCard.vue';
 import DeleteModal from '@/components/common/DeleteModal.vue';
 import Badge from '@/components/common/Badge.vue';
 import { Calendar } from 'lucide-vue-next';
+import { getUserInitials } from "@/utils/getUserInitials";
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+
 
 defineProps<{
     resource: FetcherResponse<Booking>;
@@ -24,8 +27,6 @@ const {
     abrirModalEliminarBooking,
     cerrarModalEliminarBooking,
     eliminarBooking,
-    getStatusColor,
-    getStatusLabel,
 } = new BookingTableService();
 </script>
 
@@ -56,16 +57,44 @@ const {
         </Column>
 
         <!-- Columna Tutor -->
-        <Column header="Tutor">
-            <template #body="slotProps">
-                <a
-                    :href="`/tutors/${slotProps.record?.tutor?.id}`"
-                    class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
-                >
-                    {{ slotProps.record?.tutor?.user?.name ?? '—' }} {{ slotProps.record?.tutor?.user?.surnames ?? '' }}
-                </a>
-            </template>
-        </Column>
+<Column header="Tutor">
+  <template #body="{ record }">
+    <div
+      class="flex items-center gap-3 cursor-pointer group"
+      @click="verUsuarioPerfil(record?.tutor?.user)"
+    >
+      <!-- Avatar -->
+      <Avatar shape="square" size="sm" class="overflow-hidden">
+        <AvatarImage
+          v-if="record?.tutor?.user?.avatar_url"
+          :src="record.tutor.user.avatar_url"
+          :alt="record?.tutor?.user?.name ?? 'avatar'"
+          class="h-8 w-8 object-cover"
+        />
+        <AvatarFallback v-else>
+          {{ getUserInitials(record?.tutor?.user) }}
+        </AvatarFallback>
+      </Avatar>
+
+      <!-- Nombre (con enlace opcional) -->
+      <div class="min-w-0">
+        <a
+          :href="`/tutors/${record?.tutor?.id}`"
+          class="truncate hover:underline group-hover:text-rose-400 dark:group-hover:text-rose-300"
+          @click.stop
+        >
+          {{ record?.tutor?.user?.name ?? '—' }}
+          {{ record?.tutor?.user?.surnames ?? '' }}
+        </a>
+        <!-- opcional: subtítulo/email -->
+        <!-- <p class="text-xs text-muted-foreground truncate">
+          {{ record?.tutor?.user?.email }}
+        </p> -->
+      </div>
+    </div>
+  </template>
+</Column>
+
 
         <!-- Columna Tipo -->
         <Column header="Tipo">

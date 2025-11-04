@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Gate;
+use Spatie\Permission\Contracts\Role;
 
 class UserController extends Controller
 {
@@ -117,7 +118,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        Gate::authorize('viewAny', User::class);
+        Gate::authorize('view', User::class);
         
         if ($user->hasRole(RoleEnum::NANNY->value)) {
             return redirect()->route('nannies.show', $user->nanny);
@@ -156,7 +157,7 @@ class UserController extends Controller
     public function updateAvatar(Request $request, User $user): RedirectResponse
     {
         // Authorization: only the user themselves or admin can update avatar
-        if (Auth::id() !== $user->id && ! Auth::user()?->hasRole('admin')) {
+        if (Auth::id() !== $user->id && ! Auth::user()?->hasRole(RoleEnum::ADMIN)) {
             abort(403, 'No tienes permiso para actualizar el avatar de este usuario.');
         }
 
