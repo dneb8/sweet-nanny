@@ -11,10 +11,10 @@ defineProps<{
 </script>
 
 <template>
-    <Head title="Reviews" />
+    <Head title="Reseñas" />
 
     <div class="mb-4 flex items-center justify-between">
-        <Heading icon="mdi:star-outline" title="Listado de Reviews" />
+        <Heading icon="mdi:star-outline" title="Listado de Reseñas" />
     </div>
 
     <ReviewTable :resource="reviews" />

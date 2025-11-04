@@ -25,7 +25,7 @@ const adminNavItems: NavItem[] = [
         icon: 'proicons:person-multiple',
     },
     {
-        title: 'Reviews',
+        title: 'Reseñas',
         href: '/reviews',
         icon: 'proicons:star',
     },
