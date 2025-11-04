@@ -50,3 +50,27 @@ test('verification email is sent on registration', function () {
 
     Notification::assertSentTo($user, VerifyEmail::class);
 });
+
+test('tutor instance is created on registration', function () {
+    // sembramos los roles de Spatie primero
+    $this->seed(RoleSeeder::class);
+
+    $response = $this->post('/register', [
+        'name' => 'Test User',
+        'email' => 'testuser@example.com',
+        'password' => 'password123!',
+        'password_confirmation' => 'password123!',
+    ]);
+
+    // obtenemos al usuario recién creado
+    $user = User::where('email', 'testuser@example.com')->first();
+
+    // verificamos que el usuario tiene el rol de tutor
+    expect($user->hasRole(RoleEnum::TUTOR->value))->toBeTrue();
+
+    // verificamos que el usuario tiene una instancia de Tutor asociada
+    expect($user->tutor)->not->toBeNull();
+    expect($user->tutor)->toBeInstanceOf(\App\Models\Tutor::class);
+
+    $response->assertRedirect(route('dashboard', absolute: false));
+});

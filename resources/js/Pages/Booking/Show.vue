@@ -16,7 +16,7 @@ import EditAppointmentChildrenModal from './components/modals/EditAppointmentChi
 import ConfirmUnassignModal from './components/modals/ConfirmUnassignModal.vue'
 import ConfirmChangeNannyModal from './components/modals/ConfirmChangeNannyModal.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
-import SingleAppointmentCard from './components/SingleAppointmentCard.vue'
+import SingleAppointmentCard from '@/components/SingleAppointmentCard.vue'
 
 const props = defineProps<{ 
   booking: Booking
@@ -403,7 +403,6 @@ function getEditDisabledReason(appointment: BookingAppointment): string {
             </TabsContent>
           </Tabs>
         </template>
-
         <!-- Fijo: una sola card -->
         <template v-else-if="!props.booking.recurrent && v.appointments().length > 0">
           <div class="mt-2">
