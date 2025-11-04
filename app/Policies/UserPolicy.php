@@ -17,6 +17,24 @@ class UserPolicy
     }
 
     /**
+     * Determine if the user can view a specific user.
+     */
+    public function view(User $user, User $model): bool
+    {
+        // Admin can view any user
+        if ($user->hasRole(RoleEnum::ADMIN->value)) {
+            return true;
+        }
+
+        // Nanny and Tutor can only view their own profile
+        if ($user->hasRole(RoleEnum::NANNY->value) || $user->hasRole(RoleEnum::TUTOR->value)) {
+            return $user->id === $model->id;
+        }
+
+        return false;
+    }
+
+    /**
      * Determine if the user can create users.
      */
     public function create(User $user): bool
@@ -37,7 +55,17 @@ class UserPolicy
      */
     public function delete(User $user, User $model): bool
     {
-        return $this->hasPermission($user, UserPermission::Delete->value);
+        // Admin has full delete permission via UserPermission
+        if ($this->hasPermission($user, UserPermission::Delete->value)) {
+            return true;
+        }
+
+        // Nanny and Tutor can delete their own account
+        if ($user->hasRole(RoleEnum::NANNY->value) || $user->hasRole(RoleEnum::TUTOR->value)) {
+            return $user->id === $model->id;
+        }
+
+        return false;
     }
 
     /**
