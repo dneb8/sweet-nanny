@@ -192,7 +192,7 @@ class BookingAppointmentNannyController extends Controller
                 $oldNanny->user->notify(new NannyUnassigned($appointment));
             } else {
                 // Log if old nanny has no user (shouldn't happen but helps debugging)
-                \Log::warning('Old nanny has no user', [
+                Log::warning('Old nanny has no user', [
                     'nanny_id' => $oldNanny->id,
                     'appointment_id' => $appointment->id
                 ]);
@@ -208,7 +208,7 @@ class BookingAppointmentNannyController extends Controller
                 $nanny->user->notify(new NannyAssigned($appointment));
             } else {
                 // Log if new nanny has no user (shouldn't happen but helps debugging)
-                \Log::warning('New nanny has no user', [
+                Log::warning('New nanny has no user', [
                     'nanny_id' => $nanny->id,
                     'appointment_id' => $appointment->id
                 ]);
@@ -221,7 +221,7 @@ class BookingAppointmentNannyController extends Controller
                 $nanny->user->notify(new NannyAssigned($appointment));
             } else {
                 // Log if nanny has no user
-                \Log::warning('Nanny has no user on first assignment', [
+                Log::warning('Nanny has no user on first assignment', [
                     'nanny_id' => $nanny->id,
                     'appointment_id' => $appointment->id
                 ]);
