@@ -63,9 +63,8 @@
       <p
         class="mt-16 text-sm sm:text-base text-white/70 max-w-xs sm:max-w-md mx-auto leading-relaxed px-2 sm:px-0 break-words"
       >
-        Para solicitar un servicio es necesario iniciar sesión y así comenzar con la
-        magia de <span class="text-[#f4c2ba] font-semibold">SweetNanny</span>.<br />
-        <span class="block mt-2">Si no tienes cuenta, regístrate.</span>
+        Cuidado y confianza en un solo click  <span class="text-[#f4c2ba] font-semibold"> SweetNanny</span>.<br /> siempre estará para ti.
+        <span class="block mt-2">¡Registrate para descubrir la magia!</span>
       </p>
     </div>
 

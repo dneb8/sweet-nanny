@@ -12,16 +12,28 @@
       </div>
 
       <!-- LINKS DE ESCRITORIO -->
-      <ul class="hidden md:flex space-x-6 text-sm font-medium">
+      <ul class="hidden md:flex items-center space-x-6 text-sm font-medium">
         <li><a href="#" class="text-white hover:text-pink-400">Inicio</a></li>
         <li><a href="#services" class="text-white hover:text-pink-400">Servicios</a></li>
         <li><a href="#about" class="text-white hover:text-pink-400">Acerca de</a></li>
         <li><a href="#rates" class="text-white hover:text-pink-400">Tarifas</a></li>
+
+        <!-- Botones estilo hero pero más compactos -->
         <li>
-          <Link :href="route('login')" class="text-white hover:text-pink-400">Iniciar sesión</Link>
+          <Link
+            :href="route('login')"
+            class="inline-block px-4 py-1.5 bg-[#f4c2ba] hover:bg-[#e9a7a0] text-white font-medium rounded-full shadow-md transition text-xs sm:text-sm"
+          >
+            Iniciar sesión
+          </Link>
         </li>
         <li>
-          <Link :href="route('register')" class="text-white hover:text-pink-400">Registrarse</Link>
+          <Link
+            :href="route('register')"
+            class="inline-block px-4 py-1.5 bg-white text-[#f4c2ba] hover:bg-[#e9a7a0] hover:text-white border border-white font-medium rounded-full shadow-md transition text-xs sm:text-sm"
+          >
+            Registrarse
+          </Link>
         </li>
       </ul>
 
@@ -66,8 +78,18 @@
         <a href="#services" class="block text-white hover:text-pink-400">Servicios</a>
         <a href="#about" class="block text-white hover:text-pink-400">Acerca de</a>
         <a href="#rates" class="block text-white hover:text-pink-400">Tarifas</a>
-        <Link :href="route('login')" class="block text-white hover:text-pink-400">Iniciar sesión</Link>
-        <Link :href="route('register')" class="block text-white hover:text-pink-400">Registrarse</Link>
+        <Link
+          :href="route('login')"
+          class="block px-4 py-2 bg-[#f4c2ba] hover:bg-[#e9a7a0] text-white font-medium rounded-full shadow-md transition"
+        >
+          Iniciar sesión
+        </Link>
+        <Link
+          :href="route('register')"
+          class="block px-4 py-2 border border-white text-white hover:bg-white hover:text-[#f4c2ba] font-medium rounded-full shadow-md transition"
+        >
+          Registrarse
+        </Link>
       </div>
     </transition>
   </header>
