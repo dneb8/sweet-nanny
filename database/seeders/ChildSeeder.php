@@ -21,6 +21,10 @@ class ChildSeeder extends Seeder
         for ($i = 0; $i < 20; $i++) {
             $tutor = Tutor::inRandomOrder()->first();
 
+            // Si no hay tutor, saltamos esta iteración
+            if (!$tutor) {
+                continue;
+            }
             // Generamos un nombre completo usando los apellidos del tutor
             $childName = $firstNames[array_rand($firstNames)] . ' ' . $tutor->user->surnames;
 
