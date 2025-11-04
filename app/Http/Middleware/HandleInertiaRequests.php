@@ -71,6 +71,14 @@ class HandleInertiaRequests extends Middleware
                 'avatar_url' => $request->user()->avatar_url,
                 'email_verified_at' => $request->user()->email_verified_at,
                 'roles' => $request->user()->roles->pluck('name')->toArray(),
+                'tutor' => $request->user()->tutor ? [
+                    'id' => $request->user()->tutor->id,
+                    'ulid' => $request->user()->tutor->ulid,
+                ] : null,
+                'nanny' => $request->user()->nanny ? [
+                    'id' => $request->user()->nanny->id,
+                    'ulid' => $request->user()->nanny->ulid,
+                ] : null,
             ] : null,
 
             // Permisos del usuario autenticado

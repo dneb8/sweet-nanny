@@ -403,7 +403,6 @@ function getEditDisabledReason(appointment: BookingAppointment): string {
             </TabsContent>
           </Tabs>
         </template>
-
         <!-- Fijo: una sola card -->
         <template v-else-if="!props.booking.recurrent && v.appointments().length > 0">
           <div class="mt-2">

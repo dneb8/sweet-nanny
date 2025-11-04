@@ -22,7 +22,10 @@ class BookingController extends Controller
 {
     public function index(BookingService $bookingService): Response
     {
-        $bookings = $bookingService->indexFetch();
+        Gate::authorize('viewAny', Booking::class);
+
+        $user = Auth::user();
+        $bookings = $bookingService->indexFetch($user);
 
         return Inertia::render('Booking/Index', ['bookings' => $bookings]);
     }
