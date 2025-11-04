@@ -41,7 +41,17 @@ class UserPolicy
 
     public function delete(User $user, User $model): bool
     {
-        return $this->hasPermission($user, UserPermission::Delete->value);
+        // Admin has full delete permission via UserPermission
+        if ($this->hasPermission($user, UserPermission::Delete->value)) {
+            return true;
+        }
+
+        // Nanny and Tutor can delete their own account
+        if ($user->hasRole(RoleEnum::NANNY->value) || $user->hasRole(RoleEnum::TUTOR->value)) {
+            return $user->id === $model->id;
+        }
+
+        return false;
     }
 
     private function hasPermission(User $user, string $permission): bool

@@ -325,7 +325,6 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
             height="300px"
             :showMarker="true"
             />
-
         </div>
       </div>
     </aside>

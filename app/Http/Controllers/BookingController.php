@@ -22,7 +22,10 @@ class BookingController extends Controller
 {
     public function index(BookingService $bookingService): Response
     {
-        $bookings = $bookingService->indexFetch();
+        Gate::authorize('viewAny', Booking::class);
+
+        $user = Auth::user();
+        $bookings = $bookingService->indexFetch($user);
 
         return Inertia::render('Booking/Index', ['bookings' => $bookings]);
     }
@@ -54,17 +57,15 @@ class BookingController extends Controller
     {
         Gate::authorize('view', $booking);
 
-        $booking = Booking::useWritePdo()
-            ->with([
-                'tutor.user',
-                'tutor.children',
-                'tutor.addresses',
-                'bookingAppointments.nanny.user',
-                'bookingAppointments.addresses',
-                'bookingAppointments.childrenWithTrashed',
-                'bookingAppointments.children',
-            ])
-            ->findOrFail($booking->id);
+        $booking->refresh()->load([
+            'tutor.user',
+            'tutor.children',
+            'tutor.addresses',
+            'bookingAppointments.nanny.user',
+            'bookingAppointments.addresses',
+            'bookingAppointments.childrenWithTrashed',
+            'bookingAppointments.children',
+        ]);
 
         // Actualizar estado basado en horarios de citas
         $statusService->updateStatus($booking);
@@ -75,8 +76,8 @@ class BookingController extends Controller
             'booking' => $booking,
             'kinkships' => $kinkships,
             'can' => [
-                'update' => Auth::user()->can('update', $booking),
-                'delete' => Auth::user()->can('delete', $booking),
+                'update' => Gate::allows('update', $booking),
+                'delete' => Gate::allows('delete', $booking),
             ],
         ]);
     }

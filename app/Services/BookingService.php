@@ -14,8 +14,9 @@ class BookingService
 {
     /**
      * Obtener todos los bookings en el formato que se requiere para el componente DataTable
+     * Filtra por tutor si el usuario no es admin
      */
-    public function indexFetch(): LengthAwarePaginator
+    public function indexFetch($user = null): LengthAwarePaginator
     {
         $bookings = Booking::query()
             ->with([
@@ -24,6 +25,13 @@ class BookingService
                 'bookingAppointments',
             ])
             ->orderBy('created_at', 'desc');
+
+        // Filter by tutor if user is not admin
+        if ($user && !$user->hasRole('admin')) {
+            $bookings->whereHas('tutor', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
+        }
 
         $sortables = ['created_at', 'description', 'status'];
         $searchables = ['description'];
