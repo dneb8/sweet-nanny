@@ -12,7 +12,7 @@ const user = computed(() => page.props.auth?.user);
 const quickActions = [
     {
         title: 'Crear Servicio',
-        description: 'Solicita una nueva niñera',
+        description: 'Crear una nueva solicitud de servicio',
         icon: 'mdi:calendar-plus',
         href: '/bookings/create',
         color: 'text-emerald-600 dark:text-emerald-400',
