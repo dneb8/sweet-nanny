@@ -191,7 +191,7 @@ class BookingAppointmentNannyController extends Controller
             }
         }
 
-        return Inertia::location(route('bookings.show', $booking->id));
+        return redirect()->route('bookings.show', $booking->id);
     }
 
     /**

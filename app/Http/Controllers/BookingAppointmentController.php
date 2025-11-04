@@ -11,7 +11,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
-use Inertia\Inertia;
 
 class BookingAppointmentController extends Controller
 {
@@ -37,7 +36,7 @@ class BookingAppointmentController extends Controller
     /**
      * Update appointment dates
      */
-    public function updateDates(Request $request, Booking $booking, BookingAppointment $appointment): RedirectResponse
+    public function updateDates(Request $request, Booking $booking, BookingAppointment $appointment)
     {
         $v = Validator::make($request->all(), [
             'start_date' => ['required', 'date', 'after:now'],
@@ -71,7 +70,9 @@ class BookingAppointmentController extends Controller
             $appointment->update($payload);
         });
 
-        return Inertia::location(route('bookings.show', $booking->id));
+        // Return an empty response to indicate success
+        // The frontend will handle reloading the data
+        return response('', 200);
     }
 
     /**
@@ -102,13 +103,15 @@ class BookingAppointmentController extends Controller
         // Sync the address (replace existing)
         $appointment->addresses()->sync([$validated['address_id']]);
 
-        return Inertia::location(route('bookings.show', $booking->id));
+        // Return an empty response to indicate success
+        // The frontend will handle reloading the data
+        return response('', 200);
     }
 
     /**
      * Update appointment children
      */
-    public function updateChildren(Request $request, Booking $booking, BookingAppointment $appointment): RedirectResponse
+    public function updateChildren(Request $request, Booking $booking, BookingAppointment $appointment)
     {
 
         $validator = Validator::make($request->all(), [
@@ -128,6 +131,8 @@ class BookingAppointmentController extends Controller
         // Sync children
         $appointment->children()->sync($validated['child_ids']);
 
-        return Inertia::location(route('bookings.show', $booking->id));
+        // Return an empty response to indicate success
+        // The frontend will handle reloading the data
+        return response('', 200);
     }
 }
