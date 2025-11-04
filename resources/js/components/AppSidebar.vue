@@ -55,6 +55,18 @@ const isTutor = computed(() => {
     return roleNames.includes('tutor');
 });
 
+// Check if user has NANNY role
+const isNanny = computed(() => {
+    const user = page.props.auth?.user as { roles?: string[] } | null;
+    return user?.roles?.includes('nanny') ?? false;
+});
+
+// Get current user's ID for profile link
+const currentUserId = computed(() => {
+    const user = page.props.auth?.user as { id?: number } | null;
+    return user?.id;
+});
+
 // Bookings nav items - "Crear Servicio" only visible for tutors
 const bookingsNavItems = computed(() => {
     const items: NavItem[] = [
@@ -71,6 +83,22 @@ const bookingsNavItems = computed(() => {
             title: 'Crear Servicio',
             href: '/bookings/create',
             icon: 'fluent:calendar-add-24-regular',
+        });
+    }
+
+    return items;
+});
+
+// Profile nav items - "Mi perfil público" only visible for tutors and nannies
+const profileNavItems = computed(() => {
+    const items: NavItem[] = [];
+
+    // Only tutors and nannies can see "Mi perfil público"
+    if ((isTutor.value || isNanny.value) && currentUserId.value) {
+        items.push({
+            title: 'Mi perfil público',
+            href: `/users/${currentUserId.value}`,
+            icon: 'proicons:person',
         });
     }
 
@@ -104,6 +132,7 @@ const footerNavItems: NavItem[] = [
                 :items="mainNavItems" 
                 :adminItems="isAdmin ? adminNavItems : undefined"
                 :bookingsItems="bookingsNavItems"
+                :profileItems="profileNavItems"
             />
         </SidebarContent>
 
