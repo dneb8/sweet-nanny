@@ -1,56 +1,37 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Icon } from '@iconify/vue';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { computed } from 'vue';
 
+interface User {
+    name?: string;
+    surnames?: string;
+}
+
+interface QuickLink {
+    label: string;
+    to: string;
+    icon: string;
+}
+
 const page = usePage();
-const user = computed(() => page.props.auth?.user);
+const user = computed<User>(() => page.props.auth?.user || {});
 
-const quickActions = [
+const links: QuickLink[] = [
     {
-        title: 'Crear Servicio',
-        description: 'Crear una nueva solicitud de servicio',
-        icon: 'mdi:calendar-plus',
-        href: '/bookings/create',
-        color: 'text-emerald-600 dark:text-emerald-400',
-        bgColor: 'bg-emerald-50 dark:bg-emerald-950/30',
+        label: 'Crear Servicio',
+        to: '/bookings/create',
+        icon: 'solar:calendar-outline',
     },
     {
-        title: 'Mis Servicios',
-        description: 'Ver servicios activos y pasados',
-        icon: 'mdi:calendar-account',
-        href: '/bookings',
-        color: 'text-blue-600 dark:text-blue-400',
-        bgColor: 'bg-blue-50 dark:bg-blue-950/30',
+        label: 'Mis Servicios',
+        to: '/bookings',
+        icon: 'ph:chat-circle',
     },
     {
-        title: 'Mi Perfil',
-        description: 'Editar información personal',
-        icon: 'mdi:account-cog',
-        href: '/settings/profile',
-        color: 'text-purple-600 dark:text-purple-400',
-        bgColor: 'bg-purple-50 dark:bg-purple-950/30',
-    },
-];
-
-const stats = [
-    {
-        label: 'Servicios Activos',
-        icon: 'mdi:calendar-check',
-        color: 'text-emerald-600 dark:text-emerald-400',
-    },
-    {
-        label: 'Servicios Completados',
-        icon: 'mdi:calendar-star',
-        color: 'text-blue-600 dark:text-blue-400',
-    },
-    {
-        label: 'Niñeras Favoritas',
-        icon: 'mdi:heart',
-        color: 'text-pink-600 dark:text-pink-400',
+        label: 'Mi Perfil',
+        to: '/settings/profile',
+        icon: 'lucide:user',
     },
 ];
 </script>
@@ -58,106 +39,50 @@ const stats = [
 <template>
     <Head title="Tutor Dashboard" />
 
-    <div class="space-y-8">
-        <!-- Welcome Section -->
-        <div class="flex flex-col gap-3">
-            <div class="flex items-center gap-3">
-                <div
-                    class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg"
-                >
-                    <Icon icon="mdi:human-male-female-child" class="size-7 text-white" />
-                </div>
-                <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
-                        Bienvenido, {{ user?.name }} 👋
+    <!-- Background with gradient and blobs -->
+    <div class="relative min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+        <!-- Decorative blobs -->
+        <div class="pointer-events-none absolute inset-0 overflow-hidden">
+            <div class="absolute -left-10 -top-10 h-72 w-72 rounded-full bg-blue-200/30 blur-3xl"></div>
+            <div class="absolute -right-10 top-40 h-96 w-96 rounded-full bg-purple-200/30 blur-3xl"></div>
+            <div class="absolute bottom-10 left-1/3 h-80 w-80 rounded-full bg-pink-200/30 blur-3xl"></div>
+        </div>
+
+        <!-- Main content -->
+        <div class="relative mx-auto max-w-6xl px-4 py-12">
+            <!-- Glass panel -->
+            <div class="rounded-3xl border border-white/40 bg-white/20 p-8 backdrop-blur-xl">
+                <!-- Welcome section -->
+                <div class="mb-8">
+                    <p class="text-sm text-gray-500">Bienvenido(a)</p>
+                    <h1 class="text-3xl font-semibold text-gray-800">
+                        {{ user.name }} {{ user.surnames }}
                     </h1>
-                    <div class="flex items-center gap-2">
-                        <Badge variant="secondary" class="mt-1">
-                            <Icon icon="mdi:account-heart" class="mr-1 size-3" />
-                            Tutor
-                        </Badge>
-                    </div>
                 </div>
-            </div>
-            <p class="text-base text-muted-foreground">
-                Administra tus servicios de cuidado infantil y encuentra las mejores niñeras para tu familia.
-            </p>
-        </div>
 
-        <!-- Stats Cards -->
-        <div class="grid gap-4 md:grid-cols-3">
-            <Card v-for="stat in stats" :key="stat.label" class="transition-all hover:shadow-md">
-                <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle class="text-sm font-medium">{{ stat.label }}</CardTitle>
-                    <div class="rounded-lg bg-muted p-2">
-                        <Icon :icon="stat.icon" :class="['size-4', stat.color]" />
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <div class="text-2xl font-bold">--</div>
-                    <p class="text-xs text-muted-foreground">Disponible próximamente</p>
-                </CardContent>
-            </Card>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="space-y-4">
-            <div class="flex items-center gap-2">
-                <Icon icon="mdi:lightning-bolt" class="size-5 text-amber-500" />
-                <h2 class="text-xl font-semibold">Acciones Rápidas</h2>
-            </div>
-            <div class="grid gap-4 md:grid-cols-3">
-                <Link v-for="action in quickActions" :key="action.title" :href="action.href">
-                    <Card
-                        class="group cursor-pointer transition-all hover:shadow-md hover:shadow-primary/5 hover:-translate-y-0.5"
+                <!-- Quick links grid -->
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <Link
+                        v-for="link in links"
+                        :key="link.label"
+                        :href="link.to"
+                        class="group relative block rounded-2xl border border-white/30 bg-white/15 p-5 backdrop-blur-xl transition-all duration-300 ease-out hover:scale-[1.02] hover:border-white/60 hover:shadow-[0_12px_50px_-15px_rgba(0,0,0,0.25)] focus:outline-none focus:ring-2 focus:ring-white/60"
                     >
-                        <CardHeader>
-                            <div class="flex items-start gap-4">
-                                <div
-                                    :class="[
-                                        'rounded-xl p-3 transition-colors group-hover:scale-110',
-                                        action.bgColor,
-                                    ]"
-                                >
-                                    <Icon :icon="action.icon" :class="['size-6', action.color]" />
-                                </div>
-                                <div class="flex-1 space-y-1">
-                                    <CardTitle class="text-base">{{ action.title }}</CardTitle>
-                                    <CardDescription class="text-sm">{{ action.description }}</CardDescription>
-                                </div>
-                            </div>
-                        </CardHeader>
-                    </Card>
-                </Link>
-            </div>
-        </div>
+                        <!-- Glass surface effect on hover -->
+                        <div
+                            class="pointer-events-none absolute inset-0 -z-10 rounded-2xl bg-white/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                        ></div>
 
-        <!-- Upcoming Bookings -->
-        <Card>
-            <CardHeader>
-                <div class="flex items-center justify-between">
-                    <div>
-                        <CardTitle>Próximas Citas</CardTitle>
-                        <CardDescription>Tus servicios programados</CardDescription>
-                    </div>
-                    <Button variant="ghost" size="sm">
-                        Ver todo
-                        <Icon icon="mdi:arrow-right" class="ml-2 size-4" />
-                    </Button>
-                </div>
-            </CardHeader>
-            <CardContent>
-                <div class="flex flex-col items-center justify-center py-12 text-center">
-                    <Icon icon="mdi:calendar-blank-outline" class="mb-4 size-12 text-muted-foreground/50" />
-                    <p class="text-sm text-muted-foreground">No tienes servicios programados</p>
-                    <Link href="/bookings/create">
-                        <Button variant="outline" size="sm" class="mt-4">
-                            <Icon icon="mdi:plus" class="mr-2 size-4" />
-                            Crear Servicio
-                        </Button>
+                        <!-- Content -->
+                        <div class="flex items-center gap-3">
+                            <Icon :icon="link.icon" class="h-5 w-5 text-gray-500 transition-colors group-hover:text-gray-600" />
+                            <span class="text-base font-medium text-gray-700 transition-colors group-hover:text-gray-800">
+                                {{ link.label }}
+                            </span>
+                        </div>
                     </Link>
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     </div>
 </template>

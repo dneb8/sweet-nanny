@@ -1,56 +1,37 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Icon } from '@iconify/vue';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { computed } from 'vue';
 
+interface User {
+    name?: string;
+    surnames?: string;
+}
+
+interface QuickLink {
+    label: string;
+    to: string;
+    icon: string;
+}
+
 const page = usePage();
-const user = computed(() => page.props.auth?.user);
+const user = computed<User>(() => page.props.auth?.user || {});
 
-const quickActions = [
+const links: QuickLink[] = [
     {
-        title: 'Gestionar Usuarios',
-        description: 'Ver y administrar cuentas de usuarios',
-        icon: 'mdi:account-multiple',
-        href: '/users',
-        color: 'text-blue-600 dark:text-blue-400',
-        bgColor: 'bg-blue-50 dark:bg-blue-950/30',
+        label: 'Gestionar Usuarios',
+        to: '/users',
+        icon: 'lucide:users',
     },
     {
-        title: 'Ver Bookings',
-        description: 'Supervisar servicios y citas',
-        icon: 'mdi:calendar-clock',
-        href: '/bookings',
-        color: 'text-purple-600 dark:text-purple-400',
-        bgColor: 'bg-purple-50 dark:bg-purple-950/30',
+        label: 'Ver Bookings',
+        to: '/bookings',
+        icon: 'solar:calendar-outline',
     },
     {
-        title: 'Gestionar Niñeras',
-        description: 'Administrar perfiles de niñeras',
-        icon: 'mdi:account-heart',
-        href: '/nannies',
-        color: 'text-pink-600 dark:text-pink-400',
-        bgColor: 'bg-pink-50 dark:bg-pink-950/30',
-    },
-];
-
-const stats = [
-    {
-        label: 'Usuarios Totales',
-        icon: 'mdi:account-group',
-        color: 'text-sky-600 dark:text-sky-400',
-    },
-    {
-        label: 'Bookings Activos',
-        icon: 'mdi:calendar-check',
-        color: 'text-emerald-600 dark:text-emerald-400',
-    },
-    {
-        label: 'Niñeras Activas',
-        icon: 'mdi:account-star',
-        color: 'text-amber-600 dark:text-amber-400',
+        label: 'Gestionar Niñeras',
+        to: '/nannies',
+        icon: 'ph:user',
     },
 ];
 </script>
@@ -58,89 +39,50 @@ const stats = [
 <template>
     <Head title="Admin Dashboard" />
 
-    <div class="space-y-8">
-        <!-- Welcome Section -->
-        <div class="flex flex-col gap-3">
-            <div class="flex items-center gap-3">
-                <div class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg">
-                    <Icon icon="mdi:shield-crown" class="size-7 text-white" />
-                </div>
-                <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
-                        Bienvenido, {{ user?.name }} 👋
+    <!-- Background with gradient and blobs -->
+    <div class="relative min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+        <!-- Decorative blobs -->
+        <div class="pointer-events-none absolute inset-0 overflow-hidden">
+            <div class="absolute -left-10 -top-10 h-72 w-72 rounded-full bg-blue-200/30 blur-3xl"></div>
+            <div class="absolute -right-10 top-40 h-96 w-96 rounded-full bg-purple-200/30 blur-3xl"></div>
+            <div class="absolute bottom-10 left-1/3 h-80 w-80 rounded-full bg-pink-200/30 blur-3xl"></div>
+        </div>
+
+        <!-- Main content -->
+        <div class="relative mx-auto max-w-6xl px-4 py-12">
+            <!-- Glass panel -->
+            <div class="rounded-3xl border border-white/40 bg-white/20 p-8 backdrop-blur-xl">
+                <!-- Welcome section -->
+                <div class="mb-8">
+                    <p class="text-sm text-gray-500">Bienvenido(a)</p>
+                    <h1 class="text-3xl font-semibold text-gray-800">
+                        {{ user.name }} {{ user.surnames }}
                     </h1>
-                    <div class="flex items-center gap-2">
-                        <Badge variant="secondary" class="mt-1">
-                            <Icon icon="mdi:shield-account" class="mr-1 size-3" />
-                            Administrador
-                        </Badge>
-                    </div>
+                </div>
+
+                <!-- Quick links grid -->
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <Link
+                        v-for="link in links"
+                        :key="link.label"
+                        :href="link.to"
+                        class="group relative block rounded-2xl border border-white/30 bg-white/15 p-5 backdrop-blur-xl transition-all duration-300 ease-out hover:scale-[1.02] hover:border-white/60 hover:shadow-[0_12px_50px_-15px_rgba(0,0,0,0.25)] focus:outline-none focus:ring-2 focus:ring-white/60"
+                    >
+                        <!-- Glass surface effect on hover -->
+                        <div
+                            class="pointer-events-none absolute inset-0 -z-10 rounded-2xl bg-white/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                        ></div>
+
+                        <!-- Content -->
+                        <div class="flex items-center gap-3">
+                            <Icon :icon="link.icon" class="h-5 w-5 text-gray-500 transition-colors group-hover:text-gray-600" />
+                            <span class="text-base font-medium text-gray-700 transition-colors group-hover:text-gray-800">
+                                {{ link.label }}
+                            </span>
+                        </div>
+                    </Link>
                 </div>
             </div>
-            <p class="text-base text-muted-foreground">Gestiona usuarios, niñeras, tutores y toda la configuración de la plataforma.</p>
         </div>
-
-        <!-- Stats Cards -->
-        <div class="grid gap-4 md:grid-cols-3">
-            <Card v-for="stat in stats" :key="stat.label" class="transition-all hover:shadow-md">
-                <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle class="text-sm font-medium">{{ stat.label }}</CardTitle>
-                    <div class="rounded-lg bg-muted p-2">
-                        <Icon :icon="stat.icon" :class="['size-4', stat.color]" />
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <div class="text-2xl font-bold">--</div>
-                    <p class="text-xs text-muted-foreground">Disponible próximamente</p>
-                </CardContent>
-            </Card>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="space-y-4">
-            <div class="flex items-center gap-2">
-                <Icon icon="mdi:lightning-bolt" class="size-5 text-amber-500" />
-                <h2 class="text-xl font-semibold">Acciones Rápidas</h2>
-            </div>
-            <div class="grid gap-4 md:grid-cols-3">
-                <Link v-for="action in quickActions" :key="action.title" :href="action.href">
-                    <Card class="group cursor-pointer transition-all hover:shadow-md hover:shadow-primary/5 hover:-translate-y-0.5">
-                        <CardHeader>
-                            <div class="flex items-start gap-4">
-                                <div :class="['rounded-xl p-3 transition-colors group-hover:scale-110', action.bgColor]">
-                                    <Icon :icon="action.icon" :class="['size-6', action.color]" />
-                                </div>
-                                <div class="flex-1 space-y-1">
-                                    <CardTitle class="text-base">{{ action.title }}</CardTitle>
-                                    <CardDescription class="text-sm">{{ action.description }}</CardDescription>
-                                </div>
-                            </div>
-                        </CardHeader>
-                    </Card>
-                </Link>
-            </div>
-        </div>
-
-        <!-- Recent Activity Section -->
-        <Card>
-            <CardHeader>
-                <div class="flex items-center justify-between">
-                    <div>
-                        <CardTitle>Actividad Reciente</CardTitle>
-                        <CardDescription>Últimas acciones en la plataforma</CardDescription>
-                    </div>
-                    <Button variant="ghost" size="sm">
-                        Ver todo
-                        <Icon icon="mdi:arrow-right" class="ml-2 size-4" />
-                    </Button>
-                </div>
-            </CardHeader>
-            <CardContent>
-                <div class="flex flex-col items-center justify-center py-12 text-center">
-                    <Icon icon="mdi:calendar-clock-outline" class="mb-4 size-12 text-muted-foreground/50" />
-                    <p class="text-sm text-muted-foreground">No hay actividad reciente para mostrar</p>
-                </div>
-            </CardContent>
-        </Card>
     </div>
 </template>
