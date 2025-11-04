@@ -8,11 +8,6 @@ use Illuminate\Support\Str;
 
 class Filter
 {
-    /**
-     * Las relaciones, en caso de existir, necesarias para llegar al campo a filtrar desde el query dado.
-     */
-    private null|string|array $relationships = null;
-
     public function __construct(
         private Builder $query,
         private ?string $field,
@@ -23,6 +18,11 @@ class Filter
             $this->field = Str::afterLast($field, '.');
         }
     }
+
+    /**
+     * Las relaciones, en caso de existir, necesarias para llegar al campo a filtrar desde el query dado.
+     */
+    private ?string $relationships;
 
     /**
      * Determina si el filtro por default es estricta o no (WHERE $search vs WHERE LIKE %$search%).
@@ -101,10 +101,8 @@ class Filter
             ? $filterValue
             : "%$filterValue%";
 
-        if (!empty($this->relationships)) {
-            $relationships = is_array($this->relationships) ? implode('.', $this->relationships) : $this->relationships;
-            
-            return $this->query->whereHas($relationships, function ($query) use ($clause, $operator, $search) {
+        if ($this->relationships) {
+            return $this->query->whereHas($this->relationships, function ($query) use ($clause, $operator, $search) {
                 $relatedTableName = $query->getModel()->getTable();
 
                 if ($clause === 'whereIn') {

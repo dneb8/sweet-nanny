@@ -13,7 +13,6 @@ class Booking extends Model
         'tutor_id',
         'description',
         'recurrent',
-        'status',
         'qualities',
         'careers',
         'courses',

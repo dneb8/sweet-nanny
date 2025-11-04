@@ -319,6 +319,7 @@ watch(
           </CarouselContent>
 
           <CarouselPrevious v-if="rows.length > 1" />
+          <!-- 🔗 El botón que EXPONE scrollNext -->
           <CarouselNextButton v-if="rows.length > 1" ref="carouselNextRef" />
         </Carousel>
 

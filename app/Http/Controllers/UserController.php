@@ -12,11 +12,9 @@ use App\Services\UserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Gate;
-use Spatie\Permission\Contracts\Role;
 
 class UserController extends Controller
 {
@@ -119,18 +117,14 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        // Check if the authenticated user can view this specific user
-        Gate::authorize('view', $user);
+        Gate::authorize('viewAny', User::class);
         
-        // Load the relationships to check if they exist
-        $user->load(['nanny', 'tutor']);
-        
-        if ($user->hasRole(RoleEnum::NANNY->value) && $user->nanny) {
-            return redirect()->route('nannies.show', $user->nanny->ulid);
+        if ($user->hasRole(RoleEnum::NANNY->value)) {
+            return redirect()->route('nannies.show', $user->nanny);
         }
 
-        if ($user->hasRole(RoleEnum::TUTOR->value) && $user->tutor) {
-            return redirect()->route('tutors.show', $user->tutor->ulid);
+        if ($user->hasRole(RoleEnum::TUTOR->value)) {
+            return redirect()->route('tutors.show', $user->tutor);
         }
 
         return Inertia::render('User/Show', [
@@ -145,41 +139,7 @@ class UserController extends Controller
     {
         Gate::authorize('delete', $user);
 
-        $isSelfDelete = Auth::id() === $user->id;
-
-        // Use transaction to ensure related models are deleted
-        DB::transaction(function () use ($user) {
-            // Delete related nanny or tutor profile
-            if ($user->hasRole(RoleEnum::NANNY->value) && $user->nanny) {
-                // Delete media associated with nanny
-                $user->nanny->clearMediaCollection();
-                $user->nanny->delete();
-            }
-
-            if ($user->hasRole(RoleEnum::TUTOR->value) && $user->tutor) {
-                $user->tutor->delete();
-            }
-
-            // Delete user's media
-            $user->clearMediaCollection();
-
-            // Delete the user
-            $user->delete();
-        });
-
-        // If user deleted their own account, log them out
-        if ($isSelfDelete) {
-            Auth::logout();
-            request()->session()->invalidate();
-            request()->session()->regenerateToken();
-
-            return redirect()->route('login')->with([
-                'message' => [
-                    'title' => 'Cuenta eliminada',
-                    'description' => 'Tu cuenta ha sido eliminada correctamente.',
-                ],
-            ]);
-        }
+        User::destroy($user->id);
 
         return redirect()->back()->with([
             'message' => [
@@ -196,7 +156,7 @@ class UserController extends Controller
     public function updateAvatar(Request $request, User $user): RedirectResponse
     {
         // Authorization: only the user themselves or admin can update avatar
-        if (Auth::id() !== $user->id && ! Auth::user()?->hasRole(RoleEnum::ADMIN)) {
+        if (Auth::id() !== $user->id && ! Auth::user()?->hasRole('admin')) {
             abort(403, 'No tienes permiso para actualizar el avatar de este usuario.');
         }
 

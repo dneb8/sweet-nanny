@@ -7,7 +7,6 @@ use App\Http\Requests\Tutor\UpdateTutorRequest;
 use App\Http\Traits\HandlesAvatarValidation;
 use App\Models\Tutor;
 use App\Services\TutorService;
-// Removed incorrect Gate import
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -53,6 +52,7 @@ class TutorController extends Controller
      */
     public function show(Tutor $tutor, TutorService $tutorService): Response
     {
+        // $this->authorize('view', $tutor);
 
         $tutor = $tutorService->getShowData($tutor->ulid);
 
