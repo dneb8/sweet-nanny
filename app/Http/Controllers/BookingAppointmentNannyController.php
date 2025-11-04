@@ -12,9 +12,12 @@ use App\Models\BookingAppointment;
 use App\Models\Nanny;
 use App\Notifications\NannyAssigned;
 use App\Notifications\NannyChanged;
+use App\Notifications\NannyUnassigned;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -178,17 +181,50 @@ class BookingAppointmentNannyController extends Controller
 
         // Send appropriate notifications
         if ($isChanging && $oldNanny) {
-            // Changing nanny - notify tutor
+            // Changing nanny - multiple notifications needed
             $oldNanny->loadMissing('user');
             $tutorUser = $appointment->booking?->tutor?->user;
-            if ($tutorUser) {
+            $currentUser = Auth::user();
+            
+            // ALWAYS notify the old nanny that their appointment was cancelled
+            // This is critical - the old nanny must know they're no longer assigned
+            if ($oldNanny->user) {
+                $oldNanny->user->notify(new NannyUnassigned($appointment));
+            } else {
+                // Log if old nanny has no user (shouldn't happen but helps debugging)
+                Log::warning('Old nanny has no user', [
+                    'nanny_id' => $oldNanny->id,
+                    'appointment_id' => $appointment->id
+                ]);
+            }
+            
+            // If admin made the change, notify the tutor about the nanny change
+            if ($currentUser && $currentUser->hasRole('admin') && $tutorUser && $tutorUser->id !== $currentUser->id) {
                 $tutorUser->notify(new NannyChanged($appointment, $oldNanny, $nanny));
             }
-            $message = 'Niñera cambiada correctamente';
+            
+            // ALWAYS notify the new nanny about their new assignment
+            if ($nanny->user) {
+                $nanny->user->notify(new NannyAssigned($appointment));
+            } else {
+                // Log if new nanny has no user (shouldn't happen but helps debugging)
+                Log::warning('New nanny has no user', [
+                    'nanny_id' => $nanny->id,
+                    'appointment_id' => $appointment->id
+                ]);
+            }
+            
+            $message = 'Niñera cambiada correctamente.';
         } else {
             // First assignment - notify nanny
             if ($nanny->user) {
                 $nanny->user->notify(new NannyAssigned($appointment));
+            } else {
+                // Log if nanny has no user
+                Log::warning('Nanny has no user on first assignment', [
+                    'nanny_id' => $nanny->id,
+                    'appointment_id' => $appointment->id
+                ]);
             }
             $message = 'Niñera asignada correctamente';
         }

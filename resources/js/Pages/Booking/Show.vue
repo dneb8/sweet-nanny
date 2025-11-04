@@ -14,6 +14,7 @@ import EditAppointmentDatesModal from './components/modals/EditAppointmentDatesM
 import EditAppointmentAddressModal from './components/modals/EditAppointmentAddressModal.vue'
 import EditAppointmentChildrenModal from './components/modals/EditAppointmentChildrenModal.vue'
 import ConfirmUnassignModal from './components/modals/ConfirmUnassignModal.vue'
+import ConfirmChangeNannyModal from './components/modals/ConfirmChangeNannyModal.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import SingleAppointmentCard from './components/SingleAppointmentCard.vue'
 
@@ -103,13 +104,28 @@ function canChooseNanny(appointment: BookingAppointment): boolean {
 }
 
 function canChangeNanny(appointment: BookingAppointment): boolean {
-  if (!appointment.nanny_id) return false
-  const userRoles = (window as any).$page?.props?.auth?.roles || []
-  const isAdmin = userRoles.includes('admin')
-  if (isAdmin) return true
-  const isTutor = userRoles.includes('tutor')
-  return isTutor && appointment.status === 'pending'
+  // Debe existir una niñera asignada para "cambiar"
+  if (!appointment?.nanny_id) return false
+
+  const roles = (window as any)?.$page?.props?.auth?.roles || []
+  const isAdmin = roles.includes('admin')
+  const isTutor = roles.includes('tutor')
+  const status = appointment?.status
+
+  // Admin: permitido salvo estados terminales
+  if (isAdmin) {
+    return status !== 'cancelled' && status !== 'completed'
+  }
+
+  // Tutor: estrictamente cuando está pendiente
+  if (isTutor) {
+    return status === 'pending'
+  }
+
+  // Otros roles: no
+  return false
 }
+
 
 // ----------------- fechas helpers -----------------
 const MX_TZ = 'America/Mexico_City'
@@ -130,7 +146,9 @@ const showDatesModal = ref(false)
 const showAddressModal = ref(false)
 const showChildrenModal = ref(false)
 const showConfirmModal = ref(false)
+const showConfirmChangeNannyModal = ref(false)
 const pendingModalAction = ref<'dates' | 'address' | 'children' | null>(null)
+const pendingChangeNannyAppointment = ref<BookingAppointment | null>(null)
 
 const canEditAppointment = computed(() => {
   if (!selectedAppointment.value) return false
@@ -167,6 +185,27 @@ function closeDatesModal() { showDatesModal.value = false }
 function closeAddressModal() { showAddressModal.value = false }
 function closeChildrenModal() { showChildrenModal.value = false }
 function closeConfirmModal() { showConfirmModal.value = false; pendingModalAction.value = null }
+function closeConfirmChangeNannyModal() { 
+  showConfirmChangeNannyModal.value = false
+  pendingChangeNannyAppointment.value = null
+}
+
+// Handle change nanny button click - show confirmation modal first
+function handleChangeNanny(appointment: BookingAppointment) {
+  pendingChangeNannyAppointment.value = appointment
+  showConfirmChangeNannyModal.value = true
+}
+
+// After confirmation, proceed to nanny selection
+function confirmChangeNanny() {
+  if (pendingChangeNannyAppointment.value) {
+    router.get(route('bookings.appointments.nannies.choose', { 
+      booking: props.booking.id, 
+      appointment: pendingChangeNannyAppointment.value.id 
+    }))
+  }
+  closeConfirmChangeNannyModal()
+}
 
 // ----------------- RELOAD FORZADO tras guardar -----------------
 // Llama este método desde los modales al terminar la acción en servidor
@@ -359,6 +398,7 @@ function getEditDisabledReason(appointment: BookingAppointment): string {
                 :fmt-time-tz="fmtTimeTZ"
                 @openEditModal="openEditModal"
                 @handleModalSaved="handleModalSaved"
+                @changeNanny="handleChangeNanny(appointment)"
                 @routerGet="(params: any) => router.get(params)" />
             </TabsContent>
           </Tabs>
@@ -378,6 +418,7 @@ function getEditDisabledReason(appointment: BookingAppointment): string {
               :fmt-time-tz="fmtTimeTZ"
               @openEditModal="openEditModal"
               @handleModalSaved="handleModalSaved"
+              @changeNanny="handleChangeNanny(v.appointments()[0])"
               @routerGet="(params: any) => router.get(params)" />
           </div>
         </template>
@@ -435,6 +476,13 @@ function getEditDisabledReason(appointment: BookingAppointment): string {
       :show="showConfirmModal"
       @close="closeConfirmModal"
       @confirm="confirmUnassign"
+    />
+
+    <!-- Confirm Change Nanny Modal -->
+    <ConfirmChangeNannyModal
+      :show="showConfirmChangeNannyModal"
+      @close="closeConfirmChangeNannyModal"
+      @confirm="confirmChangeNanny"
     />
 
     <!-- Delete Modal -->
