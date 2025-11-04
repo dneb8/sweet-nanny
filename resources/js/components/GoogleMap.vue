@@ -60,7 +60,7 @@ const googleMapsUrl = computed(() => {
 })
 
 // Lee la API key desde variables de entorno (Vite expone las que empiezan con VITE_)
-const GMAPS_API_KEY = import.meta.env.VITE_GMAPS as string | undefined
+const GMAPS_API_KEY = (import.meta.env.VITE_GMAPS || import.meta.env.VITE_GMAPS_API_KEY) as string | undefined
 
 function loadGoogleMaps(apiKey: string): Promise<void> {
   if ((window as any).google?.maps) return Promise.resolve()
@@ -75,7 +75,7 @@ function loadGoogleMaps(apiKey: string): Promise<void> {
     scriptEl.id = "gmaps-sdk"
     scriptEl.async = true
     scriptEl.defer = true
-    scriptEl.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMapReady`
+    scriptEl.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMapReady&loading=async&libraries=marker`
     scriptEl.onerror = (e) => {
       console.error("[GoogleMaps] Error cargando el SDK:", e)
       reject(e)
@@ -96,10 +96,11 @@ function initMap() {
     mapTypeControl: false,
     streetViewControl: false,
     fullscreenControl: true,
+    mapId: 'DEMO_MAP_ID', // Required for AdvancedMarkerElement
   })
 
   if (props.showMarker && hasValidCoords.value) {
-    marker = new google.maps.Marker({
+    marker = new google.maps.marker.AdvancedMarkerElement({
       position: center,
       map,
     })
@@ -113,17 +114,17 @@ function updatePosition() {
   map.setCenter(pos)
   if (typeof props.zoom === "number") map.setZoom(props.zoom)
   if (props.showMarker) {
-    if (!marker) marker = new google.maps.Marker({ position: pos, map })
-    else marker.setPosition(pos)
+    if (!marker) marker = new google.maps.marker.AdvancedMarkerElement({ position: pos, map })
+    else marker.position = pos
   } else if (marker) {
-    marker.setMap(null)
+    marker.map = null
     marker = null
   }
 }
 
 onMounted(async () => {
   if (!GMAPS_API_KEY) {
-    console.warn("[GoogleMaps] VITE_GMAPS no está definido. Define VITE_GMAPS en tu .env/.env.local")
+    console.warn("[GoogleMaps] VITE_GMAPS o VITE_GMAPS_API_KEY no está definido. Define una de estas variables en tu .env/.env.local")
     return
   }
   try {
@@ -135,7 +136,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  if (marker) { marker.setMap(null); marker = null }
+  if (marker) { marker.map = null; marker = null }
   map = null
 })
 
