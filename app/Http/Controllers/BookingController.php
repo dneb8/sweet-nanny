@@ -11,6 +11,7 @@ use App\Http\Requests\Bookings\UpdateBookingRequest;
 use App\Models\Booking;
 use App\Models\User;
 use App\Services\BookingService;
+use App\Services\BookingStatusService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
