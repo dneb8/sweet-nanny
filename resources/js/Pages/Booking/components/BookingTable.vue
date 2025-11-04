@@ -102,9 +102,9 @@ const {
                 <Badge
                     v-if="slotProps.record.recurrent"
                     label="Recurrente"
-                    customClass="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
+                    customClass="bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:border dark:border-indigo-200 dark:text-indigo-200"
                 />
-                <Badge v-else label="Fijo" customClass="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200" />
+                <Badge v-else label="Fijo" customClass="bg-gray-100 text-gray-800 dark:bg-gray-800/40 dark:border dark:border-gray-100 dark:border-gray-700 dark:text-gray-200" />
             </template>
         </Column>
 
