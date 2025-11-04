@@ -84,6 +84,9 @@ class BookingAppointmentController extends Controller
         ]);
 
         if ($validator->fails()) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Validation failed', 'errors' => $validator->errors()], 422);
+            }
             return back()
                 ->withErrors($validator)
                 ->withInput()
@@ -105,6 +108,9 @@ class BookingAppointmentController extends Controller
             $appointment->addresses()->sync([$validated['address_id']]);
         });
 
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Dirección actualizada exitosamente'], 200);
+        }
         return redirect()->back()->with('success', 'Dirección actualizada exitosamente');
     }
 
@@ -120,6 +126,9 @@ class BookingAppointmentController extends Controller
         ]);
 
         if ($validator->fails()) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Validation failed', 'errors' => $validator->errors()], 422);
+            }
             return back()
                 ->withErrors($validator)
                 ->withInput()
@@ -131,6 +140,9 @@ class BookingAppointmentController extends Controller
         // Sync children
         $appointment->children()->sync($validated['child_ids']);
 
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Niños actualizados exitosamente'], 200);
+        }
         return redirect()->back()->with('success', 'Niños actualizados exitosamente');
     }
 }
