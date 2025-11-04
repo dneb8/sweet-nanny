@@ -36,31 +36,6 @@ let map: any = null
 let marker: any = null
 let scriptEl: HTMLScriptElement | null = null
 
-// Helper functions for marker operations
-function createMarker(position: google.maps.LatLngLiteral, mapInstance: any) {
-  if (GMAPS_MAP_ID) {
-    return new google.maps.marker.AdvancedMarkerElement({ position, map: mapInstance })
-  } else {
-    return new google.maps.Marker({ position, map: mapInstance })
-  }
-}
-
-function updateMarkerPosition(markerInstance: any, position: google.maps.LatLngLiteral) {
-  if (GMAPS_MAP_ID) {
-    markerInstance.position = position
-  } else {
-    markerInstance.setPosition(position)
-  }
-}
-
-function removeMarker(markerInstance: any) {
-  if (GMAPS_MAP_ID) {
-    markerInstance.map = null
-  } else {
-    markerInstance.setMap(null)
-  }
-}
-
 // --- Helpers de coordenadas ---
 function toNumber(value: unknown): number {
   const n =
@@ -87,6 +62,31 @@ const googleMapsUrl = computed(() => {
 // Lee la API key y map ID desde variables de entorno (Vite expone las que empiezan con VITE_)
 const GMAPS_API_KEY = (import.meta.env.VITE_GMAPS || import.meta.env.VITE_GMAPS_API_KEY) as string | undefined
 const GMAPS_MAP_ID = import.meta.env.VITE_GMAPS_MAP_ID as string | undefined
+
+// Helper functions for marker operations
+function createMarker(position: google.maps.LatLngLiteral, mapInstance: any) {
+  if (GMAPS_MAP_ID) {
+    return new google.maps.marker.AdvancedMarkerElement({ position, map: mapInstance })
+  } else {
+    return new google.maps.Marker({ position, map: mapInstance })
+  }
+}
+
+function updateMarkerPosition(markerInstance: any, position: google.maps.LatLngLiteral) {
+  if (GMAPS_MAP_ID) {
+    markerInstance.position = position
+  } else {
+    markerInstance.setPosition(position)
+  }
+}
+
+function removeMarker(markerInstance: any) {
+  if (GMAPS_MAP_ID) {
+    markerInstance.map = null
+  } else {
+    markerInstance.setMap(null)
+  }
+}
 
 function loadGoogleMaps(apiKey: string): Promise<void> {
   if ((window as any).google?.maps) return Promise.resolve()
@@ -116,7 +116,7 @@ function initMap() {
     ? { lat: latNum.value, lng: lngNum.value }
     : { lat: 19.704, lng: -103.344 } // fallback visual
 
-  // Use GMAPS_MAP_ID if available, otherwise use a demo ID for AdvancedMarkerElement
+  // Configure map options
   const mapConfig: google.maps.MapOptions = {
     center,
     zoom: props.zoom,
@@ -125,7 +125,7 @@ function initMap() {
     fullscreenControl: true,
   }
   
-  // Add mapId if we're using AdvancedMarkerElement
+  // Add mapId if available (required for AdvancedMarkerElement)
   if (props.showMarker && GMAPS_MAP_ID) {
     mapConfig.mapId = GMAPS_MAP_ID
   }
