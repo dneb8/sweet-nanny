@@ -318,14 +318,13 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
             </Badge>
           </div>
 
-            <GoogleMap
+          <GoogleMap
             :latitude="+(appointmentAddress?.latitude ?? 19.704)"
             :longitude="+(appointmentAddress?.longitude ?? -103.344)"
             :zoom="16"
             height="300px"
             :showMarker="true"
             />
-
         </div>
       </div>
     </aside>

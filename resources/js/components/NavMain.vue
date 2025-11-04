@@ -7,6 +7,7 @@ defineProps<{
     items: NavItem[];
     adminItems?: NavItem[];
     bookingsItems?: NavItem[];
+    profileItems?: NavItem[];
 }>();
 
 const page = usePage();
@@ -43,6 +44,19 @@ const page = usePage();
         <SidebarGroupLabel>Servicios</SidebarGroupLabel>
         <SidebarMenu>
             <SidebarMenuItem v-for="item in bookingsItems" :key="item.title">
+                <SidebarMenuButton as-child :is-active="item.href === page.url" :tooltip="item.title">
+                    <Link :href="item.href">              
+                        <Icon :icon="item.icon" width="24" height="24"/>
+                        <span>{{ item.title }}</span>
+                    </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+        </SidebarMenu>
+    </SidebarGroup>
+    <SidebarGroup v-if="profileItems && profileItems.length > 0" class="pl-4 py-0">
+        <SidebarGroupLabel>Perfil</SidebarGroupLabel>
+        <SidebarMenu>
+            <SidebarMenuItem v-for="item in profileItems" :key="item.title">
                 <SidebarMenuButton as-child :is-active="item.href === page.url" :tooltip="item.title">
                     <Link :href="item.href">              
                         <Icon :icon="item.icon" width="24" height="24"/>
