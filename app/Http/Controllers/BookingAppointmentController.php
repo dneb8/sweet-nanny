@@ -94,14 +94,18 @@ class BookingAppointmentController extends Controller
 
         $validated = $validator->validated();
 
-        // If status is pending and we're editing address, unassign nanny and revert to draft
-        if ($appointment->status === 'pending' && $appointment->nanny_id) {
-            $appointment->nanny_id = null;
-            $appointment->status = 'draft';
-        }
+        DB::transaction(function () use ($appointment, $validated) {
+            // If status is pending and we're editing address, unassign nanny and revert to draft
+            if (! is_null($appointment->nanny_id)) {
+                $appointment->forceFill([
+                    'nanny_id' => null,
+                    'status' => StatusEnum::DRAFT,
+                ])->save();
+            }
 
-        // Sync the address (replace existing)
-        $appointment->addresses()->sync([$validated['address_id']]);
+            // Sync the address (replace existing)
+            $appointment->addresses()->sync([$validated['address_id']]);
+        });
 
         // Return an empty response to indicate success
         // The frontend will handle reloading the data
