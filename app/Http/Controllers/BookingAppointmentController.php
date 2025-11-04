@@ -70,9 +70,7 @@ class BookingAppointmentController extends Controller
             $appointment->update($payload);
         });
 
-        // Return an empty response to indicate success
-        // The frontend will handle reloading the data
-        return response('', 200);
+        return back()->with('success', 'Fechas actualizadas exitosamente');
     }
 
     /**
@@ -107,9 +105,7 @@ class BookingAppointmentController extends Controller
             $appointment->addresses()->sync([$validated['address_id']]);
         });
 
-        // Return an empty response to indicate success
-        // The frontend will handle reloading the data
-        return response('', 200);
+        return back()->with('success', 'Dirección actualizada exitosamente');
     }
 
     /**
@@ -135,8 +131,6 @@ class BookingAppointmentController extends Controller
         // Sync children
         $appointment->children()->sync($validated['child_ids']);
 
-        // Return an empty response to indicate success
-        // The frontend will handle reloading the data
-        return response('', 200);
+        return back()->with('success', 'Niños actualizados exitosamente');
     }
 }
