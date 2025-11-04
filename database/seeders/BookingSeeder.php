@@ -59,7 +59,7 @@ class BookingSeeder extends Seeder
                 Booking::factory()->create([
                     'tutor_id' => $tutor->id,
                     'address_id' => $address->id,
-                    'description' => $descriptions[$i],
+                    'description' => $descriptions[$i % count($descriptions)],
                     'recurrent' => $i % 2 === 0,
                     'qualities' => Arr::random($qualitiesList, rand(1, 8)),
                     'careers' => Arr::random($careersList, rand(1, 2)),
