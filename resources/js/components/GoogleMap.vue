@@ -59,8 +59,9 @@ const googleMapsUrl = computed(() => {
   return `https://www.google.com/maps/search/?api=1&query=${latNum.value},${lngNum.value}`
 })
 
-// Lee la API key desde variables de entorno (Vite expone las que empiezan con VITE_)
+// Lee la API key y map ID desde variables de entorno (Vite expone las que empiezan con VITE_)
 const GMAPS_API_KEY = (import.meta.env.VITE_GMAPS || import.meta.env.VITE_GMAPS_API_KEY) as string | undefined
+const GMAPS_MAP_ID = import.meta.env.VITE_GMAPS_MAP_ID as string | undefined
 
 function loadGoogleMaps(apiKey: string): Promise<void> {
   if ((window as any).google?.maps) return Promise.resolve()
@@ -90,20 +91,37 @@ function initMap() {
     ? { lat: latNum.value, lng: lngNum.value }
     : { lat: 19.704, lng: -103.344 } // fallback visual
 
-  map = new google.maps.Map(mapEl.value, {
+  // Use GMAPS_MAP_ID if available, otherwise use a demo ID for AdvancedMarkerElement
+  const mapConfig: google.maps.MapOptions = {
     center,
     zoom: props.zoom,
     mapTypeControl: false,
     streetViewControl: false,
     fullscreenControl: true,
-    mapId: 'DEMO_MAP_ID', // Required for AdvancedMarkerElement
-  })
+  }
+  
+  // Add mapId if we're using AdvancedMarkerElement
+  if (props.showMarker && GMAPS_MAP_ID) {
+    mapConfig.mapId = GMAPS_MAP_ID
+  }
+
+  map = new google.maps.Map(mapEl.value, mapConfig)
 
   if (props.showMarker && hasValidCoords.value) {
-    marker = new google.maps.marker.AdvancedMarkerElement({
-      position: center,
-      map,
-    })
+    // Only use AdvancedMarkerElement if mapId is available
+    if (GMAPS_MAP_ID) {
+      marker = new google.maps.marker.AdvancedMarkerElement({
+        position: center,
+        map,
+      })
+    } else {
+      // Fallback to legacy Marker if no mapId is provided
+      console.warn("[GoogleMaps] VITE_GMAPS_MAP_ID no está definido. Usando Marker legacy (deprecado). Define VITE_GMAPS_MAP_ID en tu .env para usar AdvancedMarkerElement.")
+      marker = new google.maps.Marker({
+        position: center,
+        map,
+      })
+    }
   }
 }
 
@@ -114,10 +132,28 @@ function updatePosition() {
   map.setCenter(pos)
   if (typeof props.zoom === "number") map.setZoom(props.zoom)
   if (props.showMarker) {
-    if (!marker) marker = new google.maps.marker.AdvancedMarkerElement({ position: pos, map })
-    else marker.position = pos
+    if (!marker) {
+      // Create new marker
+      if (GMAPS_MAP_ID) {
+        marker = new google.maps.marker.AdvancedMarkerElement({ position: pos, map })
+      } else {
+        marker = new google.maps.Marker({ position: pos, map })
+      }
+    } else {
+      // Update existing marker position
+      if (GMAPS_MAP_ID) {
+        marker.position = pos
+      } else {
+        marker.setPosition(pos)
+      }
+    }
   } else if (marker) {
-    marker.map = null
+    // Remove marker
+    if (GMAPS_MAP_ID) {
+      marker.map = null
+    } else {
+      marker.setMap(null)
+    }
     marker = null
   }
 }
@@ -136,7 +172,14 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  if (marker) { marker.map = null; marker = null }
+  if (marker) {
+    if (GMAPS_MAP_ID) {
+      marker.map = null
+    } else {
+      marker.setMap(null)
+    }
+    marker = null
+  }
   map = null
 })
 
