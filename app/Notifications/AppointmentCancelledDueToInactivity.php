@@ -8,7 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
 
-class NannyAssigned extends Notification implements ShouldQueue
+class AppointmentCancelledDueToInactivity extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -21,19 +21,18 @@ class NannyAssigned extends Notification implements ShouldQueue
         return ['database', 'broadcast'];
     }
 
-    /** Construye el payload común para database/broadcast */
+    /** Build common payload (DB + Broadcast) */
     protected function payload(): array
     {
-        // Asegura relaciones y locale en español
         $this->appointment->loadMissing('booking');
+        
         $start = $this->appointment->start_date->locale('es');
-        // Ej: "miércoles 8 de enero a las 8:00 pm"
-        $fechaBonita = $start->isoFormat('dddd D [de] MMMM [a las] h:mm a');
+        // Format: "miércoles 8 de enero a las 8:00 pm"
+        $fechaBonita = ucfirst($start->isoFormat('dddd D [de] MMMM [a las] h:mm a'));
 
         $mensaje = sprintf(
-            'Se te ha solicitado para la cita con fecha %s del servicio #%d.',
-            $fechaBonita,
-            $this->appointment->booking_id 
+            'Lo sentimos, tu cita del %s ha sido cancelada debido a inactividad (no se confirmó niñera).',
+            $fechaBonita
         );
 
         return [
@@ -42,7 +41,7 @@ class NannyAssigned extends Notification implements ShouldQueue
             'booking_id'     => $this->appointment->booking_id,
             'start_date'     => $this->appointment->start_date->toISOString(),
             'redirect'       => route('bookings.show', $this->appointment->booking_id),
-            'type'           => 'nanny_assigned',
+            'type'           => 'appointment_cancelled_inactivity',
         ];
     }
 

@@ -14,6 +14,7 @@ import EditAppointmentDatesModal from './components/modals/EditAppointmentDatesM
 import EditAppointmentAddressModal from './components/modals/EditAppointmentAddressModal.vue'
 import EditAppointmentChildrenModal from './components/modals/EditAppointmentChildrenModal.vue'
 import ConfirmUnassignModal from './components/modals/ConfirmUnassignModal.vue'
+import ConfirmChangeNannyModal from './components/modals/ConfirmChangeNannyModal.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import SingleAppointmentCard from './components/SingleAppointmentCard.vue'
 
@@ -84,6 +85,35 @@ const deleteMessage = computed(() => {
   return '¿Estás seguro de que deseas eliminar este servicio? Esta acción no se puede deshacer.'
 })
 
+// Function to check if can choose nanny for an appointment
+function canChooseNanny(appointment: BookingAppointment): boolean {
+  return policy.canChooseNanny(appointment, props.booking)
+}
+
+// Function to check if can change nanny for an appointment
+// Admin: can change when status is not cancelled or completed
+// Tutor: can change when status is not cancelled, completed, or confirmed
+function canChangeNanny(appointment: BookingAppointment): boolean {
+  if (!appointment.nanny_id) return false
+  
+  const status = appointment.status
+  const userRoles = (window as any).$page?.props?.auth?.roles || []
+  const isAdmin = userRoles.includes('admin')
+  const isTutor = userRoles.includes('tutor')
+  
+  // Admin: show button except when cancelled or completed
+  if (isAdmin) {
+    return status !== 'cancelled' && status !== 'completed'
+  }
+  
+  // Tutor: show button except when cancelled, completed, or confirmed
+  if (isTutor) {
+    return status !== 'cancelled' && status !== 'completed' && status !== 'confirmed'
+  }
+  
+  return false
+}
+
 // Helpers de fecha en TZ MX
 const MX_TZ = 'America/Mexico_City'
 function fmtDateTZ(iso: string) {
@@ -103,7 +133,9 @@ const showDatesModal = ref(false)
 const showAddressModal = ref(false)
 const showChildrenModal = ref(false)
 const showConfirmModal = ref(false)
+const showConfirmChangeNannyModal = ref(false)
 const pendingModalAction = ref<'dates' | 'address' | 'children' | null>(null)
+const pendingChangeNannyAppointment = ref<BookingAppointment | null>(null)
 
 const canEditAppointment = computed(() => {
   if (!selectedAppointment.value) return false
@@ -140,6 +172,27 @@ function closeDatesModal() { showDatesModal.value = false }
 function closeAddressModal() { showAddressModal.value = false }
 function closeChildrenModal() { showChildrenModal.value = false }
 function closeConfirmModal() { showConfirmModal.value = false; pendingModalAction.value = null }
+function closeConfirmChangeNannyModal() { 
+  showConfirmChangeNannyModal.value = false
+  pendingChangeNannyAppointment.value = null
+}
+
+// Handle change nanny button click - show confirmation modal first
+function handleChangeNanny(appointment: BookingAppointment) {
+  pendingChangeNannyAppointment.value = appointment
+  showConfirmChangeNannyModal.value = true
+}
+
+// After confirmation, proceed to nanny selection
+function confirmChangeNanny() {
+  if (pendingChangeNannyAppointment.value) {
+    router.get(route('bookings.appointments.nannies.choose', { 
+      booking: props.booking.id, 
+      appointment: pendingChangeNannyAppointment.value.id 
+    }))
+  }
+  closeConfirmChangeNannyModal()
+}
 
 function handleModalSaved() {
   router.reload({ only: ['booking'] })
@@ -306,11 +359,14 @@ function getEditDisabledReason(appointment: BookingAppointment): string {
                 :appointment="appointment"
                 :booking="props.booking"
                 :can-edit-appointment="policy.canEdit(appointment, props.booking)"
+                :can-choose-nanny="canChooseNanny(appointment)"
+                :can-change-nanny="canChangeNanny(appointment)"
                 :get-edit-disabled-reason="getEditDisabledReason"
                 :fmt-readable-date-time="fmtReadableDateTime"
                 :fmt-time-tz="fmtTimeTZ"
                 @openEditModal="openEditModal"
                 @handleModalSaved="handleModalSaved"
+                @changeNanny="handleChangeNanny(appointment)"
                 @routerGet="(params: any) => router.get(params)" />
             </TabsContent>
           </Tabs>
@@ -323,11 +379,14 @@ function getEditDisabledReason(appointment: BookingAppointment): string {
               :appointment="v.appointments()[0]"
               :booking="props.booking"
               :can-edit-appointment="policy.canEdit(v.appointments()[0], props.booking)"
+              :can-choose-nanny="canChooseNanny(v.appointments()[0])"
+              :can-change-nanny="canChangeNanny(v.appointments()[0])"
               :get-edit-disabled-reason="getEditDisabledReason"
               :fmt-readable-date-time="fmtReadableDateTime"
               :fmt-time-tz="fmtTimeTZ"
               @openEditModal="openEditModal"
               @handleModalSaved="handleModalSaved"
+              @changeNanny="handleChangeNanny(v.appointments()[0])"
               @routerGet="(params: any) => router.get(params)" />
           </div>
         </template>
@@ -385,6 +444,13 @@ function getEditDisabledReason(appointment: BookingAppointment): string {
       :show="showConfirmModal"
       @close="closeConfirmModal"
       @confirm="confirmUnassign"
+    />
+
+    <!-- Confirm Change Nanny Modal -->
+    <ConfirmChangeNannyModal
+      :show="showConfirmChangeNannyModal"
+      @close="closeConfirmChangeNannyModal"
+      @confirm="confirmChangeNanny"
     />
 
     <!-- Delete Modal -->

@@ -7,6 +7,8 @@ use App\Models\Booking;
 use App\Models\BookingAppointment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
@@ -37,35 +39,37 @@ class BookingAppointmentController extends Controller
      */
     public function updateDates(Request $request, Booking $booking, BookingAppointment $appointment): RedirectResponse
     {
-
-        $validator = Validator::make($request->all(), [
-            'start_date' => ['required', 'date', 'after:now'],
-            'end_date' => ['required', 'date', 'after:start_date'],
-            'duration' => ['required', 'integer', 'min:1', 'max:8'],
+        $v = Validator::make($request->all(), [
+            'start_date' => ['required','date','after:now'],
+            'end_date'   => ['required','date','after:start_date'],
+            'duration'   => ['nullable','integer','min:1','max:8'],
         ]);
 
-        if ($validator->fails()) {
-            return back()
-                ->withErrors($validator)
-                ->withInput()
-                ->with('error', 'Error al actualizar las fechas');
+        if ($v->fails()) {
+            return back()->withErrors($v)->withInput()->with('error','Error al actualizar las fechas');
         }
 
-        $validated = $validator->validated();
+        $data  = $v->validated();
+        $start = Carbon::parse($data['start_date']);
+        $end   = Carbon::parse($data['end_date']);
+        $dur   = $data['duration'] ?? max(1, (int) ceil($start->floatDiffInHours($end)));
 
-        // If status is pending and we're editing dates, unassign nanny and revert to draft
-        if ($appointment->status === StatusEnum::PENDING->value && $appointment->nanny_id) {
-            $appointment->nanny_id = null;
-            $appointment->status = StatusEnum::DRAFT->value;
-        }
+        DB::transaction(function () use ($appointment, $start, $end, $dur) {
+            // Si tenía niñera, desasigna y vuelve a DRAFT
+            if (!is_null($appointment->nanny_id)) {
+                $appointment->forceFill([
+                    'nanny_id' => null,
+                    'status'   => StatusEnum::DRAFT, 
+                ])->save();
+            }
 
-        $appointment->update([
-            'start_date' => $validated['start_date'],
-            'end_date' => $validated['end_date'],
-        ]);
+            $payload = ['start_date' => $start, 'end_date' => $end];
+            if ($appointment->isFillable('duration')) $payload['duration'] = $dur;
 
-        return back()
-            ->with('success', 'Fechas actualizadas exitosamente');
+            $appointment->update($payload);
+        });
+
+        return back()->with('success','Fechas actualizadas exitosamente.');
     }
 
     /**
