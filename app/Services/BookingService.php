@@ -21,11 +21,7 @@ class BookingService
             ->with([
                 'tutor',
                 'tutor.user',
-                'address',
-                'children',
                 'bookingAppointments',
-                'bookingAppointments.nanny',
-                'bookingAppointments.nanny.user',
             ])
             ->orderBy('created_at', 'desc');
 

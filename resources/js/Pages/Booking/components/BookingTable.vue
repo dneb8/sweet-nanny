@@ -8,7 +8,7 @@ import BookingFiltros from './BookingFiltros.vue';
 import BookingCard from './BookingCard.vue';
 import DeleteModal from '@/components/common/DeleteModal.vue';
 import Badge from '@/components/common/Badge.vue';
-import { Calendar, Users } from 'lucide-vue-next';
+import { Calendar } from 'lucide-vue-next';
 
 defineProps<{
     resource: FetcherResponse<Booking>;
@@ -48,55 +48,58 @@ const {
             <BookingCard :booking="slotProps" />
         </template>
 
+        <!-- Columna ID -->
+        <Column header="ID" field="id" :sortable="true">
+            <template #body="slotProps">
+                <span class="font-mono text-sm">#{{ slotProps.record.id }}</span>
+            </template>
+        </Column>
+
         <!-- Columna Tutor -->
         <Column header="Tutor">
             <template #body="slotProps">
-                {{ slotProps.record?.tutor?.user?.name ?? '—' }} {{ slotProps.record?.tutor?.user?.surnames ?? '' }}
+                <a
+                    :href="`/tutors/${slotProps.record?.tutor?.id}`"
+                    class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
+                >
+                    {{ slotProps.record?.tutor?.user?.name ?? '—' }} {{ slotProps.record?.tutor?.user?.surnames ?? '' }}
+                </a>
             </template>
         </Column>
 
-        <!-- Columna Dirección -->
-        <Column header="Dirección">
+        <!-- Columna Descripción -->
+        <Column header="Descripción">
             <template #body="slotProps">
-                <div v-if="slotProps.record?.address">
-                    {{ slotProps.record.address.street }}, {{ slotProps.record.address.neighborhood }}
+                <div class="max-w-xs truncate" :title="slotProps.record.description">
+                    {{ slotProps.record.description || '—' }}
                 </div>
-                <span v-else>—</span>
             </template>
         </Column>
 
-        <!-- Columna Niños con Badge e Ícono -->
-        <Column header="Niños">
+        <!-- Columna Recurrente -->
+        <Column header="Recurrente">
             <template #body="slotProps">
                 <Badge
-                    v-if="slotProps.record?.children && slotProps.record.children.length > 0"
-                    :label="`${slotProps.record.children.length}`"
-                    customClass="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 flex items-center gap-1"
-                >
-                    <template #icon>
-                        <Users class="w-3 h-3" />
-                    </template>
-                </Badge>
-                <span v-else class="text-muted-foreground">—</span>
+                    v-if="slotProps.record.recurrent"
+                    label="Recurrente"
+                    customClass="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
+                />
+                <Badge v-else label="Fijo" customClass="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200" />
             </template>
         </Column>
 
         <!-- Columna Citas con Badge e Ícono -->
         <Column header="Citas">
             <template #body="slotProps">
-                <div v-if="slotProps.record?.booking_appointments && slotProps.record.booking_appointments.length > 0">
-                    <Badge
-                        :label="`${slotProps.record.booking_appointments.length}`"
-                        customClass="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 flex items-center gap-1"
-                    >
-                        <template #icon>
-                            <Calendar class="w-3 h-3" />
-                        </template>
-                    </Badge>
-                    <div v-if="slotProps.record.booking_appointments[0]?.nanny" class="text-xs text-muted-foreground mt-1">
-                        Niñera: {{ slotProps.record.booking_appointments[0].nanny.user?.name ?? '—' }}
-                    </div>
-                </div>
+                <Badge
+                    v-if="slotProps.record?.booking_appointments && slotProps.record.booking_appointments.length > 0"
+                    :label="`${slotProps.record.booking_appointments.length}`"
+                    customClass="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 flex items-center gap-1"
+                >
+                    <template #icon>
+                        <Calendar class="w-3 h-3" />
+                    </template>
+                </Badge>
                 <span v-else class="text-muted-foreground">Sin citas</span>
             </template>
         </Column>

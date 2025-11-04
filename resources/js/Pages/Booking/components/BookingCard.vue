@@ -10,7 +10,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Icon } from '@iconify/vue';
-import { MoreVertical, Calendar, Users, MapPin } from 'lucide-vue-next';
+import { MoreVertical, Calendar } from 'lucide-vue-next';
 import type { Booking } from '@/types/Booking';
 import { BookingTableService } from '@/services/bookingTableService';
 import DeleteModal from '@/components/common/DeleteModal.vue';
@@ -107,25 +107,20 @@ const {
 
         <!-- Contenido: detalles del booking -->
         <CardContent class="px-4 pb-4 space-y-2">
-            <!-- Dirección -->
-            <div v-if="props.booking.address" class="flex items-center gap-2 text-xs text-muted-foreground">
-                <MapPin class="w-3 h-3" />
-                <span class="truncate">{{ props.booking.address.street }}, {{ props.booking.address.neighborhood }}</span>
+            <!-- Descripción -->
+            <div v-if="props.booking.description" class="text-sm text-muted-foreground">
+                {{ props.booking.description }}
             </div>
 
-            <!-- Niños -->
-            <div class="flex items-center gap-2 text-xs">
-                <Users class="w-3 h-3 text-muted-foreground" />
-                <span>{{ props.booking.children?.length ?? 0 }} niño(s)</span>
+            <!-- ID del booking -->
+            <div class="flex items-center gap-2 text-xs font-mono text-muted-foreground">
+                ID: #{{ props.booking.id }}
             </div>
 
             <!-- Citas -->
             <div class="flex items-center gap-2 text-xs">
                 <Calendar class="w-3 h-3 text-muted-foreground" />
                 <span>{{ props.booking.booking_appointments?.length ?? 0 }} cita(s)</span>
-                <span v-if="props.booking.booking_appointments?.[0]?.nanny" class="text-muted-foreground">
-                    • {{ props.booking.booking_appointments[0].nanny.user?.name ?? '—' }}
-                </span>
             </div>
 
             <!-- Fecha de creación -->
