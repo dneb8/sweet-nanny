@@ -25,8 +25,8 @@ const adminNavItems: NavItem[] = [
         icon: 'proicons:person-multiple',
     },
     {
-        title: 'Reviews',
-        href: '/admin/reviews',
+        title: 'Reseñas',
+        href: '/reviews',
         icon: 'proicons:star',
     },
     // {
@@ -43,14 +43,16 @@ const adminNavItems: NavItem[] = [
 
 // Check if user has ADMIN role
 const isAdmin = computed(() => {
-    const user = page.props.auth?.user as { roles?: string[] } | null;
-    return user?.roles?.includes('admin') ?? false;
+    const user = page.props.auth?.user as { roles?: { name: string }[] } | null;
+    const roleNames = user?.roles?.map(role => typeof role === 'string' ? role : role.name) ?? [];
+    return roleNames.includes('admin');
 });
 
 // Check if user has TUTOR role
 const isTutor = computed(() => {
-    const user = page.props.auth?.user as { roles?: string[] } | null;
-    return user?.roles?.includes('tutor') ?? false;
+    const user = page.props.auth?.user as { roles?: { name: string }[] } | null;
+    const roleNames = user?.roles?.map(role => typeof role === 'string' ? role : role.name) ?? [];
+    return roleNames.includes('tutor');
 });
 
 // Bookings nav items - "Crear Servicio" only visible for tutors

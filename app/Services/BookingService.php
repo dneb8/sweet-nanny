@@ -2,14 +2,49 @@
 
 namespace App\Services;
 
-use App\Models\Address;
+use App\Classes\Fetcher\Fetcher;
 use App\Models\Booking;
+use App\Models\Address;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class BookingService
 {
+    /**
+     * Obtener todos los bookings en el formato que se requiere para el componente DataTable
+     */
+    public function indexFetch(): LengthAwarePaginator
+    {
+        $bookings = Booking::query()
+            ->with([
+                'tutor',
+                'tutor.user',
+                'bookingAppointments',
+            ])
+            ->orderBy('created_at', 'desc');
+
+        $sortables = ['created_at', 'description', 'status'];
+        $searchables = ['description'];
+
+        return Fetcher::for($bookings)
+            ->allowFilters([
+                'recurrent' => [
+                    'as' => 'recurrent',
+                    'using' => function ($filter) {
+                        return $filter->transform(fn($val) => filter_var($val, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE));
+                    },
+                ],
+                'status' => [
+                    'as' => 'status',
+                ],
+            ])
+            ->allowSort($sortables)
+            ->allowSearch($searchables)
+            ->paginate(12);
+    }
+
     public function create(array $payload): Booking
     {
         return DB::transaction(function () use ($payload) {

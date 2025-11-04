@@ -11,6 +11,7 @@ use App\Http\Requests\Bookings\UpdateBookingRequest;
 use App\Models\Booking;
 use App\Models\User;
 use App\Services\BookingService;
+use App\Services\BookingStatusService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -19,22 +20,9 @@ use Throwable;
 
 class BookingController extends Controller
 {
-    public function index(): Response
+    public function index(BookingService $bookingService): Response
     {
-        Gate::authorize('viewAny', Booking::class);
-
-        $user = Auth::user();
-        $bookingsQuery = Booking::with(['tutor.user', 'bookingAppointments.addresses', 'bookingAppointments.children'])
-            ->latest('id');
-
-        // Filter by tutor if not admin
-        if (! $user->hasRole('admin')) {
-            $bookingsQuery->whereHas('tutor', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            });
-        }
-
-        $bookings = $bookingsQuery->paginate(12);
+        $bookings = $bookingService->indexFetch();
 
         return Inertia::render('Booking/Index', ['bookings' => $bookings]);
     }
@@ -62,7 +50,7 @@ class BookingController extends Controller
         ]);
     }
 
-    public function show(Booking $booking): Response
+    public function show(Booking $booking, BookingStatusService $statusService): Response
     {
         Gate::authorize('view', $booking);
 
@@ -75,6 +63,9 @@ class BookingController extends Controller
             'bookingAppointments.childrenWithTrashed',
             'bookingAppointments.children',
         ]);
+
+        // Actualizar estado basado en horarios de citas
+        $statusService->updateStatus($booking);
 
         $kinkships = array_map(fn ($c) => $c->value, KinkshipEnum::cases());
 
