@@ -40,7 +40,7 @@ export function useNotifications() {
             if (!hasChanged && notifications.value.length > 0) {
                 // Create maps for O(n) comparison regardless of order
                 const oldMap = new Map(
-                    notifications.value.map(n => [n.id, n.read_at])
+                    notifications.value.map((n: Notification) => [n.id, n.read_at])
                 );
                 const newMap = new Map(
                     newNotifications.map((n: Notification) => [n.id, n.read_at])

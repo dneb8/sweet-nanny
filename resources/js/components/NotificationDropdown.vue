@@ -40,6 +40,8 @@ const optimizedFetchNotifications = async () => {
         
         // Use requestIdleCallback to defer non-urgent updates
         const performFetch = async () => {
+            if (!abortController) return;
+            
             try {
                 await fetchNotifications(abortController.signal);
             } catch (error) {
