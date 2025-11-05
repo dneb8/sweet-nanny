@@ -1,4 +1,42 @@
 <script setup lang="ts">
+/**
+ * CtaModal - Unified Call-to-Action Modal Component
+ *
+ * A flexible modal component for confirmations, warnings, and deletions.
+ * Maintains the same UI/UX as the original DeleteModal but supports multiple types.
+ *
+ * @example
+ * // Delete action (red, trash icon)
+ * <CtaModal
+ *   :show="showModal"
+ *   type="delete"
+ *   message="¿Estás seguro de eliminar este elemento?"
+ *   :onConfirm="handleDelete"
+ *   @update:show="showModal = $event"
+ * />
+ *
+ * @example
+ * // Warning action (amber, alert icon)
+ * <CtaModal
+ *   :show="showModal"
+ *   type="warning"
+ *   title="Advertencia importante"
+ *   message="Esta acción puede tener consecuencias."
+ *   confirmText="Continuar de todos modos"
+ *   :onConfirm="handleWarning"
+ *   @update:show="showModal = $event"
+ * />
+ *
+ * @example
+ * // Confirm action (blue, check icon)
+ * <CtaModal
+ *   :show="showModal"
+ *   type="confirm"
+ *   message="¿Confirmas esta acción?"
+ *   :onConfirm="handleConfirm"
+ *   @update:show="showModal = $event"
+ * />
+ */
 import { ref, watch, computed } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from '@/components/ui/dialog';
