@@ -7,11 +7,32 @@ use App\Models\Tutor;
 use App\Models\User;
 use App\Models\Address;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class TutorSeeder extends Seeder
 {
     public function run(): void
     {
+        /**
+         * Avatares adultos variados (mujer/hombre) de RandomUser
+         * - women/{0..99}.jpg y men/{0..99}.jpg
+         * - Mezclamos para mayor variedad; si faltan, cicla.
+         */
+        $women = array_map(fn ($i) => "https://randomuser.me/api/portraits/women/{$i}.jpg", range(0, 99));
+        $men   = array_map(fn ($i) => "https://randomuser.me/api/portraits/men/{$i}.jpg",   range(0, 99));
+
+        // Interleave mujeres y hombres para que alternen
+        $avatars = [];
+        $max = max(count($women), count($men));
+        for ($i = 0; $i < $max; $i++) {
+            if (isset($women[$i])) $avatars[] = $women[$i];
+            if (isset($men[$i]))   $avatars[] = $men[$i];
+        }
+        $avatarForIndex = fn (int $idx) => $avatars[$idx % count($avatars)];
+
+        // =========================
+        // Tutores (tu arreglo base)
+        // =========================
         $tutores = [
             ['name' => 'Alejandra Fabiola', 'surnames' => 'López González', 'email' => 'ale89R@gmail.com', 'number' => '+52 33 1253 8099', 'emergency_contact' => 'Evelyn Alvárez', 'emergency_number' => '+52 33 8923 7481', 'address' => ['name' => 'Casa', 'postal_code' => '45030', 'street' => 'Calle Arquitectos', 'neighborhood' => 'Jardines de Guadalupe', 'type' => 'casa', 'zone' => 'guadalajara', 'latitude' => '20.662889', 'longitude' => '-103.424639', 'external_number' => '763']],
             ['name' => 'Francisco Daniel', 'surnames' => 'Carrillo Sandoval', 'email' => 'carfranT9@hotmail.com', 'number' => '+52 33 9848 7746', 'emergency_contact' => 'Karina Carrillo Fuentes', 'emergency_number' => '+52 33 8749 8277', 'address' => ['name' => 'Casa', 'postal_code' => '44960', 'street' => 'Calle José Othón Núñez', 'neighborhood' => 'Lomas de Polanco', 'type' => 'casa', 'zone' => 'guadalajara', 'latitude' => '20.631778', 'longitude' => '-103.372278', 'external_number' => '3371']],
@@ -27,7 +48,8 @@ class TutorSeeder extends Seeder
             ['name' => 'Nadia Guadalupe', 'surnames' => 'Martínez Campo', 'email' => 'nalla22.2@gmail.com', 'number' => '+52 9884 1102', 'emergency_contact' => 'Fabiola Paola Campo', 'emergency_number' => '+52 33 4712 7273', 'address' => ['name'=> 'Casa', 'postal_code' => '44298', 'street' => 'Calle Francisco Martin del Campo', 'neighborhood' => 'Jardines Alcalde', 'type' => 'casa', 'zone' => 'guadalajara', 'latitude' => '20.708333', 'longitude' => '-103.342500', 'external_number' => '766']],
         ];
 
-        foreach ($tutores as $data) {
+        foreach ($tutores as $idx => $data) {
+            // User
             $user = User::create([
                 'name' => $data['name'],
                 'surnames' => $data['surnames'],
@@ -37,12 +59,14 @@ class TutorSeeder extends Seeder
             ]);
             $user->assignRole(RoleEnum::TUTOR);
 
+            // Tutor
             $tutor = Tutor::create([
                 'user_id' => $user->id,
                 'emergency_contact' => $data['emergency_contact'],
                 'emergency_number' => $data['emergency_number'],
             ]);
 
+            // Address (morph)
             Address::create([
                 'name' => $data['address']['name'],
                 'postal_code' => $data['address']['postal_code'],
@@ -56,6 +80,21 @@ class TutorSeeder extends Seeder
                 'addressable_id' => $tutor->id,
                 'addressable_type' => Tutor::class,
             ]);
+
+            // Avatar variado (adulto)
+            try {
+                $avatarUrl = $avatarForIndex($idx);
+                $user->addMediaFromUrl($avatarUrl)
+                    ->usingFileName(Str::slug("{$user->name}-{$user->surnames}").'.jpg')
+                    ->withCustomProperties([
+                        'status' => 'approved',
+                        'note'   => 'seeded',
+                        'category' => 'adult',
+                    ])
+                    ->toMediaCollection('images'); // colección/ disco definidos en User
+            } catch (\Throwable $e) {
+                $this->command->warn("No se pudo asignar avatar a {$user->email}: {$e->getMessage()}");
+            }
         }
     }
 }
