@@ -9,6 +9,7 @@ import AboutSection from '@/components/landing/AboutSection.vue';
 import MeetNannySection from '@/components/landing/MeetNannySection.vue';
 import BabysittingPricesSection from "@/components/landing/BabysittingPricesSection.vue";
 import FooterLanding from "@/components/landing/FooterLanding.vue";
+import BlogSection from "@/components/landing/BlogSection.vue";
 
 defineOptions({
   layout: false,
@@ -45,7 +46,8 @@ defineOptions({
       <!--BABYSITTINGPRICES DE LANDING-->
       <BabysittingPricesSection />
 
-
+      <!--BLOGS DE LANDING-->
+      <BlogSection />
 
       <!--FOOTER-->
       <FooterLanding />
