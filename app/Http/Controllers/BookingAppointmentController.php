@@ -87,7 +87,6 @@ class BookingAppointmentController extends Controller
             return back()->with('error', 'No hay niñera asignada para rechazar');
         }
 
-        $oldNannyId = $appointment->nanny_id;
 
         // Remove nanny and set status to draft
         $appointment->update([
