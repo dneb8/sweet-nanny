@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -42,7 +43,7 @@ class BookingAppointmentController extends Controller
     {
         Gate::authorize('view', $appointment);
 
-        if ($appointment->status !== StatusEnum::PENDING->value) {
+        if ($appointment->status->value !== StatusEnum::PENDING->value) {
             return back()->with('error', 'Solo se pueden aceptar citas en estado pendiente');
         }
 
@@ -78,7 +79,7 @@ class BookingAppointmentController extends Controller
     {
         Gate::authorize('view', $appointment);
 
-        if ($appointment->status !== StatusEnum::PENDING->value) {
+        if ($appointment->status->value !== StatusEnum::PENDING->value) {
             return back()->with('error', 'Solo se pueden rechazar citas en estado pendiente');
         }
 
@@ -130,15 +131,15 @@ class BookingAppointmentController extends Controller
     {
         Gate::authorize('view', $appointment);
 
-        if ($appointment->status !== StatusEnum::CONFIRMED->value) {
+        if ($appointment->status->value !== StatusEnum::CONFIRMED->value) {
             return back()->with('error', 'Solo se puede cancelar la niñera de citas confirmadas');
         }
 
         if (!$appointment->nanny_id) {
             return back()->with('error', 'No hay niñera asignada');
         }
-
-        $user = auth()->user();
+        $user = Auth::user();
+        $appointment->loadMissing('booking.tutor.user', 'nanny.user');
         $appointment->loadMissing('booking.tutor.user', 'nanny.user');
 
         // Determine who is cancelling
@@ -155,7 +156,7 @@ class BookingAppointmentController extends Controller
         // Remove nanny and set to pending
         $appointment->update([
             'nanny_id' => null,
-            'status' => StatusEnum::PENDING->value,
+            'status' => StatusEnum::DRAFT->value,
         ]);
 
         // Send notifications based on who cancelled
@@ -187,17 +188,7 @@ class BookingAppointmentController extends Controller
             }
         }
 
-        // Check if booking should go back to draft
-        $booking = $appointment->booking;
-        if ($booking) {
-            $hasAnyConfirmedAppointments = $booking->appointments()
-                ->where('status', StatusEnum::CONFIRMED->value)
-                ->exists();
-            
-            if (!$hasAnyConfirmedAppointments) {
-                $booking->update(['status' => StatusEnum::DRAFT->value]);
-            }
-        }
+        $appointment->update(['status' => StatusEnum::DRAFT->value]);
 
         return back()->with('success', 'Niñera cancelada exitosamente');
     }
