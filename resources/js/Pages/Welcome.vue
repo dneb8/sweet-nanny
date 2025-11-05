@@ -4,6 +4,7 @@ import AuthLayout from "@/layouts/AuthLayout.vue";
 import HeaderLanding from '@/components/landing/HeaderLanding.vue'
 import HeroSection from '@/components/landing/HeroSection.vue'
 import WhatOfferSection from '@/components/landing/WhatOfferSection.vue'
+import HowWorksSection from "@/components/landing/HowWorksSection.vue";
 
 defineOptions({
   layout: false,
@@ -25,6 +26,9 @@ defineOptions({
       <HeroSection />
       <!--WHATOFFER DE LANDING-->
       <WhatOfferSection />
+      <!--HOWWORKS DE LANDING-->
+      <HowWorksSection />
+      
 
 
       <!-- Childcare Services Section -->
@@ -150,116 +154,7 @@ defineOptions({
         </div>
       </section>
 
-      <!-- How It Works Section -->
-      <!--
-        The original site uses a deep navy background for the process section.  We switch from
-        Tailwind's purple scale to a custom hex colour (#2A3786) that echoes the dark blue
-        tone of the reference.  This section retains white text and pastel blobs.
-      -->
-      <section class="relative py-20 bg-[#2A3786] text-white wave-bottom overflow-hidden">
-        <!-- decorative blobs -->
-        <div
-          class="absolute -top-16 -left-20 w-56 h-56 bg-[#FFDCEB] rounded-full opacity-40"
-          aria-hidden="true"
-        ></div>
-        <div
-          class="absolute -bottom-24 -right-24 w-64 h-64 bg-[#CDE8FF] rounded-full opacity-40"
-          aria-hidden="true"
-        ></div>
-        <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <h2 class="text-3xl sm:text-4xl font-extrabold text-center mb-12">
-            How It Works
-          </h2>
-          <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
-            <div class="flex flex-col items-center text-center">
-              <div
-                class="w-16 h-16 flex items-center justify-center rounded-full bg-white/20 mb-4"
-              >
-                <!-- Phone icon -->
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="w-8 h-8"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M2.25 4.5l7.5 7.5M2.25 12l7.5-7.5 11.25 11.25L20.25 18l-9-9-9 9"
-                  />
-                </svg>
-              </div>
-              <h3 class="text-xl font-semibold mb-2">Get in Touch</h3>
-              <p class="text-sm">
-                Contact us via phone or email and tell us about your childcare needs.
-              </p>
-            </div>
-            <div class="flex flex-col items-center text-center">
-              <div
-                class="w-16 h-16 flex items-center justify-center rounded-full bg-white/20 mb-4"
-              >
-                <!-- Heart icon -->
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="w-8 h-8"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-                  />
-                </svg>
-              </div>
-              <h3 class="text-xl font-semibold mb-2">Meet Your Nanny</h3>
-              <p class="text-sm">
-                We hand‑pick the perfect nanny for your family and arrange a meeting.
-              </p>
-            </div>
-            <div class="flex flex-col items-center text-center">
-              <div
-                class="w-16 h-16 flex items-center justify-center rounded-full bg-white/20 mb-4"
-              >
-                <!-- Party icon -->
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="w-8 h-8"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 14l9-5-9-5-9 5 9 5z"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 14l9-5-9-5-9 5 9 5z"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 14l9-5-9-5-9 5 9 5z"
-                  />
-                </svg>
-              </div>
-              <h3 class="text-xl font-semibold mb-2">Enjoy Peace of Mind</h3>
-              <p class="text-sm">
-                Relax and enjoy your day knowing your children are in safe hands.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
+     
       <!-- Evening Babysitting CTA -->
       <!--
         Lighten the evening section with a delicate pink (#FFF0F8) similar to the
