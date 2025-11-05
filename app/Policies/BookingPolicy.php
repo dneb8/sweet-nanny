@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\Permissions\BookingPermission;
 use App\Enums\User\RoleEnum;
 use App\Models\Booking;
 use App\Models\User;
@@ -13,17 +14,7 @@ class BookingPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Admin can view all
-        if ($user->hasRole(RoleEnum::ADMIN->value)) {
-            return true;
-        }
-
-        // Tutor can view their own bookings
-        if ($user->hasRole(RoleEnum::TUTOR->value)) {
-            return true;
-        }
-
-        return false;
+        return $this->hasPermission($user, BookingPermission::ViewAny->value);
     }
 
     /**
@@ -31,6 +22,11 @@ class BookingPolicy
      */
     public function view(User $user, Booking $booking): bool
     {
+        // Check base permission
+        if (! $this->hasPermission($user, BookingPermission::View->value)) {
+            return false;
+        }
+
         // Admin can view all
         if ($user->hasRole(RoleEnum::ADMIN->value)) {
             return true;
@@ -51,8 +47,7 @@ class BookingPolicy
      */
     public function create(User $user): bool
     {
-        // Only tutors can create bookings
-        return $user->hasRole(RoleEnum::TUTOR->value);
+        return $this->hasPermission($user, BookingPermission::Create->value);
     }
 
     /**
@@ -60,6 +55,11 @@ class BookingPolicy
      */
     public function update(User $user, Booking $booking): bool
     {
+        // Check base permission
+        if (! $this->hasPermission($user, BookingPermission::Update->value)) {
+            return false;
+        }
+
         // Load appointments to check nanny assignments
         $booking->loadMissing('bookingAppointments');
 
@@ -69,15 +69,6 @@ class BookingPolicy
         });
 
         if ($hasNannyAssigned) {
-            return false;
-        }
-
-        // Block edit if any appointment is not in draft status
-        $allDraft = $booking->bookingAppointments->every(function ($appointment) {
-            return $appointment->status->value === 'draft';
-        });
-
-        if (! $allDraft) {
             return false;
         }
 
@@ -101,16 +92,20 @@ class BookingPolicy
      */
     public function delete(User $user, Booking $booking): bool
     {
+        // Check base permission
+        if (! $this->hasPermission($user, BookingPermission::Delete->value)) {
+            return false;
+        }
+
         // Load appointments to check status
         $booking->loadMissing('bookingAppointments');
 
-        // Block delete if any appointment has a nanny assigned and is confirmed (not draft or pending)
-        $hasConfirmedNanny = $booking->bookingAppointments->some(function ($appointment) {
-            return $appointment->nanny_id !== null
-                && ! in_array($appointment->status->value, ['draft', 'pending']);
+        // Block delete if any appointment has a nanny assigned
+        $hasNannyAssigned = $booking->bookingAppointments->some(function ($appointment) {
+            return $appointment->nanny_id !== null;
         });
 
-        if ($hasConfirmedNanny) {
+        if ($hasNannyAssigned) {
             return false;
         }
 
@@ -127,5 +122,29 @@ class BookingPolicy
         }
 
         return false;
+    }
+
+    private function hasPermission(User $user, string $permission): bool
+    {
+        $userRoles = $user->roles->pluck('name')->toArray();
+
+        foreach ($userRoles as $roleName) {
+            $roleEnum = $this->getRoleEnum($roleName);
+            if ($roleEnum && BookingPermission::allows($permission, $roleEnum)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function getRoleEnum(string $roleName): ?RoleEnum
+    {
+        return match (strtolower($roleName)) {
+            'admin' => RoleEnum::ADMIN,
+            'tutor' => RoleEnum::TUTOR,
+            'nanny' => RoleEnum::NANNY,
+            default => null,
+        };
     }
 }
