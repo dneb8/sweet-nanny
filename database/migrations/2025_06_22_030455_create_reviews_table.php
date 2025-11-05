@@ -19,6 +19,7 @@ return new class extends Migration
             // Contenido del review
             $table->unsignedTinyInteger('rating');
             $table->text('comments')->nullable();
+            $table->boolean('approved')->default(false);
             $table->timestamps();
         });
     }

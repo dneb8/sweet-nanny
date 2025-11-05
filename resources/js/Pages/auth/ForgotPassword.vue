@@ -43,7 +43,7 @@ const submit = () => {
         v-if="status"
         class="mb-4 text-center text-sm font-medium text-green-600"
       >
-        {{ status }}
+        {{ status === 'password-reset-link-sent' ? 'Si la cuenta existe, se enviará un enlace de restablecimiento.' : status }}
       </div>
 
       <!-- Formulario -->

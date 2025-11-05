@@ -119,7 +119,7 @@
   </header>
 </template>
 
-<script setup>
+<script setup lang="js">
 import { ref } from "vue"
 import { Link } from "@inertiajs/vue3"
 
