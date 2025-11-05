@@ -31,10 +31,14 @@ export function useNotifications() {
             const newNotifications = response.data.notifications;
             const newUnreadCount = response.data.unread_count;
             
-            // Deep comparison to prevent unnecessary reactivity triggers
+            // Optimized comparison: check length and IDs/read_at status
             const hasChanged = 
-                JSON.stringify(notifications.value) !== JSON.stringify(newNotifications) ||
-                unreadCount.value !== newUnreadCount;
+                notifications.value.length !== newNotifications.length ||
+                unreadCount.value !== newUnreadCount ||
+                notifications.value.some((notif, idx) => {
+                    const newNotif = newNotifications[idx];
+                    return !newNotif || notif.id !== newNotif.id || notif.read_at !== newNotif.read_at;
+                });
             
             if (hasChanged) {
                 notifications.value = newNotifications;

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useNotifications, type Notification } from '@/composables/useNotifications';
 import { usePageVisibility } from '@vueuse/core';
 import { Bell } from 'lucide-vue-next';
@@ -62,9 +62,17 @@ const optimizedFetchNotifications = async () => {
     }
 };
 
-// Resume polling after page becomes visible
-const handleVisibilityChange = () => {
-    if (isPageVisible.value && pollInterval === null) {
+onMounted(() => {
+    // Initial fetch (direct call, not via requestIdleCallback)
+    fetchNotifications();
+    
+    // Start polling with optimized function
+    pollInterval = setInterval(optimizedFetchNotifications, 3000);
+});
+
+// Watch for visibility changes using VueUse pattern
+watch(isPageVisible, (visible) => {
+    if (visible && pollInterval === null) {
         // Small delay before resuming to avoid immediate fetch burst
         setTimeout(() => {
             if (isPageVisible.value) {
@@ -72,22 +80,11 @@ const handleVisibilityChange = () => {
                 pollInterval = setInterval(optimizedFetchNotifications, 3000);
             }
         }, 500);
-    } else if (!isPageVisible.value && pollInterval) {
+    } else if (!visible && pollInterval) {
         // Pause polling when page is hidden
         clearInterval(pollInterval);
         pollInterval = null;
     }
-};
-
-onMounted(() => {
-    // Initial fetch (direct call, not via requestIdleCallback)
-    fetchNotifications();
-    
-    // Start polling with optimized function
-    pollInterval = setInterval(optimizedFetchNotifications, 3000);
-    
-    // Watch for visibility changes
-    document.addEventListener('visibilitychange', handleVisibilityChange);
 });
 
 onUnmounted(() => {
@@ -100,8 +97,6 @@ onUnmounted(() => {
         abortController.abort();
         abortController = null;
     }
-    
-    document.removeEventListener('visibilitychange', handleVisibilityChange);
 });
 
 const formatTime = (dateString: string) => {
