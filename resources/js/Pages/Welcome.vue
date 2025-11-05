@@ -43,11 +43,11 @@ defineOptions({
       <!--MEET NANNYS DE LANDING-->
       <MeetNannySection />
 
-      <!--BABYSITTINGPRICES DE LANDING-->
-      <BabysittingPricesSection />
-
       <!--BLOGS DE LANDING-->
       <BlogSection />
+
+      <!--BABYSITTINGPRICES DE LANDING-->
+      <BabysittingPricesSection />
 
       <!--FOOTER-->
       <FooterLanding />
