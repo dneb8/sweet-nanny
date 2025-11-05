@@ -12,6 +12,8 @@ import FooterLanding from "@/components/landing/FooterLanding.vue";
 import BlogSection from "@/components/landing/BlogSection.vue";
 import BabyPartiSection from "@/components/landing/BabyPartiSection.vue";
 import TestimonialsSection from "../components/landing/TestimonialsSection.vue";
+import EveningSection from "@/components/landing/EveningSection.vue";
+import RelaxSection from "@/components/landing/RelaxSection.vue";
 
 defineOptions({
   layout: false,
@@ -51,267 +53,20 @@ defineOptions({
       <!--BABYSITTINGPRICES DE LANDING-->
       <BabysittingPricesSection />
 
+      <!--RELAX DE LANDING-->
+      <RelaxSection /> 
+
       <!--BLOGS DE LANDING-->
       <BlogSection />
 
       <!--TESTIMONIALS DE LANDING-->
       <TestimonialsSection />
 
+      <!--EVENING DE LANDING-->
+      <EveningSection />
+
       <!--FOOTER-->
       <FooterLanding />
-
-  
-      
-
-
-
-     
-      <!-- Evening Babysitting CTA -->
-      <!--
-        Lighten the evening section with a delicate pink (#FFF0F8) similar to the
-        reference site.  The previous pink-100 class was a bit too stark.
-      -->
-      <section class="py-20 bg-[#FFF0F8] relative overflow-hidden">
-        <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between">
-          <div class="md:w-1/2 mb-8 md:mb-0">
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-4">
-              Evening Babysitting
-            </h2>
-            <p class="text-gray-700 mb-6">
-              Need a break? Plan a night out while our trusted babysitters look after your
-              children. We provide flexible evening care to suit your schedule.
-            </p>
-            <a
-              href="#contact"
-              class="inline-block px-6 py-3 bg-[#FFBC5B] text-[#2A3786] font-medium rounded-full shadow-md hover:bg-[#FFAA3A] transition"
-              >Learn More</a
-            >
-          </div>
-          <div class="md:w-1/2 flex justify-center relative">
-            <!-- decorative blob -->
-            <div
-              class="absolute -top-12 -left-16 w-56 h-56 bg-[#CDE8FF] rounded-full opacity-40"
-              aria-hidden="true"
-            ></div>
-            <!-- <img
-              src="./ai_evening.png"
-              alt="Evening babysitting illustration"
-              class="w-80 h-60 rounded-lg object-cover shadow-lg relative z-10"
-            /> -->
-          </div>
-        </div>
-      </section>
-
-      <!-- Total Peace of Mind Section -->
-      <!--
-        Keep a light background but introduce a whisper of pink (#FFFAFD) to warm the
-        section and harmonise with adjacent panels.
-      -->
-      <section class="py-20 bg-[#FFFAFD] relative overflow-hidden">
-        <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center">
-          <div class="md:w-1/2 mb-8 md:mb-0 relative">
-            <!-- decorative blobs -->
-            <div
-              class="absolute -top-12 -right-10 w-48 h-48 bg-[#E5DBFF] rounded-full opacity-40"
-              aria-hidden="true"
-            ></div>
-            <div
-              class="absolute -bottom-14 -left-14 w-56 h-56 bg-[#FFDCEB] rounded-full opacity-40"
-              aria-hidden="true"
-            ></div>
-            <!-- <img
-              src="./ai_hero.png"
-              alt="Mother and baby"
-              class="w-full h-80 object-cover rounded-lg shadow-lg relative z-10"
-            /> -->
-          </div>
-          <div class="md:w-1/2 md:pl-12">
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-4">
-              Total Peace of Mind
-            </h2>
-            <p class="text-gray-700 mb-6">
-              We know it’s hard to leave your little ones with someone new. Our goal is to
-              provide reassuring, trustworthy care so you can relax and focus on your day.
-            </p>
-            <ul class="space-y-3">
-              <li class="flex items-start">
-                <span
-                  class="flex-shrink-0 w-6 h-6 mr-3 rounded-full bg-[#CDE8FF] text-blue-600 flex items-center justify-center"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="2"
-                    stroke="currentColor"
-                    class="w-4 h-4"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </span>
-                <span class="text-gray-700">Background‑checked caregivers</span>
-              </li>
-              <li class="flex items-start">
-                <span
-                  class="flex-shrink-0 w-6 h-6 mr-3 rounded-full bg-[#FFDCEB] text-pink-600 flex items-center justify-center"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="2"
-                    stroke="currentColor"
-                    class="w-4 h-4"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </span>
-                <span class="text-gray-700">First‑aid and CPR trained staff</span>
-              </li>
-              <li class="flex items-start">
-                <span
-                  class="flex-shrink-0 w-6 h-6 mr-3 rounded-full bg-[#FFF5B2] text-yellow-600 flex items-center justify-center"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="2"
-                    stroke="currentColor"
-                    class="w-4 h-4"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </span>
-                <span class="text-gray-700">Real‑time updates and messaging</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </section>
- 
-
-     
-      <!-- Mobile App Section -->
-      <!--
-        Introduce a very light pink tint (#FFFAFD) behind the mobile app content to avoid
-        harsh transitions between sections.
-      -->
-      <section class="py-20 bg-[#FFFAFD] relative overflow-hidden">
-        <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center">
-          <div class="md:w-1/2 mb-8 md:mb-0 flex justify-center relative">
-            <!-- decorative blob -->
-            <div
-              class="absolute -top-16 -right-12 w-48 h-48 bg-[#FFDCEB] rounded-full opacity-40"
-              aria-hidden="true"
-            ></div>
-            <!-- <img
-              src="./ai_mobile_app.png"
-              alt="Mobile application illustration"
-              class="w-40 h-80 object-cover rounded-lg shadow-xl relative z-10"
-            /> -->
-          </div>
-          <div class="md:w-1/2 md:pl-12">
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-4">
-              Check Our Mobile App
-            </h2>
-            <p class="text-gray-700 mb-6">
-              Book sitters, track your schedule and get real‑time updates – all from the palm
-              of your hand.
-            </p>
-            <ul class="space-y-3 mb-6">
-              <li class="flex items-start">
-                <span
-                  class="flex-shrink-0 w-6 h-6 mr-3 rounded-full bg-[#E5DBFF] text-purple-600 flex items-center justify-center"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="2"
-                    stroke="currentColor"
-                    class="w-4 h-4"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </span>
-                <span class="text-gray-700">Book sitters on the go</span>
-              </li>
-              <li class="flex items-start">
-                <span
-                  class="flex-shrink-0 w-6 h-6 mr-3 rounded-full bg-[#CDE8FF] text-blue-600 flex items-center justify-center"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="2"
-                    stroke="currentColor"
-                    class="w-4 h-4"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </span>
-                <span class="text-gray-700">Track bookings and payments</span>
-              </li>
-              <li class="flex items-start">
-                <span
-                  class="flex-shrink-0 w-6 h-6 mr-3 rounded-full bg-[#FFF5B2] text-yellow-600 flex items-center justify-center"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="2"
-                    stroke="currentColor"
-                    class="w-4 h-4"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </span>
-                <span class="text-gray-700">Receive real‑time updates</span>
-              </li>
-            </ul>
-            <div class="flex space-x-4">
-              <a
-                href="#"
-                class="inline-block px-6 py-3 bg-[#F76C6C] text-white font-medium rounded-full shadow-md hover:bg-[#F55A79] transition"
-                >App Store</a
-              >
-              <a
-                href="#"
-                class="inline-block px-6 py-3 bg-[#2A3786] text-white font-medium rounded-full shadow-md hover:bg-[#1E2F72] transition"
-                >Google Play</a
-              >
-            </div>
-          </div>
-        </div>
-      </section>
-
     </div>
   </body>
 </template>
