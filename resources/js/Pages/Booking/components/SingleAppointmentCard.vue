@@ -7,6 +7,8 @@ import type { Booking } from '@/types/Booking'
 import type { BookingAppointment } from '@/types/BookingAppointment'
 import { computed } from 'vue'
 import { useBookingView } from '@/services/BookingService'
+import { getBookingStatusLabelByString, getBookingStatusBadgeClass } from '@/enums/booking/status.enum'
+import { getAddressTypeLabelByString, getAddressTypeBadgeClass } from '@/enums/addresses/type.enum'
 
 /* ==== Emits ==== */
 const emit = defineEmits<{
@@ -127,8 +129,8 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
               {{ safeFmtReadable(props.appointment.start_date) }}
             </h3>
             <div class="flex items-center gap-2">
-              <Badge :class="v.statusBadge(props.booking.status)" class="px-2 py-0.5 text-[11px]">
-                {{ props.appointment.status }}
+              <Badge :class="getBookingStatusBadgeClass(props.appointment.status)" class="px-2 py-0.5 text-[11px]">
+                {{ getBookingStatusLabelByString(props.appointment.status) }}
               </Badge>
             </div>
           </div>
@@ -313,8 +315,8 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
             </p>
             <p class="text-muted-foreground">{{ appointmentAddress.street }} {{ appointmentAddress.external_number }},{{ appointmentAddress.neighborhood }}</p>
             <p class="text-muted-foreground">CP: {{ appointmentAddress.postal_code }}</p>
-            <Badge v-if="appointmentAddress.type" variant="secondary" class="mt-1 px-2 py-0.5 text-[11px]">
-              {{ appointmentAddress.type }}
+            <Badge v-if="appointmentAddress.type" :class="getAddressTypeBadgeClass(appointmentAddress.type)" class="mt-1 px-2 py-0.5 text-[11px]">
+              {{ getAddressTypeLabelByString(appointmentAddress.type) }}
             </Badge>
           </div>
 
