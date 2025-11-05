@@ -32,7 +32,7 @@
               </div>
               <!-- Back -->
               <div class="absolute w-full h-full rounded-lg overflow-hidden backface-hidden rotate-y-180">
-                <img src="/images/landing/tutorial1.png" class="w-full h-full object-cover" alt="Tutorial Registro" />
+                <img src="/images/landing/tutorial/tutorial1.png" class="w-full h-full object-cover" alt="Tutorial Registro" />
               </div>
             </div>
           </div>
@@ -61,7 +61,7 @@
                 <p class="text-sm">Describe el tipo de servicio en un formulario para informarnos todas tus necesidades y todas tus preferencias.</p>
               </div>
               <div class="absolute w-full h-full rounded-lg overflow-hidden backface-hidden rotate-y-180">
-                <img src="/images/landing/tutorial2.png" class="w-full h-full object-cover" alt="Tutorial Crear Servicio" />
+                <img src="/images/landing/tutorial/tutorial2.png" class="w-full h-full object-cover" alt="Tutorial Crear Servicio" />
               </div>
             </div>
           </div>
@@ -91,7 +91,7 @@
                 <p class="text-sm">A partir de tus preferencias nuestro sistema se especializa en encontrar las mejores niñeras para ti.</p>
               </div>
               <div class="absolute w-full h-full rounded-lg overflow-hidden backface-hidden rotate-y-180">
-                <img src="/images/landing/tutorial3.png" class="w-full h-full object-cover" alt="Tutorial Elegir Niñera" />
+                <img src="/images/landing/tutorial/tutorial3.png" class="w-full h-full object-cover" alt="Tutorial Elegir Niñera" />
               </div>
             </div>
           </div>

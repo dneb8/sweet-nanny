@@ -64,7 +64,7 @@
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { h } from 'vue'
 
 // Usamos iconos SVG como componentes
