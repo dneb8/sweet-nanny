@@ -62,7 +62,7 @@ test('verification notification respects throttling', function () {
 
     // First request should succeed
     $response = $this->actingAs($user)->post('/email/verification-notification');
-    $response->assertSessionHas('status', __('verification-link-sent'));
+    $response->assertSessionHas('status', 'verification-link-sent');
 
     // Subsequent requests within throttle period should still succeed but be rate limited
     // The throttle is set to 6 requests per minute in routes/auth.php
