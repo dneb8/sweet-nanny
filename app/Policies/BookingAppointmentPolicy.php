@@ -7,415 +7,374 @@ use App\Enums\Permissions\BookingAppointmentPermission;
 use App\Enums\User\RoleEnum;
 use App\Models\BookingAppointment;
 use App\Models\User;
+use Illuminate\Auth\Access\Response;
 
 class BookingAppointmentPolicy
 {
     /**
-     * Determine if the user can view any booking appointments
+     * Ver cualquier cita
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user): Response
     {
-        return $this->hasPermission($user, BookingAppointmentPermission::ViewAny->value);
-    }
-
-
-    public function delete(User $user, BookingAppointment $appointment): bool
-    {
-        return $this->hasPermission($user, Perm::Delete->value);
+        return $this->hasPermission($user, BookingAppointmentPermission::ViewAny->value)
+            ? Response::allow()
+            : Response::deny('No cuentas con el permiso para ver citas.');
     }
 
     /**
-     * Determine if the user can choose/browse nannies for an appointment
-     * Only when appointment is in draft status and has no nanny assigned
+     * Eliminar una cita
      */
-    public function chooseNanny(User $user, BookingAppointment $appointment): bool
+    public function delete(User $user, BookingAppointment $appointment): Response
     {
-        // Check base permission
+        return $this->hasPermission($user, BookingAppointmentPermission::Delete->value)
+            ? Response::allow()
+            : Response::deny('No cuentas con el permiso para eliminar esta cita.');
+    }
+
+    /**
+     * Elegir/buscar niñeras (solo en draft y sin niñera asignada)
+     */
+    public function chooseNanny(User $user, BookingAppointment $appointment): Response
+    {
         if (! $this->hasPermission($user, BookingAppointmentPermission::ChooseNanny->value)) {
-            return false;
+            return Response::deny('No cuentas con el permiso para elegir niñera.');
         }
 
-        // Must be in draft status
         if ($appointment->status->value !== StatusEnum::DRAFT->value) {
-            return false;
+            return Response::deny('Solo se puede elegir niñera cuando la cita está en borrador.');
         }
 
-        // Must not have a nanny assigned
         if ($appointment->nanny_id !== null) {
-            return false;
+            return Response::deny('Esta cita ya tiene una niñera asignada.');
         }
 
-        // Admin can always choose
         if ($user->hasRole(RoleEnum::ADMIN->value)) {
-            return true;
+            return Response::allow();
         }
 
-        // Tutor can choose for their own bookings
         if ($user->hasRole(RoleEnum::TUTOR->value)) {
             $appointment->loadMissing('booking.tutor');
-            $bookingTutorUserId = $appointment->booking?->tutor?->user_id;
-
-            return $bookingTutorUserId !== null && (int) $bookingTutorUserId === (int) $user->id;
+            $ownerId = $appointment->booking?->tutor?->user_id;
+            return ($ownerId !== null && (int)$ownerId === (int)$user->id)
+                ? Response::allow()
+                : Response::deny('Solo el tutor dueño del booking puede elegir niñera para esta cita.');
         }
 
-        return false;
+        return Response::deny('Tu rol no está autorizado para esta acción.');
     }
 
     /**
-     * Determine if the user can assign a nanny to an appointment
-     * Only when appointment is in draft status
+     * Asignar niñera (solo en draft)
      */
-    public function assignNanny(User $user, BookingAppointment $appointment): bool
+    public function assignNanny(User $user, BookingAppointment $appointment): Response
     {
-        // Check base permission
         if (! $this->hasPermission($user, BookingAppointmentPermission::AssignNanny->value)) {
-            return false;
+            return Response::deny('No cuentas con el permiso para asignar niñera.');
         }
 
-        // Must be in draft status
         if ($appointment->status->value !== StatusEnum::DRAFT->value) {
-            return false;
+            return Response::deny('Solo se puede asignar niñera cuando la cita está en borrador.');
         }
 
-        // Admin can always assign
         if ($user->hasRole(RoleEnum::ADMIN->value)) {
-            return true;
+            return Response::allow();
         }
 
-        // Tutor can assign for their own bookings
         if ($user->hasRole(RoleEnum::TUTOR->value)) {
             $appointment->loadMissing('booking.tutor');
-            $bookingTutorUserId = $appointment->booking?->tutor?->user_id;
-
-            return $bookingTutorUserId !== null && (int) $bookingTutorUserId === (int) $user->id;
+            $ownerId = $appointment->booking?->tutor?->user_id;
+            return ($ownerId !== null && (int)$ownerId === (int)$user->id)
+                ? Response::allow()
+                : Response::deny('Solo el tutor dueño del booking puede asignar niñera para esta cita.');
         }
 
-        return false;
+        return Response::deny('Tu rol no está autorizado para esta acción.');
     }
 
     /**
-     * Determine if the user can update dates on an appointment
-     * Only in draft or pending status; will unassign nanny if in pending
+     * Actualizar fechas (draft o pending). Si está pending, puede desasignar niñera.
      */
-    public function updateDates(User $user, BookingAppointment $appointment): bool
+    public function updateDates(User $user, BookingAppointment $appointment): Response
     {
-        // Check base permission
         if (! $this->hasPermission($user, BookingAppointmentPermission::UpdateDates->value)) {
-            return false;
+            return Response::deny('No cuentas con el permiso para actualizar fechas.');
         }
 
-        // Only draft or pending can update dates
-        if (! in_array($appointment->status->value, [StatusEnum::DRAFT->value, StatusEnum::PENDING->value])) {
-            return false;
+        if (! in_array($appointment->status->value, [StatusEnum::DRAFT->value, StatusEnum::PENDING->value], true)) {
+            return Response::deny('Solo se pueden actualizar fechas cuando la cita está en borrador o pendiente.');
         }
 
-        // Admin can always update
         if ($user->hasRole(RoleEnum::ADMIN->value)) {
-            return true;
+            return Response::allow();
         }
 
-        // Tutor can update for their own bookings
         if ($user->hasRole(RoleEnum::TUTOR->value)) {
             $appointment->loadMissing('booking.tutor');
-            $bookingTutorUserId = $appointment->booking?->tutor?->user_id;
-
-            return $bookingTutorUserId !== null && (int) $bookingTutorUserId === (int) $user->id;
+            $ownerId = $appointment->booking?->tutor?->user_id;
+            return ($ownerId !== null && (int)$ownerId === (int)$user->id)
+                ? Response::allow()
+                : Response::deny('Solo el tutor dueño del booking puede actualizar fechas de esta cita.');
         }
 
-        return false;
+        return Response::deny('Tu rol no está autorizado para esta acción.');
     }
 
     /**
-     * Determine if the user can update address on an appointment
-     * Only in draft or pending status; will unassign nanny if in pending
+     * Actualizar dirección (draft o pending). Si está pending, puede desasignar niñera.
      */
-    public function updateAddress(User $user, BookingAppointment $appointment): bool
+    public function updateAddress(User $user, BookingAppointment $appointment): Response
     {
-        // Check base permission
         if (! $this->hasPermission($user, BookingAppointmentPermission::UpdateAddress->value)) {
-            return false;
+            return Response::deny('No cuentas con el permiso para actualizar la dirección.');
         }
 
-        // Only draft or pending can update address
-        if (! in_array($appointment->status->value, [StatusEnum::DRAFT->value, StatusEnum::PENDING->value])) {
-            return false;
+        if (! in_array($appointment->status->value, [StatusEnum::DRAFT->value, StatusEnum::PENDING->value], true)) {
+            return Response::deny('Solo se puede actualizar la dirección cuando la cita está en borrador o pendiente.');
         }
 
-        // Admin can always update
         if ($user->hasRole(RoleEnum::ADMIN->value)) {
-            return true;
+            return Response::allow();
         }
 
-        // Tutor can update for their own bookings
         if ($user->hasRole(RoleEnum::TUTOR->value)) {
             $appointment->loadMissing('booking.tutor');
-            $bookingTutorUserId = $appointment->booking?->tutor?->user_id;
-
-            return $bookingTutorUserId !== null && (int) $bookingTutorUserId === (int) $user->id;
+            $ownerId = $appointment->booking?->tutor?->user_id;
+            return ($ownerId !== null && (int)$ownerId === (int)$user->id)
+                ? Response::allow()
+                : Response::deny('Solo el tutor dueño del booking puede actualizar la dirección de esta cita.');
         }
 
-        return false;
+        return Response::deny('Tu rol no está autorizado para esta acción.');
     }
 
     /**
-     * Determine if the user can update children on an appointment
-     * Only in draft or pending status; will unassign nanny if in pending
+     * Actualizar niños (draft o pending). Si está pending, puede desasignar niñera.
      */
-    public function updateChildren(User $user, BookingAppointment $appointment): bool
+    public function updateChildren(User $user, BookingAppointment $appointment): Response
     {
-        // Check base permission
         if (! $this->hasPermission($user, BookingAppointmentPermission::UpdateChildren->value)) {
-            return false;
+            return Response::deny('No cuentas con el permiso para actualizar los niños.');
         }
 
-        // Only draft or pending can update children
-        if (! in_array($appointment->status->value, [StatusEnum::DRAFT->value, StatusEnum::PENDING->value])) {
-            return false;
+        if (! in_array($appointment->status->value, [StatusEnum::DRAFT->value, StatusEnum::PENDING->value], true)) {
+            return Response::deny('Solo se pueden actualizar los niños cuando la cita está en borrador o pendiente.');
         }
 
-        // Admin can always update
         if ($user->hasRole(RoleEnum::ADMIN->value)) {
-            return true;
+            return Response::allow();
         }
 
-        // Tutor can update for their own bookings
         if ($user->hasRole(RoleEnum::TUTOR->value)) {
             $appointment->loadMissing('booking.tutor');
-            $bookingTutorUserId = $appointment->booking?->tutor?->user_id;
-
-            return $bookingTutorUserId !== null && (int) $bookingTutorUserId === (int) $user->id;
+            $ownerId = $appointment->booking?->tutor?->user_id;
+            return ($ownerId !== null && (int)$ownerId === (int)$user->id)
+                ? Response::allow()
+                : Response::deny('Solo el tutor dueño del booking puede actualizar los niños de esta cita.');
         }
 
-        return false;
+        return Response::deny('Tu rol no está autorizado para esta acción.');
     }
 
     /**
-     * Determine if the nanny can accept a pending appointment
-     * Only when status is pending and nanny is assigned
+     * Aceptar cita (nanny asignada y status pending)
      */
-    public function accept(User $user, BookingAppointment $appointment): bool
+    public function accept(User $user, BookingAppointment $appointment): Response
     {
-        // Check base permission
         if (! $this->hasPermission($user, BookingAppointmentPermission::Accept->value)) {
-            return false;
+            return Response::deny('No cuentas con el permiso para aceptar la cita.');
         }
 
-        // Must be in pending status
         if ($appointment->status->value !== StatusEnum::PENDING->value) {
-            return false;
+            return Response::deny('Solo se puede aceptar cuando la cita está pendiente.');
         }
 
-        // Must have a nanny assigned
         if ($appointment->nanny_id === null) {
-            return false;
+            return Response::deny('No hay niñera asignada a esta cita.');
         }
 
-        // Admin can always accept
         if ($user->hasRole(RoleEnum::ADMIN->value)) {
-            return true;
+            return Response::allow();
         }
 
-        // Nanny can only accept their own assignments
         if ($user->hasRole(RoleEnum::NANNY->value)) {
             $appointment->loadMissing('nanny');
-
-            return (int) $appointment->nanny->user_id === (int) $user->id;
+            return ((int)$appointment->nanny->user_id === (int)$user->id)
+                ? Response::allow()
+                : Response::deny('Solo la niñera asignada puede aceptar esta cita.');
         }
 
-        return false;
+        return Response::deny('Tu rol no está autorizado para esta acción.');
     }
 
     /**
-     * Determine if the nanny can reject a pending appointment
-     * Only when status is pending and nanny is assigned
+     * Rechazar cita (nanny asignada y status pending)
      */
-    public function reject(User $user, BookingAppointment $appointment): bool
+    public function reject(User $user, BookingAppointment $appointment): Response
     {
-        // Check base permission
         if (! $this->hasPermission($user, BookingAppointmentPermission::Reject->value)) {
-            return false;
+            return Response::deny('No cuentas con el permiso para rechazar la cita.');
         }
 
-        // Must be in pending status
         if ($appointment->status->value !== StatusEnum::PENDING->value) {
-            return false;
+            return Response::deny('Solo se puede rechazar cuando la cita está pendiente.');
         }
 
-        // Must have a nanny assigned
         if ($appointment->nanny_id === null) {
-            return false;
+            return Response::deny('No hay niñera asignada a esta cita.');
         }
 
-        // Admin can always reject
         if ($user->hasRole(RoleEnum::ADMIN->value)) {
-            return true;
+            return Response::allow();
         }
 
-        // Nanny can only reject their own assignments
         if ($user->hasRole(RoleEnum::NANNY->value)) {
             $appointment->loadMissing('nanny');
-
-            return (int) $appointment->nanny->user_id === (int) $user->id;
+            return ((int)$appointment->nanny->user_id === (int)$user->id)
+                ? Response::allow()
+                : Response::deny('Solo la niñera asignada puede rechazar esta cita.');
         }
 
-        return false;
+        return Response::deny('Tu rol no está autorizado para esta acción.');
     }
 
     /**
-     * Determine if the user can unassign a nanny from a confirmed appointment
-     * Only when status is confirmed
+     * Desasignar niñera (solo confirmed)
      */
-    public function unassignNanny(User $user, BookingAppointment $appointment): bool
+    public function unassignNanny(User $user, BookingAppointment $appointment): Response
     {
-        // Check base permission
         if (! $this->hasPermission($user, BookingAppointmentPermission::UnassignNanny->value)) {
-            return false;
+            return Response::deny('No cuentas con el permiso para desasignar la niñera.');
         }
 
-        // Must be in confirmed status
         if ($appointment->status->value !== StatusEnum::CONFIRMED->value) {
-            return false;
+            return Response::deny('Solo se puede desasignar la niñera cuando la cita está confirmada.');
         }
 
-        // Must have a nanny assigned
         if ($appointment->nanny_id === null) {
-            return false;
+            return Response::deny('Esta cita no tiene una niñera asignada.');
         }
 
-        // Admin can always unassign
         if ($user->hasRole(RoleEnum::ADMIN->value)) {
-            return true;
+            return Response::allow();
         }
 
-        // Tutor can unassign from their own bookings
         if ($user->hasRole(RoleEnum::TUTOR->value)) {
             $appointment->loadMissing('booking.tutor');
-            $bookingTutorUserId = $appointment->booking?->tutor?->user_id;
-
-            return $bookingTutorUserId !== null && (int) $bookingTutorUserId === (int) $user->id;
+            $ownerId = $appointment->booking?->tutor?->user_id;
+            return ($ownerId !== null && (int)$ownerId === (int)$user->id)
+                ? Response::allow()
+                : Response::deny('Solo el tutor dueño del booking puede desasignar la niñera.');
         }
 
-        // Nanny can unassign themselves
         if ($user->hasRole(RoleEnum::NANNY->value)) {
             $appointment->loadMissing('nanny');
-
-            return (int) $appointment->nanny->user_id === (int) $user->id;
+            return ((int)$appointment->nanny->user_id === (int)$user->id)
+                ? Response::allow()
+                : Response::deny('Solo la niñera asignada puede desasignarse.');
         }
 
-        return false;
+        return Response::deny('Tu rol no está autorizado para esta acción.');
     }
 
     /**
-     * Determine if the user can cancel an appointment
-     * Cannot cancel if already completed
+     * Cancelar cita (no se puede si está completada)
      */
-    public function cancel(User $user, BookingAppointment $appointment): bool
+    public function cancel(User $user, BookingAppointment $appointment): Response
     {
-        // Check base permission
         if (! $this->hasPermission($user, BookingAppointmentPermission::Cancel->value)) {
-            return false;
+            return Response::deny('No cuentas con el permiso para cancelar la cita.');
         }
 
-        // Cannot cancel completed appointments
         if ($appointment->status->value === StatusEnum::COMPLETED->value) {
-            return false;
+            return Response::deny('No se puede cancelar una cita ya completada.');
         }
 
-        // Admin can cancel any
         if ($user->hasRole(RoleEnum::ADMIN->value)) {
-            return true;
+            return Response::allow();
         }
 
-        // Tutor can cancel their own appointments
         if ($user->hasRole(RoleEnum::TUTOR->value)) {
             $appointment->loadMissing('booking.tutor');
-            $bookingTutorUserId = $appointment->booking?->tutor?->user_id;
-
-            return $bookingTutorUserId !== null && (int) $bookingTutorUserId === (int) $user->id;
+            $ownerId = $appointment->booking?->tutor?->user_id;
+            return ($ownerId !== null && (int)$ownerId === (int)$user->id)
+                ? Response::allow()
+                : Response::deny('Solo el tutor dueño del booking puede cancelar esta cita.');
         }
 
-        // Nanny can cancel appointments assigned to them
         if ($user->hasRole(RoleEnum::NANNY->value) && $appointment->nanny_id !== null) {
             $appointment->loadMissing('nanny');
-
-            return (int) $appointment->nanny->user_id === (int) $user->id;
+            return ((int)$appointment->nanny->user_id === (int)$user->id)
+                ? Response::allow()
+                : Response::deny('Solo la niñera asignada puede cancelar esta cita.');
         }
 
-        return false;
+        return Response::deny('Tu rol no está autorizado para esta acción.');
     }
 
     /**
-     * Determine if the nanny can review the tutor
-     * Only when status is completed and not already reviewed
+     * Review del tutor por la niñera (solo completed y no revisado aún)
      */
-    public function reviewTutor(User $user, BookingAppointment $appointment): bool
+    public function reviewTutor(User $user, BookingAppointment $appointment): Response
     {
-        // Check base permission
         if (! $this->hasPermission($user, BookingAppointmentPermission::ReviewTutor->value)) {
-            return false;
+            return Response::deny('No cuentas con el permiso para dejar reseña del tutor.');
         }
 
-        // Must be completed
         if ($appointment->status->value !== StatusEnum::COMPLETED->value) {
-            return false;
+            return Response::deny('Solo se puede reseñar cuando la cita está completada.');
         }
 
-        // Must not have already reviewed
         if ($appointment->reviewed_by_nanny) {
-            return false;
+            return Response::deny('Esta cita ya fue reseñada por la niñera.');
         }
 
-        // Admin can create reviews
         if ($user->hasRole(RoleEnum::ADMIN->value)) {
-            return true;
+            return Response::allow();
         }
 
-        // Nanny can review if they were assigned to this appointment
         if ($user->hasRole(RoleEnum::NANNY->value) && $appointment->nanny_id !== null) {
             $appointment->loadMissing('nanny');
-
-            return (int) $appointment->nanny->user_id === (int) $user->id;
+            return ((int)$appointment->nanny->user_id === (int)$user->id)
+                ? Response::allow()
+                : Response::deny('Solo la niñera asignada puede reseñar al tutor.');
         }
 
-        return false;
+        return Response::deny('Tu rol no está autorizado para esta acción.');
     }
 
     /**
-     * Determine if the tutor can review the nanny
-     * Only when status is completed and not already reviewed
+     * Review de la niñera por el tutor (solo completed y no revisado aún)
      */
-    public function reviewNanny(User $user, BookingAppointment $appointment): bool
+    public function reviewNanny(User $user, BookingAppointment $appointment): Response
     {
-        // Check base permission
         if (! $this->hasPermission($user, BookingAppointmentPermission::ReviewNanny->value)) {
-            return false;
+            return Response::deny('No cuentas con el permiso para dejar reseña de la niñera.');
         }
 
-        // Must be completed
         if ($appointment->status->value !== StatusEnum::COMPLETED->value) {
-            return false;
+            return Response::deny('Solo se puede reseñar cuando la cita está completada.');
         }
 
-        // Must not have already reviewed
         if ($appointment->reviewed_by_tutor) {
-            return false;
+            return Response::deny('Esta cita ya fue reseñada por el tutor.');
         }
 
-        // Admin can create reviews
         if ($user->hasRole(RoleEnum::ADMIN->value)) {
-            return true;
+            return Response::allow();
         }
 
-        // Tutor can review their own appointments
         if ($user->hasRole(RoleEnum::TUTOR->value)) {
             $appointment->loadMissing('booking.tutor');
-            $bookingTutorUserId = $appointment->booking?->tutor?->user_id;
-
-            return $bookingTutorUserId !== null && (int) $bookingTutorUserId === (int) $user->id;
+            $ownerId = $appointment->booking?->tutor?->user_id;
+            return ($ownerId !== null && (int)$ownerId === (int)$user->id)
+                ? Response::allow()
+                : Response::deny('Solo el tutor dueño del booking puede reseñar a la niñera.');
         }
 
-        return false;
+        return Response::deny('Tu rol no está autorizado para esta acción.');
     }
+
+    /* ------------------------- Helpers ------------------------- */
 
     private function hasPermission(User $user, string $permission): bool
     {

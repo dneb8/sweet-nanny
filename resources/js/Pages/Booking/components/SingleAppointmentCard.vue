@@ -9,20 +9,18 @@ import { computed } from 'vue'
 import { useBookingView } from '@/services/BookingService'
 import { getBookingStatusLabelByString, getBookingStatusBadgeClass } from '@/enums/booking/status.enum'
 import { getAddressTypeLabelByString, getAddressTypeBadgeClass } from '@/enums/addresses/type.enum'
-// =======
-// import { router } from '@inertiajs/vue3'
-// 
-// function cancelarCita() {
-//   router.post(
-//     route('bookings.appointments.cancel', {
-//       booking: props.booking.id,        // {booking}
-//       appointment: props.appointment.id // {appointment}
-//     }),
-//     {},
-//     { preserveScroll: true, preserveState: true }
-//   )
-// }
-// >>>>>>> copilot/optimize-notification-polling
+import { router } from '@inertiajs/vue3'
+
+function cancelarCita() {
+  router.post(
+    route('bookings.appointments.cancel', {
+      booking: props.booking.id,        // {booking}
+      appointment: props.appointment.id // {appointment}
+    }),
+    {},
+    { preserveScroll: true, preserveState: true }
+  )
+}
 
 /* ==== Emits ==== */
 const emit = defineEmits<{
