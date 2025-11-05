@@ -31,14 +31,27 @@ export function useNotifications() {
             const newNotifications = response.data.notifications;
             const newUnreadCount = response.data.unread_count;
             
-            // Optimized comparison: check length and IDs/read_at status
-            const hasChanged = 
+            // Optimized comparison: check length, count, and ID mapping
+            let hasChanged = 
                 notifications.value.length !== newNotifications.length ||
-                unreadCount.value !== newUnreadCount ||
-                notifications.value.some((notif, idx) => {
-                    const newNotif = newNotifications[idx];
-                    return !newNotif || notif.id !== newNotif.id || notif.read_at !== newNotif.read_at;
-                });
+                unreadCount.value !== newUnreadCount;
+            
+            // If basic checks pass, check if notification IDs or read status changed
+            if (!hasChanged && notifications.value.length > 0) {
+                // Create maps for O(n) comparison regardless of order
+                const oldMap = new Map(
+                    notifications.value.map(n => [n.id, n.read_at])
+                );
+                const newMap = new Map(
+                    newNotifications.map((n: Notification) => [n.id, n.read_at])
+                );
+                
+                // Check if any ID or read_at status changed
+                hasChanged = oldMap.size !== newMap.size || 
+                    Array.from(oldMap.entries()).some(([id, read_at]) => 
+                        newMap.get(id) !== read_at
+                    );
+            }
             
             if (hasChanged) {
                 notifications.value = newNotifications;

@@ -20,6 +20,7 @@ const open = ref(false);
 const isPageVisible = usePageVisibility();
 
 let pollInterval: NodeJS.Timeout | null = null;
+let visibilityTimeout: NodeJS.Timeout | null = null;
 let abortController: AbortController | null = null;
 
 // Optimized fetch that respects page visibility and uses requestIdleCallback
@@ -39,7 +40,11 @@ const optimizedFetchNotifications = async () => {
         
         // Use requestIdleCallback to defer non-urgent updates
         const performFetch = async () => {
-            await fetchNotifications(abortController?.signal);
+            try {
+                await fetchNotifications(abortController.signal);
+            } catch (error) {
+                // Errors already handled in fetchNotifications
+            }
         };
 
         // Use requestIdleCallback if available to avoid blocking main thread
@@ -73,17 +78,31 @@ onMounted(() => {
 // Watch for visibility changes using VueUse pattern
 watch(isPageVisible, (visible) => {
     if (visible && pollInterval === null) {
+        // Clear any existing timeout to prevent race condition
+        if (visibilityTimeout) {
+            clearTimeout(visibilityTimeout);
+        }
+        
         // Small delay before resuming to avoid immediate fetch burst
-        setTimeout(() => {
+        visibilityTimeout = setTimeout(() => {
             if (isPageVisible.value) {
                 optimizedFetchNotifications();
                 pollInterval = setInterval(optimizedFetchNotifications, 3000);
             }
+            visibilityTimeout = null;
         }, 500);
-    } else if (!visible && pollInterval) {
+    } else if (!visible) {
+        // Clear any pending visibility timeout
+        if (visibilityTimeout) {
+            clearTimeout(visibilityTimeout);
+            visibilityTimeout = null;
+        }
+        
         // Pause polling when page is hidden
-        clearInterval(pollInterval);
-        pollInterval = null;
+        if (pollInterval) {
+            clearInterval(pollInterval);
+            pollInterval = null;
+        }
     }
 });
 
@@ -91,6 +110,11 @@ onUnmounted(() => {
     if (pollInterval) {
         clearInterval(pollInterval);
         pollInterval = null;
+    }
+    
+    if (visibilityTimeout) {
+        clearTimeout(visibilityTimeout);
+        visibilityTimeout = null;
     }
     
     if (abortController) {
