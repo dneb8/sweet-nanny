@@ -18,23 +18,35 @@
         <li><a href="#about" class="text-white hover:text-pink-400">Acerca de</a></li>
         <li><a href="#rates" class="text-white hover:text-pink-400">Tarifas</a></li>
 
-        <!-- Botones estilo hero pero más compactos -->
-        <li>
-          <Link
-            :href="route('login')"
-            class="inline-block px-4 py-1.5 bg-[#f4c2ba] hover:bg-[#e9a7a0] text-white font-medium rounded-full shadow-md transition text-xs sm:text-sm"
-          >
-            Iniciar sesión
-          </Link>
-        </li>
-        <li>
-          <Link
-            :href="route('register')"
-            class="inline-block px-4 py-1.5 bg-white text-[#f4c2ba] hover:bg-[#e9a7a0] hover:text-white border border-white font-medium rounded-full shadow-md transition text-xs sm:text-sm"
-          >
-            Registrarse
-          </Link>
-        </li>
+        <!-- Lógica de autenticación -->
+        <template v-if="$page.props.auth.user">
+          <li>
+            <Link
+              :href="route('dashboard')"
+              class="inline-block px-4 py-1.5 bg-[#f4c2ba] hover:bg-[#e9a7a0] text-white font-medium rounded-full shadow-md transition text-xs sm:text-sm"
+            >
+              Dashboard
+            </Link>
+          </li>
+        </template>
+        <template v-else>
+          <li>
+            <Link
+              :href="route('login')"
+              class="inline-block px-4 py-1.5 bg-[#f4c2ba] hover:bg-[#e9a7a0] text-white font-medium rounded-full shadow-md transition text-xs sm:text-sm"
+            >
+              Iniciar sesión
+            </Link>
+          </li>
+          <li>
+            <Link
+              :href="route('register')"
+              class="inline-block px-4 py-1.5 bg-white text-[#f4c2ba] hover:bg-[#e9a7a0] hover:text-white border border-white font-medium rounded-full shadow-md transition text-xs sm:text-sm"
+            >
+              Registrarse
+            </Link>
+          </li>
+        </template>
       </ul>
 
       <!-- BOTÓN MENÚ MÓVIL -->
@@ -78,18 +90,30 @@
         <a href="#services" class="block text-white hover:text-pink-400">Servicios</a>
         <a href="#about" class="block text-white hover:text-pink-400">Acerca de</a>
         <a href="#rates" class="block text-white hover:text-pink-400">Tarifas</a>
-        <Link
-          :href="route('login')"
-          class="block px-4 py-2 bg-[#f4c2ba] hover:bg-[#e9a7a0] text-white font-medium rounded-full shadow-md transition"
-        >
-          Iniciar sesión
-        </Link>
-        <Link
-          :href="route('register')"
-          class="block px-4 py-2 border border-white text-white hover:bg-white hover:text-[#f4c2ba] font-medium rounded-full shadow-md transition"
-        >
-          Registrarse
-        </Link>
+
+        <!-- Lógica de autenticación -->
+        <template v-if="$page.props.auth.user">
+          <Link
+            :href="route('dashboard')"
+            class="block px-4 py-2 bg-[#f4c2ba] hover:bg-[#e9a7a0] text-white font-medium rounded-full shadow-md transition"
+          >
+            Dashboard
+          </Link>
+        </template>
+        <template v-else>
+          <Link
+            :href="route('login')"
+            class="block px-4 py-2 bg-[#f4c2ba] hover:bg-[#e9a7a0] text-white font-medium rounded-full shadow-md transition"
+          >
+            Iniciar sesión
+          </Link>
+          <Link
+            :href="route('register')"
+            class="block px-4 py-2 border border-white text-white hover:bg-white hover:text-[#f4c2ba] font-medium rounded-full shadow-md transition"
+          >
+            Registrarse
+          </Link>
+        </template>
       </div>
     </transition>
   </header>
