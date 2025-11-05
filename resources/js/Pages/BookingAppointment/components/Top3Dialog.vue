@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import type { Nanny } from '@/types/Nanny'
 
-// Modelo v-model:open (evita props/emit manuales y bucles)
+// v-model:open
 const open = defineModel<boolean>('open', { required: true })
 
 const props = defineProps<{
@@ -42,13 +42,36 @@ function initials(name: string) {
     .toUpperCase()
     .slice(0, 2)
 }
+
+// Glow helper: capa glow debajo, contenido arriba, sin bloquear clics
+function topHighlightClasses(isTop: boolean) {
+  if (!isTop) return ''
+  return [
+    'relative',
+    'z-0', // no elevamos el stacking context de la tarjeta
+    'rounded-2xl',
+    // capa glow detrás, no intercepta clics
+    'before:pointer-events-none',
+    'before:absolute before:-inset-2 before:rounded-3xl',
+    'before:z-0',
+    'before:bg-gradient-to-r before:from-fuchsia-400/25 before:via-rose-400/30 before:to-purple-400/25',
+    'before:blur-2xl before:content-[""]',
+    // animación visible
+    'animate-[glow_2.2s_ease-in-out_infinite]',
+  ].join(' ')
+}
 </script>
 
+<style scoped>
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.25); transform: translateZ(0) scale(1);}
+  50% { box-shadow: 0 0 40px 6px rgba(244, 63, 94, 0.35);  transform: translateZ(0) scale(1.2);  }
+}
+</style>
+
 <template>
-  <!-- Usamos v-model:open directo sobre Dialog -->
   <Dialog v-model:open="open">
-    <!-- Importante: dejar que el Dialog controle su update:open.
-         Si quieres cerrar por fuera/escape, puedes reactivar eventos, pero no es necesario. -->
+    <!-- shadcn/ui ya usa portal con z-50; si personalizaste, puedes añadir class="z-[60]" -->
     <DialogContent class="sm:max-w-4xl">
       <DialogHeader>
         <DialogTitle class="text-2xl">Niñeras con mayor coincidencia</DialogTitle>
@@ -65,13 +88,14 @@ function initials(name: string) {
         <!-- 2do lugar -->
         <div
           v-if="top3[1]"
-          class="rounded-2xl border bg-card p-4 flex flex-col items-center text-center space-y-3 sm:mt-8"
+          class="rounded-2xl border dark:bg-white/10 p-4 flex flex-col items-center text-center space-y-3 sm:mt-8"
+          :class="topHighlightClasses(true)"
         >
-          <Avatar class="h-20 w-20">
+          <Avatar class="h-20 w-20 relative z-10">
             <AvatarImage :src="top3[1].profile_photo_url || undefined" />
             <AvatarFallback>{{ initials(top3[1].name) }}</AvatarFallback>
           </Avatar>
-          <div>
+          <div class="relative z-10">
             <h3 class="font-semibold">{{ top3[1].name }}</h3>
             <div class="flex flex-wrap gap-1 justify-center mt-2">
               <Badge
@@ -83,22 +107,25 @@ function initials(name: string) {
               </Badge>
             </div>
           </div>
-          <div class="flex gap-2 w-full">
+          <div class="relative z-10 flex gap-2 w-full">
             <Button size="sm" variant="outline" class="flex-1" @click="see(top3[1])">Ver perfil</Button>
             <Button size="sm" class="flex-1" @click="choose(top3[1].id)">Elegir</Button>
           </div>
         </div>
 
         <!-- 1er lugar -->
-        <div class="rounded-2xl border-2 border-primary bg-card p-4 flex flex-col items-center text-center space-y-3 relative">
-          <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+        <div
+          class="rounded-2xl border-2 border-primary dark:bg-white/20 p-4 flex flex-col items-center text-center space-y-3"
+          :class="topHighlightClasses(true)"
+        >
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
             <Badge class="bg-primary">Destacada</Badge>
           </div>
-          <Avatar class="h-24 w-24 ring-2 ring-primary ring-offset-2">
+          <Avatar class="h-24 w-24 ring-2 ring-primary ring-offset-2 relative z-10">
             <AvatarImage :src="top3[0]?.profile_photo_url || undefined" />
             <AvatarFallback>{{ top3[0] ? initials(top3[0].name) : '—' }}</AvatarFallback>
           </Avatar>
-          <div>
+          <div class="relative z-10">
             <h3 class="font-semibold text-lg">{{ top3[0]?.name }}</h3>
             <div class="flex flex-wrap gap-1 justify-center mt-2">
               <Badge
@@ -110,7 +137,7 @@ function initials(name: string) {
               </Badge>
             </div>
           </div>
-          <div class="flex gap-2 w-full">
+          <div class="relative z-10 flex gap-2 w-full">
             <Button size="sm" variant="outline" class="flex-1" @click="top3[0] && see(top3[0])">Ver perfil</Button>
             <Button size="sm" class="flex-1" @click="top3[0] && choose(top3[0].id)">Elegir</Button>
           </div>
@@ -119,13 +146,14 @@ function initials(name: string) {
         <!-- 3er lugar -->
         <div
           v-if="top3[2]"
-          class="rounded-2xl border bg-card p-4 flex flex-col items-center text-center space-y-3 sm:mt-8"
+          class="rounded-2xl border dark:bg-white/10 p-4 flex flex-col items-center text-center space-y-3 sm:mt-8"
+          :class="topHighlightClasses(true)"
         >
-          <Avatar class="h-20 w-20">
+          <Avatar class="h-20 w-20 relative z-10">
             <AvatarImage :src="top3[2].profile_photo_url || undefined" />
             <AvatarFallback>{{ initials(top3[2].name) }}</AvatarFallback>
           </Avatar>
-          <div>
+          <div class="relative z-10">
             <h3 class="font-semibold">{{ top3[2].name }}</h3>
             <div class="flex flex-wrap gap-1 justify-center mt-2">
               <Badge
@@ -137,7 +165,7 @@ function initials(name: string) {
               </Badge>
             </div>
           </div>
-          <div class="flex gap-2 w-full">
+          <div class="relative z-10 flex gap-2 w-full">
             <Button size="sm" variant="outline" class="flex-1" @click="see(top3[2])">Ver perfil</Button>
             <Button size="sm" class="flex-1" @click="choose(top3[2].id)">Elegir</Button>
           </div>

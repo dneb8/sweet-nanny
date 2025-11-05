@@ -136,7 +136,7 @@ function topHighlightClasses(isTop: boolean) {
 <style scoped>
 @keyframes glow {
   0%, 100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.25); transform: translateZ(0) scale(1);}
-  50% { box-shadow: 0 0 40px 6px rgba(244, 63, 94, 0.35);  transform: translateZ(0) scale(1.02);  }
+  50% { box-shadow: 0 0 40px 6px rgba(244, 63, 94, 0.35);  transform: translateZ(0) scale(1.2);  }
 }
 </style>
 

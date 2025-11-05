@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useNotifications, type Notification } from '@/composables/useNotifications';
-import { usePageVisibility } from '@vueuse/core';
+import { useDocumentVisibility } from '@vueuse/core';
 import { Bell } from 'lucide-vue-next';
 import {
     DropdownMenu,
@@ -17,10 +17,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 const { notifications, unreadCount, fetchNotifications, markAllAsRead, handleNotificationClick } = useNotifications();
 
 const open = ref(false);
-const isPageVisible = usePageVisibility();
+const isPageVisible = useDocumentVisibility();
 
-let pollInterval: NodeJS.Timeout | null = null;
-let visibilityTimeout: NodeJS.Timeout | null = null;
+let pollInterval: ReturnType<typeof setInterval> | null = null;
+let visibilityTimeout: ReturnType<typeof setTimeout> | null = null;
 let abortController: AbortController | null = null;
 
 // Optimized fetch that respects page visibility and uses requestIdleCallback
@@ -43,8 +43,8 @@ const optimizedFetchNotifications = async () => {
             if (!abortController) return;
             
             try {
-                await fetchNotifications(abortController.signal);
-            } catch (error) {
+                await fetchNotifications();
+            } catch {
                 // Errors already handled in fetchNotifications
             }
         };

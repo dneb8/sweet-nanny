@@ -41,7 +41,7 @@ class NannyAssigned extends Notification implements ShouldQueue
             'appointment_id' => $this->appointment->id,
             'booking_id'     => $this->appointment->booking_id,
             'start_date'     => $this->appointment->start_date->toISOString(),
-            'redirect'       => route('bookings.show', $this->appointment->booking_id),
+            'redirect'       => route('booking-appointments'),
             'type'           => 'nanny_assigned',
         ];
     }
