@@ -84,7 +84,7 @@ test('updating appointment dates returns success response', function () {
 
 test('updating appointment address returns success response', function () {
     $response = $this->actingAs($this->user)
-        ->patch(route('bookings.appointments.update-address', [
+        ->patchJson(route('bookings.appointments.update-address', [
             'booking' => $this->booking->id,
             'appointment' => $this->appointment->id,
         ]), [
@@ -100,7 +100,7 @@ test('updating appointment address returns success response', function () {
 
 test('updating appointment children returns success response', function () {
     $response = $this->actingAs($this->user)
-        ->patch(route('bookings.appointments.update-children', [
+        ->patchJson(route('bookings.appointments.update-children', [
             'booking' => $this->booking->id,
             'appointment' => $this->appointment->id,
         ]), [

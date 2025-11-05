@@ -56,6 +56,17 @@ const isDeleting = ref(false)
 
 const currentAvatarUrl = computed(() => previewUrl.value || props.avatarUrl || null)
 
+/** Iniciales para fallback */
+const userInitials = computed(() => {
+  const n = (user?.name ?? '').trim()
+  const s = ((user as any)?.surnames ?? '').trim()
+  const parts = `${n} ${s}`.trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return ''
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+})
+const hasInitials = computed(() => userInitials.value.length > 0)
+
 const handleFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
@@ -166,7 +177,18 @@ const isEmailVerified = computed<boolean>(() => !!(user as any)?.email_verified_
                 alt="Avatar"
                 class="h-full w-full object-cover"
               />
-              <UserIcon v-else class="h-12 w-12 text-muted-foreground" />
+
+              <!-- Fallback: iniciales o ícono -->
+              <template v-else>
+                <span
+                  v-if="hasInitials"
+                  class="select-none text-xl font-semibold text-muted-foreground"
+                  aria-hidden="true"
+                >
+                  {{ userInitials }}
+                </span>
+                <UserIcon v-else class="h-12 w-12 text-muted-foreground" />
+              </template>
             </div>
 
             <!-- Validation Status Badge -->
