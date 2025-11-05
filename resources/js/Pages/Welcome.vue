@@ -1,45 +1,70 @@
 <script setup lang="ts">
-import { Head, Link } from "@inertiajs/vue3";
-import AuthLayout from "@/layouts/AuthLayout.vue";
+import { Head } from "@inertiajs/vue3";
+import HeaderLanding from '@/components/landing/HeaderLanding.vue'
+import HeroSection from '@/components/landing/HeroSection.vue'
+import WhatOfferSection from '@/components/landing/WhatOfferSection.vue'
+import HowWorksSection from "@/components/landing/HowWorksSection.vue";
+import AboutSection from '@/components/landing/AboutSection.vue';
+import MeetNannySection from '@/components/landing/MeetNannySection.vue';
+import BabysittingPricesSection from "@/components/landing/BabysittingPricesSection.vue";
+import FooterLanding from "@/components/landing/FooterLanding.vue";
+import BlogSection from "@/components/landing/BlogSection.vue";
+import BabyPartiSection from "@/components/landing/BabyPartiSection.vue";
+import TestimonialsSection from "../components/landing/TestimonialsSection.vue";
+import EveningSection from "@/components/landing/EveningSection.vue";
+import RelaxSection from "@/components/landing/RelaxSection.vue";
 
 defineOptions({
-  layout: AuthLayout,
+  layout: false,
 });
 </script>
 
 <template>
-  <Head title="Welcome">
-    <link rel="preconnect" href="https://rsms.me/" />
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <Head title="Bienvenidos">
   </Head>
-  <div
-    class="flex min-h-screen flex-col items-center bg-[#FDFDFC] p-6 text-[#1b1b18] lg:justify-center lg:p-8 dark:bg-[#0a0a0a]"
-  >
-    <header class="mb-6 w-full max-w-[335px] text-sm not-has-[nav]:hidden lg:max-w-4xl">
-      <nav class="flex items-center justify-end gap-4">
-        <Link
-          v-if="$page.props.auth.user"
-          :href="route('dashboard')"
-          class="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
-        >
-          Dashboard
-        </Link>
-        <template v-else>
-          <Link
-            :href="route('login')"
-            class="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#19140035] dark:text-[#EDEDEC] dark:hover:border-[#3E3E3A]"
-          >
-            Log in
-          </Link>
-          <Link
-            :href="route('register')"
-            class="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
-          >
-            Register
-          </Link>
-        </template>
-      </nav>
-    </header>
-    <div class="hidden h-14.5 lg:block"></div>
-  </div>
+
+   <body >
+    <div class="relative overflow-x-hidden">
+
+      <!--HEADER DE LANDING-->
+      <HeaderLanding />
+
+      <!--HOME DE LANDING-->
+      <HeroSection />
+
+      <!--WHATOFFER DE LANDING-->
+      <WhatOfferSection />
+
+      <!--HOWWORKS DE LANDING-->
+      <HowWorksSection />
+
+      <!--ABOUT DE LANDING-->
+      <AboutSection />
+
+      <!--MEET NANNYS DE LANDING-->
+      <MeetNannySection />
+
+      <!--BABYPARTI DE LANDING-->
+      <BabyPartiSection />
+
+      <!--BABYSITTINGPRICES DE LANDING-->
+      <BabysittingPricesSection />
+
+      <!--RELAX DE LANDING-->
+      <RelaxSection /> 
+
+      <!--BLOGS DE LANDING-->
+      <BlogSection />
+
+      <!--TESTIMONIALS DE LANDING-->
+      <TestimonialsSection />
+
+      <!--EVENING DE LANDING-->
+      <EveningSection />
+
+      <!--FOOTER-->
+      <FooterLanding />
+    </div>
+  </body>
 </template>
+
