@@ -7,6 +7,18 @@ import type { Booking } from '@/types/Booking'
 import type { BookingAppointment } from '@/types/BookingAppointment'
 import { computed } from 'vue'
 import { useBookingView } from '@/services/BookingService'
+import { router } from '@inertiajs/vue3'
+
+function cancelarCita() {
+  router.post(
+    route('bookings.appointments.cancel', {
+      booking: props.booking.id,        // {booking}
+      appointment: props.appointment.id // {appointment}
+    }),
+    {},
+    { preserveScroll: true, preserveState: true }
+  )
+}
 
 /* ==== Emits ==== */
 const emit = defineEmits<{
@@ -271,7 +283,7 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
             variant="destructive"
             size="sm"
             class="flex-1"
-            @click="emit('routerGet', route('bookings.appointments.cancel', { booking: props.booking.id, appointment: props.appointment.id }))"
+            @click="cancelarCita()"
           >
             <Icon icon="lucide:x-circle" class="mr-2 h-4 w-4" />
             Cancelar cita

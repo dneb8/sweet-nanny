@@ -2,129 +2,158 @@
 
 namespace App\Policies;
 
+use App\Enums\Booking\StatusEnum;
+use App\Enums\Permissions\BookingAppointmentPermission as Perm;
 use App\Enums\User\RoleEnum;
 use App\Models\BookingAppointment;
 use App\Models\User;
 
 class BookingAppointmentPolicy
 {
+    public function before(User $user, string $ability): ?bool
+    {
+        // Admin pasa todo
+        if ($this->hasRole($user, RoleEnum::ADMIN)) {
+            return true;
+        }
+        return null;
+    }
+
+    public function viewAny(User $user): bool
+    {
+        return $this->hasPermission($user, Perm::ViewAny->value);
+    }
+
+    public function view(User $user, BookingAppointment $appointment): bool
+    {
+        if ($this->hasPermission($user, Perm::View->value)) {
+            return true;
+        }
+
+        $appointment->loadMissing('booking.tutor', 'nanny');
+        return
+            (optional($appointment->booking?->tutor)->user_id === $user->id) ||
+            (optional($appointment->nanny)->user_id === $user->id);
+    }
+
     public function chooseNanny(User $user, BookingAppointment $appointment): bool
     {
-        // 1) ADMIN: always can choose nanny
-        if ($user->hasRole(RoleEnum::ADMIN->value)) {
-            return true;
-        }
+        if (! $this->hasPermission($user, Perm::ChooseNanny->value)) return false;
 
-        // 2) TUTOR: can choose nanny only if:
-        //    - They are the owner of the booking
-        //    - The appointment doesn't have a nanny assigned yet
-        if ($user->hasRole(RoleEnum::TUTOR->value)) {
-            // Check if nanny is already assigned
-            if ($appointment->nanny_id !== null) {
-                return false;
-            }
+        $appointment->loadMissing('booking.tutor');
+        $isOwner = (optional($appointment->booking?->tutor)->user_id === $user->id);
 
-            // Load the booking and tutor relationship
-            $appointment->loadMissing('booking.tutor');
-            $bookingTutorUserId = $appointment->booking?->tutor?->user_id;
-
-            // Verify the user owns the booking
-            return $bookingTutorUserId !== null && (int)$bookingTutorUserId === (int)$user->id;
-        }
-
-        // 3) NANNY or other roles: cannot choose nanny
-        return false;
+        return $isOwner && is_null($appointment->nanny_id);
     }
 
-    /**
-     * Determine if the user can cancel an appointment
-     */
+    public function assignNanny(User $user, BookingAppointment $appointment): bool
+    {
+        if (! $this->hasPermission($user, Perm::AssignNanny->value)) return false;
+
+        $appointment->loadMissing('booking.tutor');
+        return (optional($appointment->booking?->tutor)->user_id === $user->id);
+    }
+
     public function cancel(User $user, BookingAppointment $appointment): bool
     {
-        // Admin can cancel any appointment
-        if ($user->hasRole(RoleEnum::ADMIN->value)) {
-            return true;
-        }
+        if (! $this->hasPermission($user, Perm::Cancel->value)) return false;
 
-        // Tutor can cancel their own appointments
-        if ($user->hasRole(RoleEnum::TUTOR->value)) {
-            $appointment->loadMissing('booking.tutor');
-            $bookingTutorUserId = $appointment->booking?->tutor?->user_id;
-            return $bookingTutorUserId !== null && (int)$bookingTutorUserId === (int)$user->id;
-        }
+        $appointment->loadMissing('booking.tutor');
+        $isOwner = (optional($appointment->booking?->tutor)->user_id === $user->id);
 
-        return false;
+        return $isOwner && ($appointment->status->value !== StatusEnum::COMPLETED->value);
     }
 
-    /**
-     * Determine if the user can update an appointment
-     */
+    public function unassignNanny(User $user, BookingAppointment $appointment): bool
+    {
+        if (! $this->hasPermission($user, Perm::UnassignNanny->value)) return false;
+
+        $appointment->loadMissing('booking.tutor', 'nanny');
+        $isOwnerTutor    = (optional($appointment->booking?->tutor)->user_id === $user->id);
+        $isAssignedNanny = (optional($appointment->nanny)->user_id === $user->id);
+
+        return ($isOwnerTutor || $isAssignedNanny)
+            && ($appointment->status->value === StatusEnum::CONFIRMED->value)
+            && ! is_null($appointment->nanny_id);
+    }
+
+    public function accept(User $user, BookingAppointment $appointment): bool
+    {
+        if (! $this->hasPermission($user, Perm::Accept->value)) return false;
+
+        $appointment->loadMissing('nanny');
+        return (optional($appointment->nanny)->user_id === $user->id)
+            && ($appointment->status->value === StatusEnum::PENDING->value);
+    }
+
+    public function reject(User $user, BookingAppointment $appointment): bool
+    {
+        if (! $this->hasPermission($user, Perm::Reject->value)) return false;
+
+        $appointment->loadMissing('nanny');
+        return (optional($appointment->nanny)->user_id === $user->id)
+            && ($appointment->status->value === StatusEnum::PENDING->value);
+    }
+
     public function update(User $user, BookingAppointment $appointment): bool
     {
-        // Check status - only draft and pending can be edited
-        if (!in_array($appointment->status, ['draft', 'pending'])) {
+        if (! $this->hasPermission($user, Perm::UpdateDates->value)) return false; // gating mínimo
+
+        if (! in_array($appointment->status->value, [StatusEnum::DRAFT->value, StatusEnum::PENDING->value], true)) {
             return false;
         }
 
-        // Admin can edit any
-        if ($user->hasRole(RoleEnum::ADMIN->value)) {
-            return true;
-        }
-
-        // Tutor can edit their own
-        if ($user->hasRole(RoleEnum::TUTOR->value)) {
-            $appointment->loadMissing('booking.tutor');
-            $bookingTutorUserId = $appointment->booking?->tutor?->user_id;
-            return $bookingTutorUserId !== null && (int)$bookingTutorUserId === (int)$user->id;
-        }
-
-        return false;
+        $appointment->loadMissing('booking.tutor');
+        return (optional($appointment->booking?->tutor)->user_id === $user->id);
     }
 
-    /**
-     * Determine if the user can view any booking appointments
-     */
-    public function viewAny(User $user): bool
+    public function updateDates(User $user, BookingAppointment $appointment): bool
     {
-        // Admin can view all
-        if ($user->hasRole(RoleEnum::ADMIN->value)) {
-            return true;
-        }
-
-        // Nanny can view their own appointments
-        if ($user->hasRole(RoleEnum::NANNY->value)) {
-            return true;
-        }
-
-        return false;
+        return $this->hasPermission($user, Perm::UpdateDates->value) && $this->update($user, $appointment);
     }
 
-    /**
-     * Determine if the user can view a specific booking appointment
-     */
-    public function view(User $user, BookingAppointment $appointment): bool
+    public function updateAddress(User $user, BookingAppointment $appointment): bool
     {
-        // Admin can view any appointment
-        if ($user->hasRole(RoleEnum::ADMIN->value)) {
-            return true;
-        }
+        return $this->hasPermission($user, Perm::UpdateAddress->value) && $this->update($user, $appointment);
+    }
 
-        // Nanny can only view appointments assigned to them
-        if ($user->hasRole(RoleEnum::NANNY->value)) {
-            if ($appointment->nanny_id === null) {
-                return false;
+    public function updateChildren(User $user, BookingAppointment $appointment): bool
+    {
+        return $this->hasPermission($user, Perm::UpdateChildren->value) && $this->update($user, $appointment);
+    }
+
+    public function delete(User $user, BookingAppointment $appointment): bool
+    {
+        return $this->hasPermission($user, Perm::Delete->value);
+    }
+
+    private function hasPermission(User $user, string $permission): bool
+    {
+        // obtiene roles del usuario y consulta el enum map
+        $userRoles = $user->roles->pluck('name')->toArray();
+
+        foreach ($userRoles as $roleName) {
+            if ($roleEnum = $this->getRoleEnum($roleName)) {
+                if (Perm::allows($permission, $roleEnum)) {
+                    return true;
+                }
             }
-            $appointment->loadMissing('nanny');
-            return (int)$appointment->nanny->user_id === (int)$user->id;
         }
-
-        // Tutor can view their own appointments
-        if ($user->hasRole(RoleEnum::TUTOR->value)) {
-            $appointment->loadMissing('booking.tutor');
-            $bookingTutorUserId = $appointment->booking?->tutor?->user_id;
-            return $bookingTutorUserId !== null && (int)$bookingTutorUserId === (int)$user->id;
-        }
-
         return false;
+    }
+
+    private function hasRole(User $user, RoleEnum $role): bool
+    {
+        return $user->hasRole($role->value);
+    }
+
+    private function getRoleEnum(string $roleName): ?RoleEnum
+    {
+        return match (strtolower($roleName)) {
+            'admin' => RoleEnum::ADMIN,
+            'tutor' => RoleEnum::TUTOR,
+            'nanny' => RoleEnum::NANNY,
+            default => null,
+        };
     }
 }

@@ -22,7 +22,6 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
 
     protected $hidden = ['password', 'remember_token'];
 
-    // 👇 Estos campos aparecerán en el JSON/props enviados a Inertia
     protected $appends = [
         'avatar_url',
         'avatar_status',
