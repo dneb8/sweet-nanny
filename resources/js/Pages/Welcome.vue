@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from "@inertiajs/vue3";
-import AuthLayout from "@/layouts/AuthLayout.vue";
+import { Head } from "@inertiajs/vue3";
 import HeaderLanding from '@/components/landing/HeaderLanding.vue'
 import HeroSection from '@/components/landing/HeroSection.vue'
 import WhatOfferSection from '@/components/landing/WhatOfferSection.vue'
@@ -22,8 +21,6 @@ defineOptions({
 
 <template>
   <Head title="Bienvenidos">
-    <link rel="preconnect" href="https://rsms.me/" />
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
   </Head>
 
    <body >
