@@ -45,18 +45,29 @@
       <div
         class="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4 flex-wrap"
       >
-        <Link
-          :href="route('login')"
-          class="inline-block px-5 py-2.5 sm:px-6 sm:py-3 bg-[#f4c2ba] hover:bg-[#e9a7a0] text-white font-medium rounded-full shadow-lg transition w-4/5 sm:w-auto text-sm sm:text-base"
-        >
-          Inicia sesión
-        </Link>
-        <Link
-          :href="route('register')"
-          class="inline-block px-5 py-2.5 sm:px-6 sm:py-3 border border-[#f4c2ba] text-[#f4c2ba] hover:bg-[#f4c2ba] hover:text-white font-medium rounded-full shadow-lg transition w-4/5 sm:w-auto text-sm sm:text-base"
-        >
-          Regístrate
-        </Link>
+        <!-- Lógica de autenticación -->
+        <template v-if="$page.props.auth.user">
+          <Link
+            :href="route('dashboard')"
+            class="inline-block px-5 py-2.5 sm:px-6 sm:py-3 bg-[#f4c2ba] hover:bg-[#e9a7a0] text-white font-medium rounded-full shadow-lg transition w-4/5 sm:w-auto text-sm sm:text-base"
+          >
+            Dashboard
+          </Link>
+        </template>
+        <template v-else>
+          <Link
+            :href="route('login')"
+            class="inline-block px-5 py-2.5 sm:px-6 sm:py-3 bg-[#f4c2ba] hover:bg-[#e9a7a0] text-white font-medium rounded-full shadow-lg transition w-4/5 sm:w-auto text-sm sm:text-base"
+          >
+            Inicia sesión
+          </Link>
+          <Link
+            :href="route('register')"
+            class="inline-block px-5 py-2.5 sm:px-6 sm:py-3 border border-[#f4c2ba] text-[#f4c2ba] hover:bg-[#f4c2ba] hover:text-white font-medium rounded-full shadow-lg transition w-4/5 sm:w-auto text-sm sm:text-base"
+          >
+            Regístrate
+          </Link>
+        </template>
       </div>
 
       <!-- Texto adicional -->

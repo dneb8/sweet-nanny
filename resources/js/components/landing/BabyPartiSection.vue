@@ -20,13 +20,23 @@
           Nuestras niñeras profesionales están preparadas para acompañarte en fiestas infantiles, cumpleaños y
           eventos especiales. Decoración, juegos y entretenimiento garantizado para los más pequeños.
         </p>
-        <!-- Botón funcional -->
-        <Link
-          :href="route('login')"
-          class="inline-block px-4 py-1.5 bg-[#f4c2ba] hover:bg-[#e9a7a0] text-white font-medium rounded-full shadow-md transition text-xs sm:text-sm"
-        >
-          Inicia sesión para reservar
-        </Link>
+        <!-- Lógica de autenticación -->
+        <template v-if="$page.props.auth.user">
+          <Link
+            :href="route('dashboard')"
+            class="inline-block px-4 py-1.5 bg-[#f4c2ba] hover:bg-[#e9a7a0] text-white font-medium rounded-full shadow-md transition text-xs sm:text-sm"
+          >
+            Ingresa a Dashboard para reservar
+          </Link>
+        </template>
+        <template v-else>
+          <Link
+            :href="route('login')"
+            class="inline-block px-4 py-1.5 bg-[#f4c2ba] hover:bg-[#e9a7a0] text-white font-medium rounded-full shadow-md transition text-xs sm:text-sm"
+          >
+            Inicia sesión para reservar
+          </Link>
+        </template>
       </div>
       <div class="md:w-1/2 flex justify-center">
         <img
