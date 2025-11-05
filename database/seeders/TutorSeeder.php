@@ -11,27 +11,46 @@ use Illuminate\Support\Str;
 
 class TutorSeeder extends Seeder
 {
+    /** Nombres comunes para inferir género (puedes ampliar). */
+    private const FEMALE_NAMES = [
+        'alejandra','maria','maría','irene','laura','sylvia','sandra','imelda','karla','nadia',
+        'fabiola','josefina','gabriela','paola','sofia','sofía','valeria','brenda','giselle',
+        'monica','mónica','julia','daniela','elena','teresa','jimena','maribel','carolina',
+        'yamil','yamileth','denisse','guadalupe','susana'
+    ];
+
+    private const MALE_NAMES = [
+        'francisco','erick','david','daniel','alejandro','federico','julio','uriel'
+    ];
+
     public function run(): void
     {
         /**
-         * Avatares adultos variados (mujer/hombre) de RandomUser
-         * - women/{0..99}.jpg y men/{0..99}.jpg
-         * - Mezclamos para mayor variedad; si faltan, cicla.
+         * Generadores de avatares (0..99). Si se agotan, ciclan por índice.
          */
         $women = array_map(fn ($i) => "https://randomuser.me/api/portraits/women/{$i}.jpg", range(0, 99));
         $men   = array_map(fn ($i) => "https://randomuser.me/api/portraits/men/{$i}.jpg",   range(0, 99));
 
-        // Interleave mujeres y hombres para que alternen
-        $avatars = [];
-        $max = max(count($women), count($men));
-        for ($i = 0; $i < $max; $i++) {
-            if (isset($women[$i])) $avatars[] = $women[$i];
-            if (isset($men[$i]))   $avatars[] = $men[$i];
-        }
-        $avatarForIndex = fn (int $idx) => $avatars[$idx % count($avatars)];
+        $pickAvatar = function (string $name, int $idx, ?string $forced = null) use ($women, $men): array {
+            // Forzar por campo 'gender' si viene definido en el registro
+            if ($forced === 'female') return [$women[$idx % 100], 'female'];
+            if ($forced === 'male')   return [$men[$idx % 100],   'male'];
+
+            $first = Str::of($name)->lower()->explode(' ')->first(); // primer token del name
+            $isFemale = in_array($first, self::FEMALE_NAMES, true);
+            $isMale   = in_array($first, self::MALE_NAMES, true);
+
+            if ($isFemale && !$isMale) return [$women[$idx % 100], 'female'];
+            if ($isMale && !$isFemale) return [$men[$idx % 100],   'male'];
+
+            // Ambiguo/no encontrado: alterna por índice
+            return ($idx % 2 === 0)
+                ? [$women[$idx % 100], 'female']
+                : [$men[$idx % 100],   'male'];
+        };
 
         // =========================
-        // Tutores (tu arreglo base)
+        // Tutores (puedes añadir 'gender' => 'female'|'male' para forzar)
         // =========================
         $tutores = [
             ['name' => 'Alejandra Fabiola', 'surnames' => 'López González', 'email' => 'ale89R@gmail.com', 'number' => '+52 33 1253 8099', 'emergency_contact' => 'Evelyn Alvárez', 'emergency_number' => '+52 33 8923 7481', 'address' => ['name' => 'Casa', 'postal_code' => '45030', 'street' => 'Calle Arquitectos', 'neighborhood' => 'Jardines de Guadalupe', 'type' => 'casa', 'zone' => 'guadalajara', 'latitude' => '20.662889', 'longitude' => '-103.424639', 'external_number' => '763']],
@@ -49,7 +68,7 @@ class TutorSeeder extends Seeder
         ];
 
         foreach ($tutores as $idx => $data) {
-            // User
+            // 1) User
             $user = User::create([
                 'name' => $data['name'],
                 'surnames' => $data['surnames'],
@@ -59,14 +78,14 @@ class TutorSeeder extends Seeder
             ]);
             $user->assignRole(RoleEnum::TUTOR);
 
-            // Tutor
+            // 2) Tutor
             $tutor = Tutor::create([
                 'user_id' => $user->id,
                 'emergency_contact' => $data['emergency_contact'],
                 'emergency_number' => $data['emergency_number'],
             ]);
 
-            // Address (morph)
+            // 3) Address (morph)
             Address::create([
                 'name' => $data['address']['name'],
                 'postal_code' => $data['address']['postal_code'],
@@ -81,17 +100,20 @@ class TutorSeeder extends Seeder
                 'addressable_type' => Tutor::class,
             ]);
 
-            // Avatar variado (adulto)
+            // 4) Avatar según nombre (o 'gender' forzado si existe)
             try {
-                $avatarUrl = $avatarForIndex($idx);
+                $forced = $data['gender'] ?? null; // opcional en tu array
+                [$avatarUrl, $gender] = $pickAvatar($data['name'], $idx, $forced);
+
                 $user->addMediaFromUrl($avatarUrl)
                     ->usingFileName(Str::slug("{$user->name}-{$user->surnames}").'.jpg')
                     ->withCustomProperties([
-                        'status' => 'approved',
-                        'note'   => 'seeded',
-                        'category' => 'adult',
+                        'status'  => 'approved',
+                        'note'    => 'seeded',
+                        'gender'  => $gender,
+                        'source'  => 'randomuser',
                     ])
-                    ->toMediaCollection('images'); // colección/ disco definidos en User
+                    ->toMediaCollection('images'); // definido en User::registerMediaCollections()
             } catch (\Throwable $e) {
                 $this->command->warn("No se pudo asignar avatar a {$user->email}: {$e->getMessage()}");
             }

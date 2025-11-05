@@ -21,24 +21,31 @@ class BookingAppointmentFactory extends Factory
         $startDate = $this->faker->dateTimeBetween('-3 days', '+1 month');
         $endDate   = (clone $startDate)->modify('+2 hours');
 
-        // Determinar status
-        $now    = Carbon::now();
-        $status = 'pending';
+        $now = Carbon::now();
+
+        // Regla principal: al crear, por defecto es DRAFT.
+        // Si hay niñera asignada, puede estar en pending/confirmed/in_progress/completed según fechas.
+        // Si NO hay niñera, permanece en draft (o cancelled si ya pasó).
+        $status = 'draft';
 
         if ($nannyId) {
             if ($startDate > $now) {
-                $status = 'confirmed';      // futuro con niñera
+                // Futuro con niñera asignada: está pendiente de confirmación de la niñera
+                $status = 'pending';
             } elseif ($startDate <= $now && $endDate >= $now) {
-                $status = 'in_progress';    // en curso
+                // En ventana de servicio: solo si asumimos que ya fue confirmada
+                $status = 'in_progress';
             } else { // $endDate < $now
-                $status = 'completed';      // ya finalizó
+                // Terminó: solo si asumimos que estuvo confirmada antes
+                $status = 'completed';
             }
         } else {
-            // Sin niñera: pendiente si no ha pasado, cancelado si ya pasó
+            // Sin niñera: si ya pasó la ventana, lo marcamos como cancelado por no haberse concretado
             if ($endDate < $now) {
                 $status = 'cancelled';
             } else {
-                $status = 'pending';
+                // A futuro y sin niñera -> se queda en draft
+                $status = 'draft';
             }
         }
 
@@ -46,7 +53,7 @@ class BookingAppointmentFactory extends Factory
             'nanny_id'       => $nannyId,
             'start_date'     => $startDate,
             'end_date'       => $endDate,
-            'status'         => $status,
+            'status'         => $status, // <- ahora respeta el flujo
             'payment_status' => $this->faker->randomElement(['unpaid', 'paid', 'refunded']),
             'extra_hours'    => $this->faker->numberBetween(0, 3),
             'total_cost'     => $this->faker->randomFloat(2, 100, 500),
