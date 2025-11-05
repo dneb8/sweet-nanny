@@ -10,8 +10,9 @@ import BookingAppointmentFiltros from './BookingAppointmentFiltros.vue';
 import BookingAppointmentCard from './BookingAppointmentCard.vue';
 import TutorDetailDialog from './TutorDetailDialog.vue';
 import ReviewFormDialog from '@/Pages/Review/components/ReviewFormDialog.vue';
+import DeleteModal from '@/components/common/DeleteModal.vue';
 import Badge from '@/components/common/Badge.vue';
-import { Users, Star, Check, X } from 'lucide-vue-next';
+import { Users, Star, Check, X, UserX } from 'lucide-vue-next';
 import { getUserInitials } from '@/utils/getUserInitials';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { router } from '@inertiajs/vue3';
@@ -33,6 +34,12 @@ const selectedTutor = ref<Tutor | null>(null);
 const reviewDialogOpen = ref(false);
 const selectedTutorId = ref<number | string | null>(null);
 const selectedTutorName = ref<string>('');
+
+// Modal states
+const showAcceptModal = ref(false);
+const showRejectModal = ref(false);
+const showUnassignModal = ref(false);
+const currentAppointmentId = ref<number | null>(null);
 
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-ES', {
@@ -60,32 +67,58 @@ const openReviewModal = (appointment: BookingAppointment) => {
     }
 };
 
-const acceptAppointment = (appointmentId: number) => {
-    router.patch(
-        route('booking-appointments.accept', appointmentId),
-        {},
-        {
-            preserveScroll: true,
-            onSuccess: () => {
-                // Optional: show success toast
-            },
-        }
-    );
+const openAcceptModal = (appointmentId: number) => {
+    currentAppointmentId.value = appointmentId;
+    showAcceptModal.value = true;
 };
 
-const cancelAppointment = (appointmentId: number) => {
-    if (confirm('¿Estás seguro de que quieres cancelar esta cita?')) {
+const confirmAccept = () => {
+    if (currentAppointmentId.value) {
         router.patch(
-            route('booking-appointments.cancel', appointmentId),
+            route('booking-appointments.accept', currentAppointmentId.value),
             {},
             {
                 preserveScroll: true,
-                onSuccess: () => {
-                    // Optional: show success toast
-                },
             }
         );
     }
+    showAcceptModal.value = false;
+};
+
+const openRejectModal = (appointmentId: number) => {
+    currentAppointmentId.value = appointmentId;
+    showRejectModal.value = true;
+};
+
+const confirmReject = () => {
+    if (currentAppointmentId.value) {
+        router.patch(
+            route('booking-appointments.reject', currentAppointmentId.value),
+            {},
+            {
+                preserveScroll: true,
+            }
+        );
+    }
+    showRejectModal.value = false;
+};
+
+const openUnassignModal = (appointmentId: number) => {
+    currentAppointmentId.value = appointmentId;
+    showUnassignModal.value = true;
+};
+
+const confirmUnassign = () => {
+    if (currentAppointmentId.value) {
+        router.patch(
+            route('booking-appointments.unassign-nanny', currentAppointmentId.value),
+            {},
+            {
+                preserveScroll: true,
+            }
+        );
+    }
+    showUnassignModal.value = false;
 };
 
 const handleReviewSaved = () => {
@@ -238,24 +271,34 @@ const handleReviewSaved = () => {
         <Column header="Acciones">
             <template #body="{ record }">
                 <div class="flex gap-2">
-                    <!-- Aceptar (pending → confirmed) -->
+                    <!-- Aceptar (pending → confirmed) - Only for pending with nanny assigned -->
                     <div
-                        v-if="record?.status === 'pending'"
-                        @click="acceptAppointment(record.id)"
+                        v-if="record?.status === 'pending' && record?.nanny_id"
+                        @click="openAcceptModal(record.id)"
                         class="flex justify-center items-center w-max text-green-600 dark:text-green-500 hover:text-green-600/80 dark:hover:text-green-400 hover:cursor-pointer"
-                        title="Aceptar cita"
+                        title="Aceptar solicitud"
                     >
                         <Check class="w-5 h-5" />
                     </div>
 
-                    <!-- Cancelar (confirmed → cancelled) -->
+                    <!-- Rechazar (pending with nanny) -->
                     <div
-                        v-if="record?.status === 'confirmed'"
-                        @click="cancelAppointment(record.id)"
+                        v-if="record?.status === 'pending' && record?.nanny_id"
+                        @click="openRejectModal(record.id)"
                         class="flex justify-center items-center w-max text-rose-600 dark:text-rose-500 hover:text-rose-600/80 dark:hover:text-rose-400 hover:cursor-pointer"
-                        title="Cancelar cita"
+                        title="Rechazar solicitud"
                     >
                         <X class="w-5 h-5" />
+                    </div>
+
+                    <!-- Cancelar niñera (confirmed → pending, unassign nanny) -->
+                    <div
+                        v-if="record?.status === 'confirmed' && record?.nanny_id"
+                        @click="openUnassignModal(record.id)"
+                        class="flex justify-center items-center w-max text-orange-600 dark:text-orange-500 hover:text-orange-600/80 dark:hover:text-orange-400 hover:cursor-pointer"
+                        title="Cancelar niñera"
+                    >
+                        <UserX class="w-5 h-5" />
                     </div>
 
                     <!-- Calificar tutor -->
@@ -267,6 +310,11 @@ const handleReviewSaved = () => {
                     >
                         <Star class="w-5 h-5" />
                     </div>
+
+                    <!-- No actions available -->
+                    <span v-if="!record?.nanny_id || (record?.status !== 'pending' && record?.status !== 'confirmed' && record?.status !== 'completed')" class="text-sm text-muted-foreground">
+                        —
+                    </span>
                 </div>
             </template>
         </Column>
@@ -283,5 +331,32 @@ const handleReviewSaved = () => {
         :reviewable-name="selectedTutorName"
         @saved="handleReviewSaved"
         @close="reviewDialogOpen = false"
+    />
+
+    <!-- Accept Modal -->
+    <DeleteModal
+        :show="showAcceptModal"
+        @update:show="showAcceptModal = $event"
+        message="¿Estás seguro de que quieres aceptar esta solicitud? La cita será confirmada."
+        :onConfirm="confirmAccept"
+        :onCancel="() => (showAcceptModal = false)"
+    />
+
+    <!-- Reject Modal -->
+    <DeleteModal
+        :show="showRejectModal"
+        @update:show="showRejectModal = $event"
+        message="¿Estás seguro de que quieres rechazar esta solicitud? La niñera será desasignada."
+        :onConfirm="confirmReject"
+        :onCancel="() => (showRejectModal = false)"
+    />
+
+    <!-- Unassign Nanny Modal -->
+    <DeleteModal
+        :show="showUnassignModal"
+        @update:show="showUnassignModal = $event"
+        message="¿Estás seguro de que quieres cancelar la niñera asignada? La cita volverá a estado pendiente."
+        :onConfirm="confirmUnassign"
+        :onCancel="() => (showUnassignModal = false)"
     />
 </template>

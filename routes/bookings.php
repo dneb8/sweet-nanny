@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'verified'])->prefix('booking-appointments')->name('booking-appointments.')->group(function () {
     Route::get('/', [BookingAppointmentController::class, 'index'])->name('index');
     Route::patch('/{appointment}/accept', [BookingAppointmentController::class, 'accept'])->name('accept');
+    Route::patch('/{appointment}/reject', [BookingAppointmentController::class, 'reject'])->name('reject');
+    Route::patch('/{appointment}/unassign-nanny', [BookingAppointmentController::class, 'unassignNanny'])->name('unassign-nanny');
     Route::patch('/{appointment}/cancel', [BookingAppointmentController::class, 'cancelDirect'])->name('cancel');
 });
 

@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Enums\Booking\StatusEnum;
 use App\Models\Booking;
 use App\Models\BookingAppointment;
+use App\Notifications\AppointmentAccepted;
+use App\Notifications\AppointmentRejected;
+use App\Notifications\NannyCancelledFromAppointment;
 use App\Services\BookingAppointmentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -33,6 +36,7 @@ class BookingAppointmentController extends Controller
 
     /**
      * Accept a booking appointment (pending -> confirmed)
+     * Nanny accepts the assignment
      */
     public function accept(BookingAppointment $appointment): RedirectResponse
     {
@@ -42,11 +46,160 @@ class BookingAppointmentController extends Controller
             return back()->with('error', 'Solo se pueden aceptar citas en estado pendiente');
         }
 
+        if (!$appointment->nanny_id) {
+            return back()->with('error', 'No hay niñera asignada para aceptar');
+        }
+
         $appointment->update([
             'status' => StatusEnum::CONFIRMED->value,
         ]);
 
+        // Notify tutor
+        $appointment->loadMissing('booking.tutor.user');
+        $tutorUser = $appointment->booking?->tutor?->user;
+        if ($tutorUser) {
+            $tutorUser->notify(new AppointmentAccepted($appointment));
+        }
+
+        // Notify admin (get first admin user)
+        $admin = \App\Models\User::role('admin')->first();
+        if ($admin) {
+            $admin->notify(new AppointmentAccepted($appointment));
+        }
+
         return back()->with('success', 'Cita aceptada exitosamente');
+    }
+
+    /**
+     * Reject a booking appointment (remove nanny assignment)
+     * Nanny rejects the assignment
+     */
+    public function reject(BookingAppointment $appointment): RedirectResponse
+    {
+        Gate::authorize('view', $appointment);
+
+        if ($appointment->status !== StatusEnum::PENDING->value) {
+            return back()->with('error', 'Solo se pueden rechazar citas en estado pendiente');
+        }
+
+        if (!$appointment->nanny_id) {
+            return back()->with('error', 'No hay niñera asignada para rechazar');
+        }
+
+        $oldNannyId = $appointment->nanny_id;
+
+        // Remove nanny and set status to draft
+        $appointment->update([
+            'nanny_id' => null,
+            'status' => StatusEnum::DRAFT->value,
+        ]);
+
+        // Notify tutor
+        $appointment->loadMissing('booking.tutor.user');
+        $tutorUser = $appointment->booking?->tutor?->user;
+        if ($tutorUser) {
+            $tutorUser->notify(new AppointmentRejected($appointment));
+        }
+
+        // Notify admin
+        $admin = \App\Models\User::role('admin')->first();
+        if ($admin) {
+            $admin->notify(new AppointmentRejected($appointment));
+        }
+
+        // Check if booking should go back to draft
+        $booking = $appointment->booking;
+        if ($booking) {
+            $hasAnyConfirmedAppointments = $booking->appointments()
+                ->where('status', StatusEnum::CONFIRMED->value)
+                ->exists();
+            
+            if (!$hasAnyConfirmedAppointments) {
+                $booking->update(['status' => StatusEnum::DRAFT->value]);
+            }
+        }
+
+        return back()->with('success', 'Solicitud rechazada exitosamente');
+    }
+
+    /**
+     * Unassign nanny from a confirmed appointment
+     * Can be done by tutor, nanny, or admin
+     */
+    public function unassignNanny(BookingAppointment $appointment): RedirectResponse
+    {
+        Gate::authorize('view', $appointment);
+
+        if ($appointment->status !== StatusEnum::CONFIRMED->value) {
+            return back()->with('error', 'Solo se puede cancelar la niñera de citas confirmadas');
+        }
+
+        if (!$appointment->nanny_id) {
+            return back()->with('error', 'No hay niñera asignada');
+        }
+
+        $user = auth()->user();
+        $appointment->loadMissing('booking.tutor.user', 'nanny.user');
+
+        // Determine who is cancelling
+        $cancelledBy = 'admin'; // default
+        if ($user->hasRole('tutor') && $appointment->booking?->tutor?->user_id === $user->id) {
+            $cancelledBy = 'tutor';
+        } elseif ($user->hasRole('nanny') && $appointment->nanny?->user_id === $user->id) {
+            $cancelledBy = 'nanny';
+        }
+
+        $nannyUser = $appointment->nanny?->user;
+        $tutorUser = $appointment->booking?->tutor?->user;
+
+        // Remove nanny and set to pending
+        $appointment->update([
+            'nanny_id' => null,
+            'status' => StatusEnum::PENDING->value,
+        ]);
+
+        // Send notifications based on who cancelled
+        if ($cancelledBy === 'tutor') {
+            // Notify nanny and admin
+            if ($nannyUser) {
+                $nannyUser->notify(new NannyCancelledFromAppointment($appointment, $cancelledBy));
+            }
+            $admin = \App\Models\User::role('admin')->first();
+            if ($admin) {
+                $admin->notify(new NannyCancelledFromAppointment($appointment, $cancelledBy));
+            }
+        } elseif ($cancelledBy === 'nanny') {
+            // Notify tutor and admin
+            if ($tutorUser) {
+                $tutorUser->notify(new NannyCancelledFromAppointment($appointment, $cancelledBy));
+            }
+            $admin = \App\Models\User::role('admin')->first();
+            if ($admin) {
+                $admin->notify(new NannyCancelledFromAppointment($appointment, $cancelledBy));
+            }
+        } else {
+            // Admin cancelled, notify both
+            if ($tutorUser) {
+                $tutorUser->notify(new NannyCancelledFromAppointment($appointment, $cancelledBy));
+            }
+            if ($nannyUser) {
+                $nannyUser->notify(new NannyCancelledFromAppointment($appointment, $cancelledBy));
+            }
+        }
+
+        // Check if booking should go back to draft
+        $booking = $appointment->booking;
+        if ($booking) {
+            $hasAnyConfirmedAppointments = $booking->appointments()
+                ->where('status', StatusEnum::CONFIRMED->value)
+                ->exists();
+            
+            if (!$hasAnyConfirmedAppointments) {
+                $booking->update(['status' => StatusEnum::DRAFT->value]);
+            }
+        }
+
+        return back()->with('success', 'Niñera cancelada exitosamente');
     }
 
     /**
