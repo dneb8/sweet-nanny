@@ -9,6 +9,20 @@ import { computed } from 'vue'
 import { useBookingView } from '@/services/BookingService'
 import { getBookingStatusLabelByString, getBookingStatusBadgeClass } from '@/enums/booking/status.enum'
 import { getAddressTypeLabelByString, getAddressTypeBadgeClass } from '@/enums/addresses/type.enum'
+// =======
+// import { router } from '@inertiajs/vue3'
+// 
+// function cancelarCita() {
+//   router.post(
+//     route('bookings.appointments.cancel', {
+//       booking: props.booking.id,        // {booking}
+//       appointment: props.appointment.id // {appointment}
+//     }),
+//     {},
+//     { preserveScroll: true, preserveState: true }
+//   )
+// }
+// >>>>>>> copilot/optimize-notification-polling
 
 /* ==== Emits ==== */
 const emit = defineEmits<{
@@ -273,7 +287,7 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
             variant="destructive"
             size="sm"
             class="flex-1"
-            @click="emit('routerGet', route('bookings.appointments.cancel', { booking: props.booking.id, appointment: props.appointment.id }))"
+            @click="cancelarCita()"
           >
             <Icon icon="lucide:x-circle" class="mr-2 h-4 w-4" />
             Cancelar cita

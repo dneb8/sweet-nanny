@@ -6,6 +6,7 @@ declare global {
   interface Window {
     google: typeof google
     initMapReady: () => void
+    __AdvancedMarkerElement__?: any
   }
 }
 declare const google: any
@@ -66,24 +67,38 @@ const GMAPS_MAP_ID = import.meta.env.VITE_GMAPS_MAP_ID as string | undefined
 
 function validateConfig(): string | null {
   if (!GMAPS_API_KEY) return "Falta configurar VITE_GMAPS_API_KEY en .env"
-  if (!GMAPS_MAP_ID) return "Falta configurar VITE_GMAPS_MAP_ID (requerido para AdvancedMarkers)"
+  // MAP_ID es recomendable para estilos; no es obligatorio si hay fallback
   return null
 }
 
-// --- Marker helpers ---
+// --- Marker helpers (con feature-detect y fallback) ---
 function createMarker(position: google.maps.LatLngLiteral, mapInstance: any) {
-  return new google.maps.marker.AdvancedMarkerElement({ position, map: mapInstance })
+  const AdvancedMarkerElement = (window as any).__AdvancedMarkerElement__
+  if (AdvancedMarkerElement) {
+    return new AdvancedMarkerElement({ position, map: mapInstance })
+  }
+  // Fallback a Marker clásico
+  return new google.maps.Marker({ position, map: mapInstance })
 }
 function updateMarkerPosition(markerInstance: any, position: google.maps.LatLngLiteral) {
-  markerInstance.position = position
+  if (markerInstance?.setPosition) {
+    markerInstance.setPosition(position) // Marker clásico
+  } else {
+    markerInstance.position = position   // AdvancedMarker
+  }
 }
 function removeMarker(markerInstance: any) {
-  markerInstance.map = null
+  if (!markerInstance) return
+  if (markerInstance?.setMap) {
+    markerInstance.setMap(null) // Marker clásico
+  } else {
+    markerInstance.map = null   // AdvancedMarker
+  }
 }
 
-// --- Cargar Google Maps SDK ---
-function loadGoogleMaps(apiKey: string, mapId: string): Promise<void> {
-  if ((window as any).google?.maps) return Promise.resolve()
+// --- Cargar Google Maps SDK (moderno) ---
+function loadGoogleMaps(apiKey: string): Promise<void> {
+  if ((window as any).google?.maps?.importLibrary) return Promise.resolve()
 
   if (document.getElementById("gmaps-sdk")) {
     return new Promise((res) => { (window as any).initMapReady = () => res() })
@@ -95,7 +110,8 @@ function loadGoogleMaps(apiKey: string, mapId: string): Promise<void> {
     scriptEl.id = "gmaps-sdk"
     scriptEl.async = true
     scriptEl.defer = true
-    scriptEl.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&map_ids=${mapId}&callback=initMapReady&loading=async&libraries=marker`
+    // v=weekly para garantizar versión reciente con Advanced Markers
+    scriptEl.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&v=weekly&callback=initMapReady`
     scriptEl.onerror = (e) => reject(e)
     document.head.appendChild(scriptEl)
   })
@@ -105,6 +121,19 @@ function loadGoogleMaps(apiKey: string, mapId: string): Promise<void> {
 async function initMap() {
   if (!mapEl.value) return
   await nextTick()
+
+  // Carga módulos de la API moderna
+  const { Map } = await google.maps.importLibrary('maps') as google.maps.MapsLibrary
+
+  // Intenta cargar librería de markers avanzados; si falla, usamos fallback
+  let AdvancedMarkerElement: any | null = null
+  try {
+    const markerLib = await google.maps.importLibrary('marker') as google.maps.MarkerLibrary
+    AdvancedMarkerElement = markerLib?.AdvancedMarkerElement ?? null
+  } catch {
+    AdvancedMarkerElement = null
+  }
+  ;(window as any).__AdvancedMarkerElement__ = AdvancedMarkerElement
 
   const center = hasValidCoords.value
     ? { lat: latNum.value, lng: lngNum.value }
@@ -116,13 +145,16 @@ async function initMap() {
     mapTypeControl: false,
     streetViewControl: false,
     fullscreenControl: true,
+    // mapId es opcional; útil si quieres estilos/AdvancedMarker styling
     mapId: GMAPS_MAP_ID,
   }
 
-  map = new google.maps.Map(mapEl.value, mapConfig)
-  google.maps.event.addListenerOnce(map, "idle", () => {
-    google.maps.event.trigger(map, "resize")
-    map.setCenter(center)
+  map = new Map(mapEl.value, mapConfig)
+
+  // Ajustes de resize/center cuando termina de renderizar
+  google.maps.event.addListenerOnce(map as any, "idle", () => {
+    google.maps.event.trigger(map as any, "resize")
+    ;(map as any).setCenter(center)
   })
 
   if (props.showMarker && hasValidCoords.value) {
@@ -134,8 +166,8 @@ async function initMap() {
 function updatePosition() {
   if (!map || !hasValidCoords.value) return
   const pos = { lat: latNum.value, lng: lngNum.value }
-  map.setCenter(pos)
-  if (typeof props.zoom === "number") map.setZoom(props.zoom)
+  ;(map as any).setCenter(pos)
+  if (typeof props.zoom === "number") (map as any).setZoom(props.zoom)
   if (props.showMarker) {
     if (!marker) marker = createMarker(pos, map)
     else updateMarkerPosition(marker, pos)
@@ -153,7 +185,7 @@ function hardRebuildMap() {
   if (!mapEl.value) return
   const center = hasValidCoords.value
     ? { lat: latNum.value, lng: lngNum.value }
-    : map?.getCenter?.() ?? { lat: 19.704, lng: -103.344 }
+    : (map as any)?.getCenter?.() ?? { lat: 19.704, lng: -103.344 }
   if (marker) { removeMarker(marker); marker = null }
   map = null
 
@@ -165,7 +197,8 @@ function hardRebuildMap() {
     fullscreenControl: true,
     mapId: GMAPS_MAP_ID,
   }
-  map = new google.maps.Map(mapEl.value, mapConfig)
+  const { Map } = google.maps // ya cargado
+  map = new Map(mapEl.value, mapConfig)
   if (props.showMarker && hasValidCoords.value) {
     marker = createMarker(center, map)
   }
@@ -173,11 +206,11 @@ function hardRebuildMap() {
 
 function softResize() {
   if (!map || !mapEl.value) return
-  google.maps.event.trigger(map, "resize")
+  google.maps.event.trigger(map as any, "resize")
   const pos = hasValidCoords.value
     ? { lat: latNum.value, lng: lngNum.value }
-    : map.getCenter()
-  if (pos) map.setCenter(pos)
+    : (map as any).getCenter()
+  if (pos) (map as any).setCenter(pos)
 }
 
 function scheduleResize(hard = false) {
@@ -205,23 +238,27 @@ onMounted(async () => {
     rootEl.value.style.minHeight = props.height
   }
 
-  await loadGoogleMaps(GMAPS_API_KEY!, GMAPS_MAP_ID!)
+  await loadGoogleMaps(GMAPS_API_KEY!)
   await initMap()
 
   // Observers
   ro = new ResizeObserver(() => scheduleResize(false))
   if (rootEl.value) ro.observe(rootEl.value)
 
-  window.addEventListener("resize", () => scheduleResize(false))
-  window.addEventListener("orientationchange", () => scheduleResize(true))
+  window.addEventListener("resize", onResize)
+  window.addEventListener("orientationchange", onOrient)
 
+  // *nudges* para layouts que tardan en calcular tamaño
   setTimeout(() => scheduleResize(false), 50)
   setTimeout(() => scheduleResize(false), 250)
 })
 
+function onResize() { scheduleResize(false) }
+function onOrient() { scheduleResize(true) }
+
 onUnmounted(() => {
-  window.removeEventListener("resize", () => scheduleResize(false))
-  window.removeEventListener("orientationchange", () => scheduleResize(true))
+  window.removeEventListener("resize", onResize)
+  window.removeEventListener("orientationchange", onOrient)
   if (ro && rootEl.value) ro.unobserve(rootEl.value)
   ro = null
   if (marker) { removeMarker(marker); marker = null }

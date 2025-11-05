@@ -18,40 +18,10 @@ class BookingAppointmentPolicy
         return $this->hasPermission($user, BookingAppointmentPermission::ViewAny->value);
     }
 
-    /**
-     * Determine if the user can view a specific booking appointment
-     */
-    public function view(User $user, BookingAppointment $appointment): bool
+
+    public function delete(User $user, BookingAppointment $appointment): bool
     {
-        // Check base permission
-        if (! $this->hasPermission($user, BookingAppointmentPermission::View->value)) {
-            return false;
-        }
-
-        // Admin can view any appointment
-        if ($user->hasRole(RoleEnum::ADMIN->value)) {
-            return true;
-        }
-
-        // Nanny can only view appointments assigned to them
-        if ($user->hasRole(RoleEnum::NANNY->value)) {
-            if ($appointment->nanny_id === null) {
-                return false;
-            }
-            $appointment->loadMissing('nanny');
-
-            return (int) $appointment->nanny->user_id === (int) $user->id;
-        }
-
-        // Tutor can view their own appointments
-        if ($user->hasRole(RoleEnum::TUTOR->value)) {
-            $appointment->loadMissing('booking.tutor');
-            $bookingTutorUserId = $appointment->booking?->tutor?->user_id;
-
-            return $bookingTutorUserId !== null && (int) $bookingTutorUserId === (int) $user->id;
-        }
-
-        return false;
+        return $this->hasPermission($user, Perm::Delete->value);
     }
 
     /**
