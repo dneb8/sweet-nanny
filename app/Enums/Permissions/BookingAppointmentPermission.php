@@ -22,6 +22,7 @@ enum BookingAppointmentPermission: string
     case Cancel = 'booking_appointment.cancel';
     case ReviewTutor = 'booking_appointment.review_tutor';
     case ReviewNanny = 'booking_appointment.review_nanny';
+    case Delete = 'booking_appointment.delete';
 
     public static function map(): array
     {
@@ -39,6 +40,7 @@ enum BookingAppointmentPermission: string
             self::Cancel->value => [RoleEnum::ADMIN, RoleEnum::TUTOR, RoleEnum::NANNY],
             self::ReviewTutor->value => [RoleEnum::ADMIN, RoleEnum::NANNY],
             self::ReviewNanny->value => [RoleEnum::ADMIN, RoleEnum::TUTOR],
+            self::Delete->value => [RoleEnum::ADMIN, RoleEnum::TUTOR],
         ];
     }
 }

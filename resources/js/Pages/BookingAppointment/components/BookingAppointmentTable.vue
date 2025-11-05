@@ -10,7 +10,7 @@ import BookingAppointmentFiltros from './BookingAppointmentFiltros.vue';
 import BookingAppointmentCard from './BookingAppointmentCard.vue';
 import TutorDetailDialog from './TutorDetailDialog.vue';
 import ReviewFormDialog from '@/Pages/Review/components/ReviewFormDialog.vue';
-import DeleteModal from '@/components/common/DeleteModal.vue';
+import CtaModal from '@/components/common/CtaModal.vue';
 import Badge from '@/components/common/Badge.vue';
 import { Users, Star, Check, X, UserX } from 'lucide-vue-next';
 import { getUserInitials } from '@/utils/getUserInitials';
@@ -334,28 +334,36 @@ const handleReviewSaved = () => {
     />
 
     <!-- Accept Modal -->
-    <DeleteModal
+    <CtaModal
         :show="showAcceptModal"
         @update:show="showAcceptModal = $event"
+        type="confirm"
+        title="Aceptar solicitud"
         message="¿Estás seguro de que quieres aceptar esta solicitud? La cita será confirmada."
         :onConfirm="confirmAccept"
         :onCancel="() => (showAcceptModal = false)"
     />
 
     <!-- Reject Modal -->
-    <DeleteModal
+    <CtaModal
         :show="showRejectModal"
         @update:show="showRejectModal = $event"
+        type="warning"
+        title="Rechazar solicitud"
         message="¿Estás seguro de que quieres rechazar esta solicitud? La niñera será desasignada."
+        confirmText="Rechazar"
         :onConfirm="confirmReject"
         :onCancel="() => (showRejectModal = false)"
     />
 
     <!-- Unassign Nanny Modal -->
-    <DeleteModal
+    <CtaModal
         :show="showUnassignModal"
         @update:show="showUnassignModal = $event"
+        type="warning"
+        title="Cancelar niñera"
         message="¿Estás seguro de que quieres cancelar la niñera asignada? La cita volverá a estado pendiente."
+        confirmText="Cancelar niñera"
         :onConfirm="confirmUnassign"
         :onCancel="() => (showUnassignModal = false)"
     />

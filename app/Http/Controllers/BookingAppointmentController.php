@@ -162,9 +162,6 @@ class BookingAppointmentController extends Controller
         return back()->with('success', 'Niñera cancelada exitosamente');
     }
 
-    /**
-     * Cancel (confirmed -> cancelled) by tutor owner or admin
-     */
     public function cancelDirect(BookingAppointment $appointment): RedirectResponse
     {
         Gate::authorize('cancel', $appointment);
