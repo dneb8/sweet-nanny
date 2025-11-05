@@ -13,8 +13,7 @@ import { computed, ref, watch, nextTick } from 'vue'
 import EditAppointmentDatesModal from './components/modals/EditAppointmentDatesModal.vue'
 import EditAppointmentAddressModal from './components/modals/EditAppointmentAddressModal.vue'
 import EditAppointmentChildrenModal from './components/modals/EditAppointmentChildrenModal.vue'
-import ConfirmUnassignModal from './components/modals/ConfirmUnassignModal.vue'
-import ConfirmChangeNannyModal from './components/modals/ConfirmChangeNannyModal.vue'
+import CtaModal from '@/components/common/CtaModal.vue'
 import DeleteModal from '@/components/common/DeleteModal.vue'
 import SingleAppointmentCard from './components/SingleAppointmentCard.vue'
 
@@ -471,17 +470,27 @@ function getEditDisabledReason(appointment: BookingAppointment): string {
       </DialogContent>
     </Dialog>
 
-    <ConfirmUnassignModal
-      :show="showConfirmModal"
-      @close="closeConfirmModal"
-      @confirm="confirmUnassign"
+    <CtaModal
+        :show="showConfirmModal"
+        type="warning"
+        title="Confirmación necesaria"
+        message="Al editar fechas o dirección en una cita con estado pendiente, la niñera asignada será removida y la cita volverá a estado borrador. ¿Deseas continuar con esta acción?"
+        confirmText="Sí, continuar"
+        :onConfirm="confirmUnassign"
+        :onCancel="closeConfirmModal"
+        @update:show="(val) => !val && closeConfirmModal()"
     />
 
     <!-- Confirm Change Nanny Modal -->
-    <ConfirmChangeNannyModal
-      :show="showConfirmChangeNannyModal"
-      @close="closeConfirmChangeNannyModal"
-      @confirm="confirmChangeNanny"
+    <CtaModal
+        :show="showConfirmChangeNannyModal"
+        type="warning"
+        title="Confirmar cambio de niñera"
+        message="Estás a punto de cambiar la niñera asignada a esta cita. La niñera actual será notificada de que su asignación ha sido cancelada. ¿Deseas continuar con esta acción?"
+        confirmText="Sí, cambiar niñera"
+        :onConfirm="confirmChangeNanny"
+        :onCancel="closeConfirmChangeNannyModal"
+        @update:show="(val) => !val && closeConfirmChangeNannyModal()"
     />
 
     <!-- Delete Modal -->
