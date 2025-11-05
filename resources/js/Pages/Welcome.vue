@@ -6,6 +6,7 @@ import HeroSection from '@/components/landing/HeroSection.vue'
 import WhatOfferSection from '@/components/landing/WhatOfferSection.vue'
 import HowWorksSection from "@/components/landing/HowWorksSection.vue";
 import AboutSection from '@/components/landing/AboutSection.vue';
+import MeetNannySection from '@/components/landing/MeetNannySection.vue';
 
 defineOptions({
   layout: false,
@@ -31,6 +32,8 @@ defineOptions({
       <HowWorksSection />
       <!--ABOUT DE LANDING-->
       <AboutSection />
+      <!--MEET NANNYS DE LANDING-->
+      <MeetNannySection />
       
 
 
