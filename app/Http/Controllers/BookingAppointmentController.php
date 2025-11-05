@@ -94,18 +94,6 @@ class BookingAppointmentController extends Controller
         if ($admin = \App\Models\User::role('admin')->first()) {
             $admin->notify(new AppointmentRejected($appointment));
         }
-
-        // If no confirmed appointments left, booking -> draft
-        if ($booking = $appointment->booking) {
-            $hasAnyConfirmedAppointments = $booking->appointments()
-                ->where('status', StatusEnum::CONFIRMED->value)
-                ->exists();
-
-            if (!$hasAnyConfirmedAppointments) {
-                $booking->update(['status' => StatusEnum::DRAFT->value]);
-            }
-        }
-
         return back()->with('success', 'Solicitud rechazada exitosamente');
     }
 
