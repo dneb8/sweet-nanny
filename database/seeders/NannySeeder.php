@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use App\Models\Address;
 use App\Enums\Address\ZoneEnum;
+use Illuminate\Support\Str;
 
 class NannySeeder extends Seeder
 {
@@ -15,9 +16,22 @@ class NannySeeder extends Seeder
     {
         $nannyRole = RoleEnum::NANNY->value;
 
-        // Lista de NANNIES 
+        /**
+         * Avatares femeninos (RandomUser)
+         * - women/{0..99}.jpg
+         * - Si hay más candidatas que 100, se cicla.
+         */
+        $womenIds = range(0, 99);
+        $avatars = array_map(fn ($i) => "https://randomuser.me/api/portraits/women/{$i}.jpg", $womenIds);
+        $avatarForIndex = function (int $idx) use ($avatars) {
+            return $avatars[$idx % count($avatars)];
+        };
+
+        // ===========================================
+        // CANDIDATAS (tu lista original, tal cual)
+        // ===========================================
         $candidatas = [
-             // GUADALAJARA (44000 - 44999)
+            // GUADALAJARA (44000 - 44999)
             ['name' => 'Paola', 'surnames' => 'Sánchez Rivera', 'email' => 'paola.sanchez@outlook.com', 'number' => '+52 33 6677 5588', 'bio' => 'Niñera muy organizada con horarios y alimentación.', 'availability' => true, 'start_date' => '2024-11-05', 'postal_code' => '44150', 'street' => 'Calle Luis Pérez Verdía #184', 'neighborhood' => 'Ladrón de Guevara', 'other_type' => null, 'internal_number' => null],
             ['name' => 'Sofía', 'surnames' => 'Díaz Castro', 'email' => 'sofia.diazcastro@gmail.com', 'number' => '+52 33 1122 3344', 'bio' => 'Experiencia en el cuidado de niños en edad escolar. Habilidad para asistir con tareas escolares y promover hábitos de lectura.', 'availability' => true, 'start_date' => '2024-09-10', 'postal_code' => '44720', 'street' => 'Hacienda de los pozos #30', 'neighborhood' => 'Balcones de Oblatos', 'other_type' => 'Guadalajara', 'internal_number' => null],
             ['name' => 'Renata', 'surnames' => 'Pérez Chávez', 'email' => 'renata.pc.gdl@hotmail.com', 'number' => '+52 33 2288 1199', 'bio' => 'Cariñosa y creativa, con experiencia en cuidado nocturno y apoyo con la transición a dormir. Enfoque en el juego simbólico.', 'availability' => true, 'start_date' => '2024-12-05', 'postal_code' => '44670', 'street' => 'Calle Manuel Acuña #150', 'neighborhood' => 'Providencia', 'other_type' => 'Guadalajara', 'internal_number' => '4'],
@@ -37,7 +51,7 @@ class NannySeeder extends Seeder
             ['name' => 'Estefanía', 'surnames' => 'Ramos Larios', 'email' => 'estefania.ramos.l@hotmail.com', 'number' => '+52 33 7700 9922', 'bio' => 'Cuidado de apoyo para familias con horarios variables. Muy organizada con el manejo de diferentes horarios de siesta.', 'availability' => true, 'start_date' => '2024-09-01', 'postal_code' => '44250', 'street' => 'Circunvalación #10', 'neighborhood' => 'San Bernardo', 'other_type' => 'Guadalajara', 'internal_number' => '6'],
             ['name' => 'Marisol', 'surnames' => 'Vargas Gómez', 'email' => 'marisolvg@hotmail.com', 'number' => '+52 33 1188 2277', 'bio' => 'Cocinera aficionada, disfruta preparando snacks saludables con los niños. Experiencia con niños de 4 a 8 años.', 'availability' => true, 'start_date' => '2025-03-01', 'postal_code' => '44900', 'street' => 'Calle 5 de Febrero #300', 'neighborhood' => 'Moderna', 'other_type' => 'Guadalajara', 'internal_number' => null],
             ['name' => 'Susana', 'surnames' => 'Navarro Ríos', 'email' => 'susanariostez@yahoo.com', 'number' => '+52 33 8982 9922', 'bio' => 'Experiencia en cuidado de niños con alergias y necesidades dietéticas especiales (celiaquía). Muy detallista y organizada.', 'availability' => true, 'start_date' => '2024-10-05', 'postal_code' => '44695', 'street' => 'Calle Cantera #10', 'neighborhood' => 'Prados Providencia', 'other_type' => 'Guadalajara', 'internal_number' => null],
-            
+
             // ZAPOPAN (45000 - 45245)
             ['name' => 'Daniela', 'surnames' => 'Hernández Ramírez', 'email' => 'daniela.hernandez@outlook.com', 'number' => '+52 33 9876 5412', 'bio' => 'Niñera cariñosa y siempre feliz. Experiencia con bebés y rutinas de sueño.', 'availability' => true, 'start_date' => '2024-09-01', 'postal_code' => '45010', 'street' => 'San Juan #45', 'neighborhood' => 'Zapopan Centro', 'other_type' => null, 'internal_number' => '1'],
             ['name' => 'Fernanda', 'surnames' => 'Martínez Cruz', 'email' => 'fernanda.martinez@hotmail.com', 'number' => '+52 81 2200 3344', 'bio' => 'Apoya a sus hermanitos en sus tiempos libres. Disfruta actividades artísticas y música para estimular el aprendizaje.', 'availability' => true, 'start_date' => '2024-10-10', 'postal_code' => '45190', 'street' => 'Av. Patria #500', 'neighborhood' => 'Puerta de Hierro', 'other_type' => null, 'internal_number' => null],
@@ -62,7 +76,7 @@ class NannySeeder extends Seeder
             ['name' => 'Paulina', 'surnames' => 'Vargas Pérez', 'email' => 'paulina_vperez@outlook.com', 'number' => '+52 33 4466 8800', 'bio' => 'Especializada en actividades STEM sencillas (ciencia, tecnología, ingeniería, matemáticas) para niños preescolares.', 'availability' => true, 'start_date' => '2025-01-15', 'postal_code' => '45040', 'street' => 'Av. de las Américas #55', 'neighborhood' => 'Minerva', 'other_type' => 'Zapopan', 'internal_number' => null],
             ['name' => 'Samantha', 'surnames' => 'Cruz Mota', 'email' => 'samantha_cruzm@live.com', 'number' => '+52 33 3355 7799', 'bio' => 'Niñera creativa y cariñosa. Fomenta el movimiento corporal y la expresión creativa a través de juegos rítmicos.', 'availability' => true, 'start_date' => '2025-02-01', 'postal_code' => '45030', 'street' => 'Calle Cubilete #40', 'neighborhood' => 'Jardines del Sol', 'other_type' => 'Zapopan', 'internal_number' => null],
             ['name' => 'Viviana', 'surnames' => 'Díaz Rangel', 'email' => 'viviana.drangel@outlook.com', 'number' => '+52 33 5599 8939', 'bio' => 'Muy dedicada en el desarrollo de lenguaje temprano. Utiliza tarjetas y rimas para estimular la comunicación en bebés y toddlers.', 'availability' => true, 'start_date' => '2024-11-20', 'postal_code' => '45119', 'street' => 'Av. Universidad #15', 'neighborhood' => 'Santa Margarita', 'other_type' => 'Zapopan', 'internal_number' => null],
-            
+
             // TLAJOMULCO (45640 - 45679)
             ['name' => 'Valeria', 'surnames' => 'Ramos Torres', 'email' => 'valeria.rt@hotmail.com', 'number' => '+52 33 5544 3322', 'bio' => 'Gran paciencia con niños pequeños, especializada en juegos al aire libre y en actividades que fomentan la creatividad.', 'availability' => true, 'start_date' => '2024-08-01', 'postal_code' => '45643', 'street' => 'Avenida de Los Gavilanes #150', 'neighborhood' => 'Los Gavilanes', 'other_type' => 'Tlajomulco de Zúñiga', 'internal_number' => null],
             ['name' => 'Rebeca', 'surnames' => 'Núñez Pérez', 'email' => 'rebeca.nunez@yahoo.com', 'number' => '+52 33 2211 5566', 'bio' => 'Apasionada por el teatro y la narración de cuentos. Cuidado cariñoso con foco en el bienestar emocional de los niños.', 'availability' => true, 'start_date' => '2024-10-01', 'postal_code' => '45654', 'street' => 'Calle Benito Juárez #88', 'neighborhood' => 'San Agustín', 'other_type' => 'Tlajomulco de Zúñiga', 'internal_number' => null],
@@ -79,12 +93,12 @@ class NannySeeder extends Seeder
             ['name' => 'Adriana', 'surnames' => 'Pérez Ruiz', 'email' => 'adriana.pruiz.gdl@outlook.com', 'number' => '+52 33 9080 7060', 'bio' => 'Enfoque en el desarrollo psicomotor. Usa juegos de coordinación y equilibrio para el desarrollo físico y cognitivo.', 'availability' => true, 'start_date' => '2025-01-05', 'postal_code' => '45648', 'street' => 'Av. 8 de Julio #100', 'neighborhood' => 'San Agustin', 'other_type' => 'Tlajomulco de Zúñiga', 'internal_number' => '9A'],
             ['name' => 'Irma', 'surnames' => 'Álvarez Soto', 'email' => 'irma_alvarez@live.com', 'number' => '+52 33 2244 6688', 'bio' => 'Experiencia en el cuidado de mascotas grandes (perros, gatos) mientras cuida a los niños. Responsable y atenta.', 'availability' => true, 'start_date' => '2025-03-20', 'postal_code' => '45649', 'street' => 'Calle Lázaro Cárdenas #50', 'neighborhood' => 'El Zapote del Valle', 'other_type' => 'Tlajomulco de Zúñiga', 'internal_number' => null],
             ['name' => 'Irene', 'surnames' => 'Soto Chávez', 'email' => 'irene.sotoc@gmail.com', 'number' => '+52 33 1237 6688', 'bio' => 'Especialista en arte-terapia para niños. Utiliza pintura y modelado para ayudar a los niños a expresar sus emociones.', 'availability' => true, 'start_date' => '2025-01-10', 'postal_code' => '45664', 'street' => 'Av. De Las Fuentes #88', 'neighborhood' => 'Las Fuentes', 'other_type' => 'Tlajomulco de Zúñiga', 'internal_number' => null],
-            
-            // TLAQUEPAQUE (45500 - 45639) - *Nuevos CP asignados*
+
+            // TLAQUEPAQUE (45500 - 45639)
             ['name' => 'Teresa', 'surnames' => 'Núñez Solís', 'email' => 'teresa.nsolis@gmail.com', 'number' => '+52 33 8000 9000', 'bio' => 'Experiencia en el cuidado de niños con autismo. Paciente y fomenta el desarrollo de habilidades sociales.', 'availability' => true, 'start_date' => '2024-09-20', 'postal_code' => '45570', 'street' => 'Calle Matamoros #10', 'neighborhood' => 'Centro de Tlaquepaque', 'other_type' => 'Tlaquepaque', 'internal_number' => null],
             ['name' => 'Jimena', 'surnames' => 'Luna Pérez', 'email' => 'jimena_luna@outlook.com', 'number' => '+52 33 7000 8000', 'bio' => 'Enfoque en el juego sensorial para niños pequeños. Habilidad para crear juguetes y actividades con materiales reciclados.', 'availability' => true, 'start_date' => '2024-11-15', 'postal_code' => '45600', 'street' => 'Av. San Pedro #300', 'neighborhood' => 'San Pedro Tlaquepaque', 'other_type' => 'Tlaquepaque', 'internal_number' => null],
 
-            // TONALÁ (45400 - 45429) - *Nuevos CP asignados*
+            // TONALÁ (45400 - 45429)
             ['name' => 'Elena', 'surnames' => 'Pérez Chávez', 'email' => 'elena.perez.ch@gmail.com', 'number' => '+52 33 6000 7000', 'bio' => 'Niñera con flexibilidad de horario. Le gusta la cocina saludable y actividades al aire libre.', 'availability' => true, 'start_date' => '2024-10-01', 'postal_code' => '45403', 'street' => 'Calle Hidalgo #50', 'neighborhood' => 'Puente Grande', 'other_type' => 'Tonalá', 'internal_number' => '5'],
             ['name' => 'Maribel', 'surnames' => 'Ríos Godínez', 'email' => 'maribel.riosg@hotmail.com', 'number' => '+52 33 5000 6000', 'bio' => 'Experiencia en el apoyo a tareas de primaria. Enfocada en la lectura y escritura creativa.', 'availability' => true, 'start_date' => '2024-11-20', 'postal_code' => '45420', 'street' => 'Av. Tonaltecas #200', 'neighborhood' => 'Centro de Tonalá', 'other_type' => 'Tonalá', 'internal_number' => '10'],
         ];
@@ -105,9 +119,9 @@ class NannySeeder extends Seeder
         });
 
         // =============================
-        // Creación de usuarios y nannies
+        // Creación de usuarios/nannies/addresses + avatar
         // =============================
-         foreach ($candidatas as $data) {
+        foreach ($candidatas as $idx => $data) {
             // Crear el usuario
             $user = User::factory()->state([
                 'name' => $data['name'],
@@ -126,24 +140,37 @@ class NannySeeder extends Seeder
                 'start_date' => $data['start_date'],
             ]);
 
-            // Extraer número exterior del string de calle (ej: "Calle 8 de Julio #900" -> "900")
+            // Dirección (parsea número exterior del string de calle)
             $streetParts = explode('#', $data['street']);
             $externalNumber = count($streetParts) > 1 ? trim($streetParts[1]) : fake()->buildingNumber();
             $streetName = trim($streetParts[0]);
 
-            // Generar nombre descriptivo de la dirección
             $addressName = "{$streetName} {$externalNumber} — {$data['neighborhood']}";
 
-            // Crear su dirección asociada (sin type, se genera aleatorio en el factory)
             Address::factory()->state([
                 'postal_code' => $data['postal_code'],
                 'street' => $streetName,
                 'name' => $addressName,
                 'neighborhood' => $data['neighborhood'],
-                'zone' => $data['other_type'],
+                'zone' => $data['other_type'], // ya normalizado con ZoneEnum
                 'internal_number' => $data['internal_number'],
                 'external_number' => $externalNumber,
             ])->forNanny($nanny)->create();
+
+            // Avatar (siempre mujer)
+            try {
+                $avatarUrl = $avatarForIndex($idx);
+                $user->addMediaFromUrl($avatarUrl)
+                    ->usingFileName(Str::slug("{$user->name}-{$user->surnames}").'.jpg')
+                    ->withCustomProperties([
+                        'status' => 'approved',
+                        'note'   => 'seeded',
+                        'gender' => 'female',
+                    ])
+                    ->toMediaCollection('images'); // colección declarada en User::registerMediaCollections()
+            } catch (\Throwable $e) {
+                $this->command->warn("No se pudo asignar avatar a {$user->email}: {$e->getMessage()}");
+            }
         }
     }
 }

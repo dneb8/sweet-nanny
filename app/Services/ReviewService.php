@@ -18,7 +18,7 @@ class ReviewService
             ->orderBy('created_at', 'desc');
 
         $sortables = ['created_at', 'rating', 'approved'];
-        $searchables = ['comments'];
+        $searchables = ['comments','reviewable.user.name', 'reviewable.user.email'];
 
         return Fetcher::for($reviews)
             ->allowFilters([
