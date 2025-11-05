@@ -10,6 +10,8 @@ import MeetNannySection from '@/components/landing/MeetNannySection.vue';
 import BabysittingPricesSection from "@/components/landing/BabysittingPricesSection.vue";
 import FooterLanding from "@/components/landing/FooterLanding.vue";
 import BlogSection from "@/components/landing/BlogSection.vue";
+import BabyPartiSection from "@/components/landing/BabyPartiSection.vue";
+import TestimonialsSection from "../components/landing/TestimonialsSection.vue";
 
 defineOptions({
   layout: false,
@@ -43,14 +45,22 @@ defineOptions({
       <!--MEET NANNYS DE LANDING-->
       <MeetNannySection />
 
-      <!--BLOGS DE LANDING-->
-      <BlogSection />
+      <!--BABYPARTI DE LANDING-->
+      <BabyPartiSection />
 
       <!--BABYSITTINGPRICES DE LANDING-->
       <BabysittingPricesSection />
 
+      <!--BLOGS DE LANDING-->
+      <BlogSection />
+
+      <!--TESTIMONIALS DE LANDING-->
+      <TestimonialsSection />
+
       <!--FOOTER-->
       <FooterLanding />
+
+  
       
 
 
@@ -191,107 +201,9 @@ defineOptions({
           </div>
         </div>
       </section>
-
-      
-      <!-- Testimonials Section -->
-      <!--
-        A pale powder-blue (#EAF4FF) sets off the testimonial cards.  This matches
-        the blog section below and creates consistent banding across the page.
-      -->
-      <section class="py-20 bg-[#EAF4FF] relative overflow-hidden">
-        <!-- decorative blob -->
-        <div
-          class="absolute -top-20 -left-20 w-52 h-52 bg-[#FFDCEB] rounded-full opacity-40"
-          aria-hidden="true"
-        ></div>
-        <div
-          class="absolute -bottom-24 -right-24 w-64 h-64 bg-[#E5DBFF] rounded-full opacity-40"
-          aria-hidden="true"
-        ></div>
-        <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-800 text-center mb-12">
-            What Clients Say
-          </h2>
-          <div class="grid gap-8 sm:grid-cols-2">
-            <div class="p-8 bg-white rounded-xl shadow-md">
-              <p class="text-gray-700 italic mb-4">
-                "Our nanny from Happy Baby is wonderful. She treats our children like her own and
-                always keeps us updated. We never worry when she’s here!"
-              </p>
-              <div class="flex items-center">
-                <!-- <img
-                  src="./ai_hero.png"
-                  alt="Client 1"
-                  class="w-12 h-12 rounded-full object-cover object-center mr-3"
-                /> -->
-                <div>
-                  <p class="font-semibold">Sarah K.</p>
-                  <p class="text-sm text-gray-500">Mother of two</p>
-                </div>
-              </div>
-            </div>
-            <div class="p-8 bg-white rounded-xl shadow-md">
-              <p class="text-gray-700 italic mb-4">
-                "I booked an evening sitter through Happy Baby. The process was easy and the sitter
-                was excellent. Highly recommend their services!"
-              </p>
-              <div class="flex items-center">
-                <!-- <img
-                  src="./ai_childcare.png"
-                  alt="Client 2"
-                  class="w-12 h-12 rounded-full object-cover object-center mr-3"
-                /> -->
-                <div>
-                  <p class="font-semibold">David L.</p>
-                  <p class="text-sm text-gray-500">Busy professional</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
  
 
-      <!-- Baby Shower Party Section -->
-      <!--
-        Lighten the baby‑shower section using the same delicate pink as the evening CTA (#FFF0F8).
-      -->
-      <section class="py-20 bg-[#FFF0F8] relative overflow-hidden">
-        <!-- decorative blob -->
-        <div
-          class="absolute -top-16 -left-20 w-56 h-56 bg-[#CDE8FF] rounded-full opacity-40"
-          aria-hidden="true"
-        ></div>
-        <div
-          class="absolute -bottom-20 -right-24 w-64 h-64 bg-[#E5DBFF] rounded-full opacity-40"
-          aria-hidden="true"
-        ></div>
-        <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center relative z-10">
-          <div class="md:w-1/2 mb-8 md:mb-0">
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-4">
-              Baby Shower Party
-            </h2>
-            <p class="text-gray-700 mb-6">
-              Celebrate your bundle of joy with a memorable shower planned by our team. We provide
-              decorations, games and delicious treats.
-            </p>
-            <a
-              href="#contact"
-              class="inline-block px-6 py-3 bg-[#FFBC5B] text-[#2A3786] font-medium rounded-full shadow-md hover:bg-[#FFAA3A] transition"
-              >Start Planning</a
-            >
-          </div>
-          <div class="md:w-1/2 flex justify-center">
-            <!-- <img
-              src="./ai_baby_shower.png"
-              alt="Baby shower party illustration"
-              class="w-80 h-60 rounded-lg object-cover shadow-lg"
-            /> -->
-          </div>
-        </div>
-      </section>
-
+     
       <!-- Mobile App Section -->
       <!--
         Introduce a very light pink tint (#FFFAFD) behind the mobile app content to avoid
