@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useNotifications, type Notification } from '@/composables/useNotifications';
+import { usePageVisibility } from '@vueuse/core';
 import { Bell } from 'lucide-vue-next';
 import {
     DropdownMenu,
@@ -16,20 +17,91 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 const { notifications, unreadCount, fetchNotifications, markAllAsRead, handleNotificationClick } = useNotifications();
 
 const open = ref(false);
+const isPageVisible = usePageVisibility();
 
 let pollInterval: NodeJS.Timeout | null = null;
+let abortController: AbortController | null = null;
+
+// Optimized fetch that respects page visibility and uses requestIdleCallback
+const optimizedFetchNotifications = async () => {
+    // Skip if page is hidden
+    if (!isPageVisible.value) {
+        return;
+    }
+
+    try {
+        // Cancel previous request if still pending
+        if (abortController) {
+            abortController.abort();
+        }
+        
+        abortController = new AbortController();
+        
+        // Use requestIdleCallback to defer non-urgent updates
+        const performFetch = async () => {
+            await fetchNotifications(abortController?.signal);
+        };
+
+        // Use requestIdleCallback if available to avoid blocking main thread
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(() => {
+                // Double-check visibility before fetching
+                if (isPageVisible.value) {
+                    performFetch();
+                }
+            }, { timeout: 2000 }); // Ensure it runs within 2s even if idle time isn't available
+        } else {
+            // Fallback for browsers without requestIdleCallback
+            await performFetch();
+        }
+    } catch (error) {
+        // Ignore abort errors
+        if (error instanceof Error && error.name !== 'AbortError') {
+            console.error('Error fetching notifications:', error);
+        }
+    }
+};
+
+// Resume polling after page becomes visible
+const handleVisibilityChange = () => {
+    if (isPageVisible.value && pollInterval === null) {
+        // Small delay before resuming to avoid immediate fetch burst
+        setTimeout(() => {
+            if (isPageVisible.value) {
+                optimizedFetchNotifications();
+                pollInterval = setInterval(optimizedFetchNotifications, 3000);
+            }
+        }, 500);
+    } else if (!isPageVisible.value && pollInterval) {
+        // Pause polling when page is hidden
+        clearInterval(pollInterval);
+        pollInterval = null;
+    }
+};
 
 onMounted(() => {
+    // Initial fetch (direct call, not via requestIdleCallback)
     fetchNotifications();
     
-    // Poll for new notifications every 3 seconds
-    pollInterval = setInterval(fetchNotifications, 3000);
+    // Start polling with optimized function
+    pollInterval = setInterval(optimizedFetchNotifications, 3000);
+    
+    // Watch for visibility changes
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 });
 
 onUnmounted(() => {
     if (pollInterval) {
         clearInterval(pollInterval);
+        pollInterval = null;
     }
+    
+    if (abortController) {
+        abortController.abort();
+        abortController = null;
+    }
+    
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
 });
 
 const formatTime = (dateString: string) => {

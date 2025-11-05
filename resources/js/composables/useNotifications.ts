@@ -20,13 +20,31 @@ const loading = ref(false);
 export function useNotifications() {
     const { notifySuccess, notifyError, notifyInfo } = useNotify();
 
-    const fetchNotifications = async () => {
+    const fetchNotifications = async (signal?: AbortSignal) => {
         try {
             loading.value = true;
-            const response = await axios.get(route('notifications.index'));
-            notifications.value = response.data.notifications;
-            unreadCount.value = response.data.unread_count;
+            const response = await axios.get(route('notifications.index'), {
+                signal,
+            });
+            
+            // Only update if data is different to avoid unnecessary re-renders
+            const newNotifications = response.data.notifications;
+            const newUnreadCount = response.data.unread_count;
+            
+            // Deep comparison to prevent unnecessary reactivity triggers
+            const hasChanged = 
+                JSON.stringify(notifications.value) !== JSON.stringify(newNotifications) ||
+                unreadCount.value !== newUnreadCount;
+            
+            if (hasChanged) {
+                notifications.value = newNotifications;
+                unreadCount.value = newUnreadCount;
+            }
         } catch (error) {
+            // Don't log abort errors
+            if (axios.isCancel(error) || (error instanceof Error && error.name === 'AbortError')) {
+                return;
+            }
             console.error('Failed to fetch notifications:', error);
         } finally {
             loading.value = false;
