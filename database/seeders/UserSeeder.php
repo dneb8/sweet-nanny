@@ -80,7 +80,7 @@ class UserSeeder extends Seeder
         $me = User::factory()->state([
             'name' => 'Deneb Rivera Alcaraz',
             'surnames' => null,
-            'email' => 'deneb.riv.88@gmail.com', // <-- cambia a tu correo real si quieres
+            'email' => 'denebriv.88@gmail.com', // <-- cambia a tu correo real si quieres
             'number' => null,
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
