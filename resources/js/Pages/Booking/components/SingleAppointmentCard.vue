@@ -102,7 +102,7 @@ function fmtDateTimeMX12_plus6(iso: string): string {
 }
 
 /* ==== Props ==== */
-const props = defineProps<{
+defineProps<{
   booking: Booking
   appointment: BookingAppointment
   canEditAppointment: boolean

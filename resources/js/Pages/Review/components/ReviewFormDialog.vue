@@ -2,7 +2,7 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import ReviewForm from './ReviewForm.vue';
 
-const props = defineProps<{
+defineProps<{
     open: boolean;
     reviewableType: 'tutor' | 'nanny';
     reviewableId: number | string;

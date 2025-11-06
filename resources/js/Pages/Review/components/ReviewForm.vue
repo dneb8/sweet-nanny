@@ -61,7 +61,7 @@ const cancel = () => {
 <template>
     <div class="space-y-6">
         <!-- Rating Stars -->
-        <FormField v-slot="{ componentField }" name="rating">
+        <FormField v-slot="{ componentField: _componentField }" name="rating">
             <FormItem>
                 <FormLabel class="text-base font-medium">Calificación *</FormLabel>
                 <FormControl>

@@ -113,6 +113,15 @@ const config = computed(() => {
                 buttonVariant: 'default' as const,
                 buttonText: props.confirmText || 'Confirmar',
             };
+        default:
+            return {
+                title: props.title || 'Confirmar acción',
+                icon: CheckCircle2,
+                iconColor: 'text-blue-600',
+                glowColor: 'bg-blue-600',
+                buttonVariant: 'default' as const,
+                buttonText: props.confirmText || 'Confirmar',
+            };
     }
 });
 

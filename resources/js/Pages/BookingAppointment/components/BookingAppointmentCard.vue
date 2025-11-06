@@ -6,7 +6,7 @@ import Badge from '@/components/common/Badge.vue';
 import { BookingAppointmentTableService } from '@/services/bookingAppointmentTableService';
 import { Users } from 'lucide-vue-next';
 
-const props = defineProps<{
+defineProps<{
     appointment: BookingAppointment;
 }>();
 
