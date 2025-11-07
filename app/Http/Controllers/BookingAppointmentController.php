@@ -234,6 +234,9 @@ class BookingAppointmentController extends Controller
         ]);
 
         if ($validator->fails()) {
+            if ($request->expectsJson()) {
+                return response()->json(['errors' => $validator->errors()], 422);
+            }
             return back()->withErrors($validator)->withInput()->with('error', 'Error al actualizar la dirección');
         }
 
@@ -250,6 +253,10 @@ class BookingAppointmentController extends Controller
             $appointment->addresses()->sync([$validated['address_id']]);
         });
 
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true], 200);
+        }
+        
         return back()->with('success', 'Dirección actualizada exitosamente');
     }
 
@@ -266,11 +273,18 @@ class BookingAppointmentController extends Controller
         ]);
 
         if ($validator->fails()) {
+            if ($request->expectsJson()) {
+                return response()->json(['errors' => $validator->errors()], 422);
+            }
             return back()->withErrors($validator)->withInput()->with('error', 'Error al actualizar los niños');
         }
 
         $validated = $validator->validated();
         $appointment->children()->sync($validated['child_ids']);
+
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true], 200);
+        }
 
         return back()->with('success', 'Niños actualizados exitosamente');
     }

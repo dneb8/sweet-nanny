@@ -22,6 +22,27 @@ class BookingAppointmentPolicy
     }
 
     /**
+     * Ver una cita específica
+     */
+    public function view(User $user, BookingAppointment $appointment): bool
+    {
+        if ($user->hasRole(RoleEnum::ADMIN->value)) {
+            return true;
+        }
+
+        if ($user->hasRole(RoleEnum::NANNY->value)) {
+            return $appointment->nanny_id === $user->nanny?->id;
+        }
+
+        if ($user->hasRole(RoleEnum::TUTOR->value)) {
+            $appointment->loadMissing('booking.tutor');
+            return $appointment->booking?->tutor_id === $user->tutor?->id;
+        }
+
+        return false;
+    }
+
+    /**
      * Eliminar una cita
      */
     public function delete(User $user, BookingAppointment $appointment): Response

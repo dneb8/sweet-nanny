@@ -1,6 +1,5 @@
 import { computed, provide, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { BookingAppointment } from '@/types/BookingAppointment';
 import { BookingStatus, getBookingStatusLabel } from '@/enums/booking-status.enum';
 import { User } from '@/types/User';
 
