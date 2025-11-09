@@ -1,64 +1,93 @@
-version: '3.8'
-
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        WWW_USER_ID: ${DOCKER_UID:-1000}
-        WWW_GROUP_ID: ${DOCKER_GID:-1000}
-    image: sweet-nanny-app
-    container_name: sweet-nanny-app
+        - WWW_USER_ID=${DOCKER_UID:-1000}
+        - WWW_GROUP_ID=${DOCKER_GID:-1000}
+      network: host
+    image: "sweet-nanny/php8.4"
     restart: unless-stopped
+    tty: true
     environment:
-      APP_ENV: production
-      APP_DEBUG: false
       SERVICE_NAME: app
+      SERVICE_TAGS: dev
     working_dir: /var/www
     volumes:
-      - ./:/var/www
-      - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
+      - '/mnt/storage/archivos/:/var/archivos'
+      # - '/mnt/storage/backups/sweet-nanny/:/var/respaldo'
+      - './:/var/www'
+      - './php/local.ini:/usr/local/etc/php/conf.d/local.ini'
+      - '/home/${DOCKER_HOME_USER}/.ssh/:/home/www/.ssh/'
+      - './nginx/conf.d/:/etc/nginx/conf.d/'
     depends_on:
       - db
     networks:
       - app-network
-
   webserver:
-    image: nginx:alpine
-    container_name: sweet-nanny-nginx
+    image: 'nginx:alpine3.18-slim'
     restart: unless-stopped
+    tty: true
+    expose:
+      - "80"
     ports:
-      - "${DOCKER_WEB_PORT:-8085}:80"
+      - '${DOCKER_WEB_PORT:-8085}:80'
+    environment:
+      - VIRTUAL_HOST=${DOCKER_PROXY_DOMAIN}
+      - LETSENCRYPT_HOST=${DOCKER_PROXY_DOMAIN}
+      - LETSENCRYPT_EMAIL=soporte.sigi@cucei.udg.mx
     volumes:
-      - ./:/var/www
-      - ./nginx/conf.d:/etc/nginx/conf.d
-    depends_on:
-      - app
+      - '/mnt/storage/archivos/:/var/archivos'
+      # - '/mnt/storage/backups/sweet-nanny/:/var/respaldo'
+      - './:/var/www'
+      - './nginx/conf.d/:/etc/nginx/conf.d/'
+      - './php/local.ini:/usr/local/etc/php/conf.d/local.ini'
     networks:
+      - default
       - app-network
-
   db:
-    image: mariadb:10.9.4
-    container_name: sweet-nanny-db
+    image: 'mariadb:10.9.4'
     restart: unless-stopped
+    tty: true
     ports:
-      - "${DOCKER_DB_PORT:-3314}:3306"
+      - '${DOCKER_DB_PORT:-3314}:3306'
     environment:
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      MYSQL_USER: ${DB_USERNAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
       LANG: C.UTF-8
     volumes:
-      - dbdata:/var/lib/mysql
-      - ./mysql/my.cnf:/etc/mysql/my.cnf
+      - 'dbdata:/var/lib/mysql/'
+      - './mysql/my.cnf:/etc/mysql/my.cnf'
+      # - '/mnt/storage/backups/sweet-nanny/:/var/respaldo'
     networks:
       - app-network
-
+  npm:
+    profiles:
+      - "dev"
+    image: "sweet-nanny/php8.4"
+    restart: unless-stopped
+    user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    ports:
+      - '${DOCKER_NPM_PORT:-5173}:${DOCKER_NPM_PORT:-5173}'
+    working_dir: /var/www
+    depends_on:
+      - app
+    volumes:
+      - './:/var/www'
+    entrypoint: ['npm', 'run', 'dev']
+    networks:
+      - app-network
   phpmyadmin:
+    profiles:
+      - "dev"
     image: phpmyadmin/phpmyadmin:latest
-    container_name: sweet-nanny-phpmyadmin
     restart: unless-stopped
     depends_on:
       - db
@@ -71,8 +100,15 @@ services:
       - app-network
 
 networks:
+  default:
+    external:
+      name: nginx-proxy
   app-network:
     driver: bridge
-
 volumes:
   dbdata:
+    driver: local
+  #ssl:
+  #certs:
+  #html:
+  #vhostd:
