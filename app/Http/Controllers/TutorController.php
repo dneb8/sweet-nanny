@@ -4,13 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Tutor\CreateTutorRequest;
 use App\Http\Requests\Tutor\UpdateTutorRequest;
+use App\Http\Traits\HandlesAvatarValidation;
 use App\Models\Tutor;
 use App\Services\TutorService;
+// Removed incorrect Gate import
 use Inertia\Inertia;
 use Inertia\Response;
 
 class TutorController extends Controller
 {
+    use HandlesAvatarValidation;
     /**
      * Display a listing of the resource.
      */
@@ -50,12 +53,22 @@ class TutorController extends Controller
      */
     public function show(Tutor $tutor, TutorService $tutorService): Response
     {
-        // $this->authorize('view', $tutor);
 
-        $tutorData = $tutorService->getShowData($tutor->ulid);
+        $tutor = $tutorService->getShowData($tutor->ulid);
+
+        $tutor->load([
+            'user.roles',
+            'user.media' => fn ($q) => $q->where('collection_name', 'images'),
+            'addresses',
+            'reviews',
+            'bookings.bookingAppointments',
+        ]);
+
+        // Trigger validation if needed for pending avatars
+        $this->kickoffAvatarValidationIfNeeded($tutor->user);
 
         return Inertia::render('Tutor/Show', [
-            'tutor' => $tutorData,
+            'tutor' => $tutor,
         ]);
     }
 

@@ -6,6 +6,8 @@ use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\ServiceProvider;
+use App\Models\BookingAppointment;
+use App\Observers\BookingAppointmentObserver;
 use Tightenco\Ziggy\Ziggy;  // si usas Ziggy para rutas en frontend
 
 class AppServiceProvider extends ServiceProvider
@@ -61,5 +63,9 @@ class AppServiceProvider extends ServiceProvider
 
             return $mail;
         });
+
+        
+        //Para STATUS
+        BookingAppointment::observe(BookingAppointmentObserver::class);
     }
 }

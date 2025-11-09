@@ -11,4 +11,8 @@ Route::middleware(['auth', 'verified'])->prefix('users')->name('users.')->group(
     Route::get('/{user}', [UserController::class, 'show'])->name('show');
     Route::post('/', [UserController::class, 'store'])->name('store');
     Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
+
+    // Avatar management routes
+    Route::post('/{user}/avatar', [UserController::class, 'updateAvatar'])->name('avatar.update');
+    Route::delete('/{user}/avatar', [UserController::class, 'deleteAvatar'])->name('avatar.delete');
 });

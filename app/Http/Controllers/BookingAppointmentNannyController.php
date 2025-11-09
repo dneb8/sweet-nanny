@@ -3,17 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Classes\Fetcher\Fetcher;
+use App\Enums\Booking\StatusEnum;
 use App\Enums\Career\NameCareerEnum;
 use App\Enums\Course\NameEnum as CourseNameEnum;
 use App\Enums\Nanny\QualityEnum;
-use App\Http\Requests\BookingAppointment\AssignNannyRequest;
 use App\Models\Booking;
 use App\Models\BookingAppointment;
 use App\Models\Nanny;
 use App\Services\NannySearchService;
+use App\Notifications\NannyAssigned;
+use App\Notifications\NannyChanged;
+use App\Notifications\NannyUnassigned;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -130,9 +135,10 @@ class BookingAppointmentNannyController extends Controller
 
         if ($appointment->booking_id !== $booking->id) abort(404);
 
-        if ($appointment->nanny_id !== null) {
-            return back()->withErrors(['general' => 'Esta cita ya tiene una niñera asignada.']);
-        }
+        // Store old nanny if changing
+        $oldNannyId = $appointment->nanny_id;
+        $oldNanny = $oldNannyId ? Nanny::find($oldNannyId) : null;
+        $isChanging = $oldNannyId !== null;
 
         $isAvailable = Nanny::availableBetween($appointment->start_date, $appointment->end_date)
             ->where('id', $nanny->id)
@@ -143,11 +149,64 @@ class BookingAppointmentNannyController extends Controller
         }
 
         $appointment->nanny_id = $nanny->id;
+        $appointment->status = StatusEnum::PENDING->value;
         $appointment->save();
 
-        return redirect()
-            ->route('bookings.show', $booking->id)
-            ->with('notification', 'Niñera asignada correctamente.');
+        // Load relationships
+        $nanny->loadMissing('user');
+        $appointment->loadMissing('booking.tutor.user');
+
+        // Send appropriate notifications
+        if ($isChanging && $oldNanny) {
+            // Changing nanny - multiple notifications needed
+            $oldNanny->loadMissing('user');
+            $tutorUser = $appointment->booking?->tutor?->user;
+            $currentUser = Auth::user();
+            
+            // ALWAYS notify the old nanny that their appointment was cancelled
+            // This is critical - the old nanny must know they're no longer assigned
+            if ($oldNanny->user) {
+                $oldNanny->user->notify(new NannyUnassigned($appointment));
+            } else {
+                // Log if old nanny has no user (shouldn't happen but helps debugging)
+                Log::warning('Old nanny has no user', [
+                    'nanny_id' => $oldNanny->id,
+                    'appointment_id' => $appointment->id
+                ]);
+            }
+            
+            // If admin made the change, notify the tutor about the nanny change
+            if ($currentUser && $currentUser->hasRole('admin') && $tutorUser && $tutorUser->id !== $currentUser->id) {
+                $tutorUser->notify(new NannyChanged($appointment, $oldNanny, $nanny));
+            }
+            
+            // ALWAYS notify the new nanny about their new assignment
+            if ($nanny->user) {
+                $nanny->user->notify(new NannyAssigned($appointment));
+            } else {
+                // Log if new nanny has no user (shouldn't happen but helps debugging)
+                Log::warning('New nanny has no user', [
+                    'nanny_id' => $nanny->id,
+                    'appointment_id' => $appointment->id
+                ]);
+            }
+            
+            $message = 'Niñera cambiada correctamente.';
+        } else {
+            // First assignment - notify nanny
+            if ($nanny->user) {
+                $nanny->user->notify(new NannyAssigned($appointment));
+            } else {
+                // Log if nanny has no user
+                Log::warning('Nanny has no user on first assignment', [
+                    'nanny_id' => $nanny->id,
+                    'appointment_id' => $appointment->id
+                ]);
+            }
+            $message = 'Niñera asignada correctamente';
+        }
+
+        return redirect()->route('bookings.show', $booking->id)->with('success', $message);
     }
 
     /**

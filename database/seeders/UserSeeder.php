@@ -21,6 +21,7 @@ class UserSeeder extends Seeder
                 'name' => $role->label(),
                 'email' => strtolower($role->value).'@test.com',
                 'password' => Hash::make('password'),
+                'email_verified_at' => now(),
             ])->create();
 
             $user->assignRole($role->value);

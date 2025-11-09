@@ -12,5 +12,8 @@ Route::middleware(['auth', 'verified'])->prefix('nannies')->name('nannies.')->gr
     Route::post('/', [NannyController::class, 'store'])->name('store');
     Route::delete('/{nanny}', [NannyController::class, 'destroy'])->name('destroy');
     Route::patch('/{nanny}/qualities', [NannyController::class, 'updateQualities'])->name('update.qualities');
+   #Route::patch('/{nanny}/profile', [NannyController::class, 'updateProfile'])->name('nannies.updateProfile');
+    Route::patch('/{nanny}/profile', [NannyController::class, 'updateProfile'])->name('nannies.updateProfile');
+
 
 });

@@ -8,15 +8,20 @@ import CoursesCard from './information/Course.vue'
 import CareersCard from './information/Career.vue'
 import QualitiesCard from './information/Quality.vue'
 import ServicesCard from './information/Booking.vue'
+import { Head } from '@inertiajs/vue3'
 
-const props = defineProps<{ nanny: Nanny }>()
+const props = defineProps<{
+nanny: Nanny
+bookings: any 
+}>()
 </script>
 
 <template>
+<Head :title="`Niñera ${props.nanny.user.name} ${props.nanny.user.surnames}`" />
   <div class="grid grid-cols-1 gap-5">
     <!-- Columna superior -->
     <div class="space-y-5">
-      <ProfileCard :nanny="props.nanny" />
+      <ProfileCard :nanny="props.nanny" :key="props.nanny.id" />
       <div class="grid md:grid-cols-2 gap-5">
         <AddressCard :nanny="props.nanny" />
         <CoursesCard :nanny="props.nanny" />
@@ -27,7 +32,7 @@ const props = defineProps<{ nanny: Nanny }>()
 
     <!-- Servicios -->
     <div class="space-y-6">
-      <ServicesCard :nanny="props.nanny" />
+      <ServicesCard :nanny="props.nanny" :bookings="props.bookings" />
     </div>
   </div>
 </template>
