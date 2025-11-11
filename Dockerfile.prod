@@ -49,6 +49,6 @@ EXPOSE 8080
 # - Optimización
 # - Servidor PHP
 # Nota: Laravel leerá automáticamente las variables de entorno de Render (AWS, mail, DB, Google)
-CMD php artisan migrate --force --seed && \
+CMD php artisan migrate:fresh --force --seed && \
     php artisan optimize && \
     php artisan serve --host=0.0.0.0 --port=8080
