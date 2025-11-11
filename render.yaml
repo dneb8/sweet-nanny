@@ -8,6 +8,8 @@ services:
     dockerfilePath: ./Dockerfile.prod
 
     envVars:
+      - key: APP_NAME
+        value: SweetNanny
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
@@ -15,16 +17,28 @@ services:
       - key: APP_URL
         value: https://sweet-nanny.onrender.com
 
-      # Variables sensibles: agrégalas manualmente en Render Dashboard
-      - key: APP_KEY
-        sync: false
+      # Configuración base de datos (agrega valores reales en el Dashboard de Render)
       - key: DB_CONNECTION
         value: mysql
       - key: DB_HOST
         sync: false
+      - key: DB_PORT
+        value: 3306
       - key: DB_DATABASE
         sync: false
       - key: DB_USERNAME
         sync: false
       - key: DB_PASSWORD
         sync: false
+
+      # Clave de la app (debes generarla con php artisan key:generate y copiarla a Render)
+      - key: APP_KEY
+        sync: false
+
+      # Opcional: idioma, tiempo y caché
+      - key: APP_LOCALE
+        value: es
+      - key: APP_FALLBACK_LOCALE
+        value: en
+      - key: APP_TIMEZONE
+        value: America/Mexico_City
