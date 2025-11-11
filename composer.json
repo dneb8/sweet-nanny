@@ -19,11 +19,11 @@
         "pusher/pusher-php-server": "^7.2",
         "spatie/laravel-medialibrary": "^11.0",
         "spatie/laravel-permission": "^6.20",
+        "fakerphp/faker": "^1.23",
         "tightenco/ziggy": "^2.4"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.15",
-        "fakerphp/faker": "^1.23",
         "laravel-lang/publisher": "^16.7",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.18",
