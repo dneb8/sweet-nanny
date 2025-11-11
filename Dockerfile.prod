@@ -30,7 +30,7 @@ COPY . .
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Instalar dependencias de producción
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+RUN composer install --optimize-autoloader --no-interaction --prefer-dist
 
 # Construir assets de frontend (si usas Vite)
 RUN npm install && npm run build
