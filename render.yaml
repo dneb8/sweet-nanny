@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: sweet-nanny
+    env: docker
+    plan: free
+    branch: main
+    region: oregon
+
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        value: https://sweet-nanny.onrender.com
+      - key: APP_KEY
+        sync: base64:kJOpUzmg5vLJmCq7cteMQdQp7YKlOsIKvBgxSNjenqc=  # la agregarás manualmente
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        value: tu-host
+      - key: DB_DATABASE
+        value: tu-db
+      - key: DB_USERNAME
+        value: tu-usuario
+      - key: DB_PASSWORD
+        sync: false
+
+    dockerfilePath: ./Dockerfile.prod

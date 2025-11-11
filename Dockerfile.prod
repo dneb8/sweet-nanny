@@ -1,0 +1,43 @@
+# Imagen base
+FROM php:8.2-fpm
+
+# Establecer directorio de trabajo
+WORKDIR /var/www/html
+
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    libzip-dev \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    libicu-dev \
+    git \
+    unzip \
+    curl \
+    npm \
+    zip \
+    && docker-php-ext-install pdo_mysql mbstring zip exif pcntl bcmath intl \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd
+
+# Instalar Composer globalmente
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Copiar archivos de Composer y instalar dependencias
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --optimize-autoloader
+
+# Copiar el resto del proyecto
+COPY . .
+
+# Generar cache de Laravel
+RUN php artisan config:clear && php artisan route:clear && php artisan view:clear
+
+# Permisos para almacenamiento
+RUN chown -R www-data:www-data storage bootstrap/cache
+
+# Exponer puerto (Render espera un puerto visible)
+EXPOSE 8080
+
+# Comando para producción
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
