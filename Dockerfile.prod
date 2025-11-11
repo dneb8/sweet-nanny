@@ -4,7 +4,7 @@ FROM php:8.2-fpm
 # Establecer el directorio de trabajo
 WORKDIR /var/www/html
 
-# Instalar dependencias necesarias
+# Instalar dependencias del sistema necesarias para Laravel
 RUN apt-get update && apt-get install -y \
     libzip-dev \
     libpng-dev \
@@ -23,19 +23,19 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install gd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copiar todo el proyecto
+# Copiar el proyecto
 COPY . .
 
 # Instalar Composer globalmente
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Instalar dependencias de producción
-RUN composer install --optimize-autoloader --no-interaction --prefer-dist
+# Instalar dependencias de producción (sin dev para mantener la imagen ligera)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-# Construir assets de frontend (si usas Vite)
+# Construir assets de frontend (Vite)
 RUN npm install && npm run build
 
-# 🔹 Limpiar caches (sin depender de conexión ni .env)
+# 🔹 Limpiar caches anteriores
 RUN rm -rf bootstrap/cache/*.php
 
 # 🔹 Asignar permisos correctos
@@ -44,8 +44,10 @@ RUN chmod -R 775 storage bootstrap/cache && chown -R www-data:www-data storage b
 # Cambiar al usuario no root
 USER www-data
 
-# Exponer el puerto 8080
+# Exponer puerto 8080
 EXPOSE 8080
 
-# 🔹 Comando de inicio (ya con entorno cargado)
-CMD php artisan migrate --force --seed || true && php artisan optimize && php artisan serve --host=0.0.0.0 --port=8080
+# 🔹 Comando de inicio: migraciones + seeders + optimización + servidor
+CMD php artisan migrate --force --seed && \
+    php artisan optimize && \
+    php artisan serve --host=0.0.0.0 --port=8080
