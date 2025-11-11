@@ -5,6 +5,7 @@ services:
     plan: free
     branch: main
     region: oregon
+    dockerfilePath: ./Dockerfile.prod
 
     envVars:
       - key: APP_ENV
@@ -13,17 +14,17 @@ services:
         value: false
       - key: APP_URL
         value: https://sweet-nanny.onrender.com
+
+      # Variables sensibles: agrégalas manualmente en Render Dashboard
       - key: APP_KEY
-        sync: base64:kJOpUzmg5vLJmCq7cteMQdQp7YKlOsIKvBgxSNjenqc=  # la agregarás manualmente
+        sync: false
       - key: DB_CONNECTION
         value: mysql
       - key: DB_HOST
-        value: tu-host
+        sync: false
       - key: DB_DATABASE
-        value: tu-db
+        sync: false
       - key: DB_USERNAME
-        value: tu-usuario
+        sync: false
       - key: DB_PASSWORD
         sync: false
-
-    dockerfilePath: ./Dockerfile.prod
