@@ -30,7 +30,7 @@ COPY . .
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Instalar dependencias de producción
-RUN composer install --optimize-autoloader --no-interaction --prefer-dist
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
 # Construir assets de frontend (si usas Vite)
 RUN npm install && npm run build
@@ -48,4 +48,4 @@ USER www-data
 EXPOSE 8080
 
 # 🔹 Comando de inicio (ya con entorno cargado)
-CMD php artisan migrate --force --seed && php artisan optimize && php artisan serve --host=0.0.0.0 --port=8080
+CMD php artisan migrate --force --seed || true && php artisan optimize && php artisan serve --host=0.0.0.0 --port=8080
