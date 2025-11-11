@@ -8,7 +8,7 @@ services:
     dockerfilePath: ./Dockerfile.prod
 
     envVars:
-      # Variables públicas / necesarias para deploy
+      # --- Variables públicas / necesarias para deploy ---
       - key: APP_NAME
         value: SweetNanny
       - key: APP_ENV
@@ -27,3 +27,15 @@ services:
         value: base64:kJOpUzmg5vLJmCq7cteMQdQp7YKlOsIKvBgxSNjenqc=
       - key: FLASK_API_URL
         value: http://127.0.0.1:5000
+
+      # --- Vite / Google Maps ---
+      - key: VITE_APP_URL
+        value: https://sweet-nanny.onrender.com
+      - key: VITE_DEFAULT_CENTER_LAT
+        value: 20.6597
+      - key: VITE_DEFAULT_CENTER_LNG
+        value: -103.3496
+      - key: VITE_GMAPS_API_KEY
+        value: AIzaSyCFIDDy7FvxQJxcFPEBLf0AgzBjBAs5A-w
+      - key: VITE_GMAPS_MAP_ID
+        value: AIzaSyAGsvUiKV_DFO5aXrswzvK_2X6NCQ7bsT0
