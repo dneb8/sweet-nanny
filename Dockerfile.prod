@@ -4,7 +4,7 @@ FROM php:8.2-fpm
 # Establecer el directorio de trabajo
 WORKDIR /var/www/html
 
-# Instalar dependencias del sistema necesarias para Laravel y PostgreSQL
+# Instalar dependencias necesarias
 RUN apt-get update && apt-get install -y \
     libzip-dev \
     libpng-dev \
@@ -35,20 +35,8 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-di
 # Construir assets de frontend (si usas Vite)
 RUN npm install && npm run build
 
-# 🔹 Limpiar caches sin detener el build si falla (por falta de .env)
-RUN php artisan config:clear || true && \
-    php artisan route:clear || true && \
-    php artisan view:clear || true && \
-    php artisan cache:clear || true
-
-# 🔹 Generar caches nuevas (no obligatorio durante build)
-RUN php artisan optimize || true
-
-# 🔹 Ejecutar migraciones automáticamente (no genera error si ya existen)
-RUN php artisan migrate --force || true
-
-# 🔹 Crear enlace simbólico de storage (importante para imágenes y logs)
-RUN php artisan storage:link || true
+# 🔹 Limpiar caches (sin depender de conexión ni .env)
+RUN rm -rf bootstrap/cache/*.php
 
 # 🔹 Asignar permisos correctos
 RUN chmod -R 775 storage bootstrap/cache && chown -R www-data:www-data storage bootstrap/cache
@@ -59,5 +47,5 @@ USER www-data
 # Exponer el puerto 8080
 EXPOSE 8080
 
-# Comando de inicio para producción
-CMD php artisan config:clear && php artisan cache:clear && php artisan optimize && php artisan serve --host=0.0.0.0 --port=8080
+# 🔹 Comando de inicio (ya con entorno cargado)
+CMD php artisan migrate --force && php artisan optimize && php artisan serve --host=0.0.0.0 --port=8080
