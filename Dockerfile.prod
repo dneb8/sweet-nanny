@@ -35,14 +35,20 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-di
 # Construir assets de frontend (si usas Vite)
 RUN npm install && npm run build
 
-# Limpiar y generar caches de Laravel
-RUN php artisan config:clear && php artisan route:clear && php artisan view:clear && php artisan optimize
+# 🔹 Limpiar completamente cualquier caché anterior
+RUN php artisan config:clear && php artisan route:clear && php artisan view:clear && php artisan cache:clear
 
-# (Opcional pero recomendado) Ejecutar migraciones automáticamente
+# 🔹 Generar caches nuevas optimizadas
+RUN php artisan optimize
+
+# 🔹 Ejecutar migraciones automáticamente (no genera error si ya existen)
 RUN php artisan migrate --force || true
 
-# Asignar permisos correctos a storage y bootstrap/cache
-RUN chown -R www-data:www-data storage bootstrap/cache
+# 🔹 Crear enlace simbólico de storage (importante para imágenes y logs)
+RUN php artisan storage:link || true
+
+# 🔹 Asignar permisos correctos
+RUN chmod -R 775 storage bootstrap/cache && chown -R www-data:www-data storage bootstrap/cache
 
 # Cambiar al usuario no root
 USER www-data
