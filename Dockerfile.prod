@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
     libjpeg62-turbo-dev \
     libfreetype6-dev \
     libicu-dev \
-    libonig-dev \
+    libonig-dev \ 
     git \
     unzip \
     curl \
@@ -22,44 +22,29 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install gd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Crear usuario "www" (seguro para Render)
-ARG WWW_GROUP_ID=1000
-ARG WWW_USER_ID=1000
-RUN groupadd -g ${WWW_GROUP_ID} www \
-    && useradd -u ${WWW_USER_ID} -ms /bin/bash -g www www
+# Copiar todo el proyecto antes de instalar dependencias
+COPY . .
 
 # Instalar Composer globalmente
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Copiar archivos de Composer primero (para aprovechar la caché)
-COPY composer.json composer.lock ./
-
-# Instalar dependencias de producción
+# Instalar dependencias de producción (ya con artisan presente)
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-# Copiar el resto del proyecto
-COPY . .
-
-# Copiar el archivo .env.example como .env si no existe (Render usa envVars)
-RUN if [ ! -f .env ]; then cp .env.example .env; fi
-
-# Construir los assets de frontend (si usas Vite)
+# Construir assets de frontend (si usas Vite)
 RUN npm install && npm run build
 
-# Limpiar y optimizar la caché de Laravel
-RUN php artisan config:clear \
- && php artisan route:clear \
- && php artisan view:clear \
- && php artisan optimize
+# Limpiar y generar caches de Laravel
+RUN php artisan config:clear && php artisan route:clear && php artisan view:clear && php artisan optimize
 
-# Asignar permisos correctos
+# Asignar permisos correctos a storage y bootstrap/cache
 RUN chown -R www-data:www-data storage bootstrap/cache
 
 # Cambiar al usuario no root
-USER www
+USER www-data
 
-# Exponer el puerto que Render usará
+# Exponer el puerto 8080
 EXPOSE 8080
 
-# Comando de inicio (Laravel en producción)
+# Comando de inicio para producción
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
