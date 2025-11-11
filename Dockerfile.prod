@@ -23,23 +23,26 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install gd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copiar todo el proyecto antes de instalar dependencias
+# Copiar todo el proyecto
 COPY . .
 
 # Instalar Composer globalmente
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Instalar dependencias de producción (ya con artisan presente)
+# Instalar dependencias de producción
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
 # Construir assets de frontend (si usas Vite)
 RUN npm install && npm run build
 
-# 🔹 Limpiar completamente cualquier caché anterior
-RUN php artisan config:clear && php artisan route:clear && php artisan view:clear && php artisan cache:clear
+# 🔹 Limpiar caches sin detener el build si falla (por falta de .env)
+RUN php artisan config:clear || true && \
+    php artisan route:clear || true && \
+    php artisan view:clear || true && \
+    php artisan cache:clear || true
 
-# 🔹 Generar caches nuevas optimizadas
-RUN php artisan optimize
+# 🔹 Generar caches nuevas (no obligatorio durante build)
+RUN php artisan optimize || true
 
 # 🔹 Ejecutar migraciones automáticamente (no genera error si ya existen)
 RUN php artisan migrate --force || true
@@ -57,4 +60,4 @@ USER www-data
 EXPOSE 8080
 
 # Comando de inicio para producción
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
+CMD php artisan config:clear && php artisan cache:clear && php artisan optimize && php artisan serve --host=0.0.0.0 --port=8080
