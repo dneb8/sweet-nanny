@@ -8,6 +8,7 @@ services:
     dockerfilePath: ./Dockerfile.prod
 
     envVars:
+      # Variables públicas / necesarias para deploy
       - key: APP_NAME
         value: SweetNanny
       - key: APP_ENV
@@ -18,33 +19,11 @@ services:
         value: https://sweet-nanny.onrender.com
       - key: APP_TIMEZONE
         value: America/Mexico_City
-
-      # --- Base de datos (Render PostgreSQL) ---
-      - key: DB_CONNECTION
-        value: pgsql
-      - key: DB_HOST
-        value: dpg-d49cvsmmcj7s73ee0qb0-a
-      - key: DB_PORT
-        value: 5432
-      - key: DB_DATABASE
-        value: sweetnanny_db
-      - key: DB_USERNAME
-        value: sweetnanny_user
-      - key: DB_PASSWORD
-        value: MuN5PG2kGJGDqDPp1HRS9WQ48rc9xqui
-
-      # --- Idioma y configuración regional ---
       - key: APP_LOCALE
         value: es
       - key: APP_FALLBACK_LOCALE
         value: en
-
-      # --- Clave de la app (usa la que tienes ya generada) ---
       - key: APP_KEY
         value: base64:kJOpUzmg5vLJmCq7cteMQdQp7YKlOsIKvBgxSNjenqc=
-
-      # --- API Flask (por ahora sin usar) ---
       - key: FLASK_API_URL
         value: http://127.0.0.1:5000
-      - key: NANNY_API_KEY
-        value: a23g9511

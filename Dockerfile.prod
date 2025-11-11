@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install gd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copiar el proyecto
+# Copiar todo el proyecto
 COPY . .
 
 # Instalar Composer globalmente
@@ -38,16 +38,17 @@ RUN npm install && npm run build
 # 🔹 Limpiar caches anteriores
 RUN rm -rf bootstrap/cache/*.php
 
-# 🔹 Asignar permisos correctos
+# 🔹 Asignar permisos correctos (necesarios para storage y bootstrap/cache)
 RUN chmod -R 775 storage bootstrap/cache && chown -R www-data:www-data storage bootstrap/cache
-
-# Cambiar al usuario no root
-USER www-data
 
 # Exponer puerto 8080
 EXPOSE 8080
 
-# 🔹 Comando de inicio: migraciones + seeders + optimización + servidor
+# 🔹 Comando de inicio:
+# - Migraciones + Seeders
+# - Optimización
+# - Servidor PHP
+# Nota: Laravel leerá automáticamente las variables de entorno de Render (AWS, mail, DB, Google)
 CMD php artisan migrate --force --seed && \
     php artisan optimize && \
     php artisan serve --host=0.0.0.0 --port=8080
