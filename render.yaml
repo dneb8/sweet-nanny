@@ -13,32 +13,38 @@ services:
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
-        value: false
+        value: true
       - key: APP_URL
         value: https://sweet-nanny.onrender.com
+      - key: APP_TIMEZONE
+        value: America/Mexico_City
 
-      # Configuración base de datos (agrega valores reales en el Dashboard de Render)
+      # --- Base de datos (Render PostgreSQL) ---
       - key: DB_CONNECTION
-        value: mysql
+        value: pgsql
       - key: DB_HOST
-        sync: false
+        value: dpg-d49cvsmmcj7s73ee0qb0-a
       - key: DB_PORT
-        value: 3306
+        value: 5432
       - key: DB_DATABASE
-        sync: false
+        value: sweetnanny_db
       - key: DB_USERNAME
-        sync: false
+        value: sweetnanny_user
       - key: DB_PASSWORD
-        sync: false
+        value: MuN5PG2kGJGDqDPp1HRS9WQ48rc9xqui
 
-      # Clave de la app (debes generarla con php artisan key:generate y copiarla a Render)
-      - key: APP_KEY
-        sync: false
-
-      # Opcional: idioma, tiempo y caché
+      # --- Idioma y configuración regional ---
       - key: APP_LOCALE
         value: es
       - key: APP_FALLBACK_LOCALE
         value: en
-      - key: APP_TIMEZONE
-        value: America/Mexico_City
+
+      # --- Clave de la app (usa la que tienes ya generada) ---
+      - key: APP_KEY
+        value: base64:kJOpUzmg5vLJmCq7cteMQdQp7YKlOsIKvBgxSNjenqc=
+
+      # --- API Flask (por ahora sin usar) ---
+      - key: FLASK_API_URL
+        value: http://127.0.0.1:5000
+      - key: NANNY_API_KEY
+        value: a23g9511
