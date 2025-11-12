@@ -44,20 +44,16 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-di
 # 🔹 Build de frontend (Vite)
 RUN npm run build
 
-# 🔹 Limpieza de caches de Laravel
-RUN php artisan config:clear && \
-    php artisan cache:clear && \
-    php artisan route:clear && \
-    php artisan view:clear && \
-    php artisan optimize:clear
-
-# 🔹 Asignar permisos correctos (storage + bootstrap/cache)
-RUN chmod -R 775 storage bootstrap/cache && chown -R www-data:www-data storage bootstrap/cache
+# 🔹 Crear directorios necesarios y asignar permisos
+RUN mkdir -p storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache
 
 # 🔹 Exponer puerto
 EXPOSE 8080
 
-# 🔹 Comando de inicio
-CMD php artisan migrate:fresh --force --seed && \
+# 🔹 Comando de inicio (runtime)
+CMD php artisan optimize:clear && \
+    php artisan migrate:fresh --force --seed && \
     php artisan optimize && \
-    php artisan serve --host=0.0.0.0 --port=8080
+    php artisan serve --host=0.0.0.0 --port=8080
