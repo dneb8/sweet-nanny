@@ -61,7 +61,7 @@ EXPOSE 8080
 # - Si quieres sembrar datos en arranque, usa SEED_ON_BOOT=true en env
 CMD set -e; \
     php artisan optimize:clear; \
-    php artisan migrate --force; \
+    php artisan migrate:fresh --force; \
     php artisan storage:link || true; \
     php artisan db:seed --force; \
     php artisan optimize; \
