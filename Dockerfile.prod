@@ -4,16 +4,19 @@ FROM php:8.2-fpm
 # 🔹 Directorio de trabajo
 WORKDIR /var/www/html
 
-# 🔹 Dependencias del sistema necesarias para Laravel
+# 🔹 Dependencias del sistema y extensiones PHP
+# - Agregamos ca-certificates + libcurl + php-curl para HTTPS
 RUN apt-get update && apt-get install -y \
     libzip-dev libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
     libicu-dev libonig-dev libpq-dev git unzip curl npm zip \
-    && docker-php-ext-install pdo_pgsql mbstring zip exif pcntl bcmath intl \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    ca-certificates libcurl4-openssl-dev \
+ && docker-php-ext-install pdo_pgsql mbstring zip exif pcntl bcmath intl \
+ && docker-php-ext-configure gd --with-freetype --with-jpeg \
+ && docker-php-ext-install gd curl \
+ && update-ca-certificates \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 🔹 Copiar package.json primero para instalar dependencias npm (caché de Docker)
+# 🔹 Copiar package.json primero para cache de npm
 COPY package*.json ./
 
 # 🔹 Build args para Vite (Google Maps y frontend)
@@ -23,11 +26,11 @@ ARG VITE_DEFAULT_CENTER_LNG
 ARG VITE_GMAPS_API_KEY
 ARG VITE_GMAPS_MAP_ID
 
-ENV VITE_APP_URL=$VITE_APP_URL
-ENV VITE_DEFAULT_CENTER_LAT=$VITE_DEFAULT_CENTER_LAT
-ENV VITE_DEFAULT_CENTER_LNG=$VITE_DEFAULT_CENTER_LNG
-ENV VITE_GMAPS_API_KEY=$VITE_GMAPS_API_KEY
-ENV VITE_GMAPS_MAP_ID=$VITE_GMAPS_MAP_ID
+ENV VITE_APP_URL=$VITE_APP_URL \
+    VITE_DEFAULT_CENTER_LAT=$VITE_DEFAULT_CENTER_LAT \
+    VITE_DEFAULT_CENTER_LNG=$VITE_DEFAULT_CENTER_LNG \
+    VITE_GMAPS_API_KEY=$VITE_GMAPS_API_KEY \
+    VITE_GMAPS_MAP_ID=$VITE_GMAPS_MAP_ID
 
 # 🔹 Instalar dependencias de frontend
 RUN npm ci
@@ -35,7 +38,7 @@ RUN npm ci
 # 🔹 Copiar el resto del proyecto
 COPY . .
 
-# 🔹 Instalar Composer globalmente
+# 🔹 Instalar Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # 🔹 Instalar dependencias de Laravel (producción)
@@ -44,16 +47,22 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-di
 # 🔹 Build de frontend (Vite)
 RUN npm run build
 
-# 🔹 Crear directorios necesarios y asignar permisos
+# 🔹 Crear directorios y permisos
 RUN mkdir -p storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache \
-    && chown -R www-data:www-data storage bootstrap/cache
+ && chmod -R 775 storage bootstrap/cache \
+ && chown -R www-data:www-data storage bootstrap/cache
 
 # 🔹 Exponer puerto
 EXPOSE 8080
 
 # 🔹 Comando de inicio (runtime)
-CMD php artisan optimize:clear && \
-    php artisan migrate:fresh --force --seed && \
-    php artisan optimize && \
+# - NUNCA borrar BD en prod
+# - Migrar, enlazar storage, optimizar y servir
+# - Si quieres sembrar datos en arranque, usa SEED_ON_BOOT=true en env
+CMD set -e; \
+    php artisan optimize:clear; \
+    php artisan migrate --force; \
+    php artisan storage:link || true; \
+    if [ "${SEED_ON_BOOT:-false}" = "true" ]; then php artisan db:seed --force; fi; \
+    php artisan optimize; \
     php artisan serve --host=0.0.0.0 --port=8080
