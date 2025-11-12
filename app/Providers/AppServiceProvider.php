@@ -8,6 +8,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\ServiceProvider;
 use App\Models\BookingAppointment;
 use App\Observers\BookingAppointmentObserver;
+use Illuminate\Support\Facades\URL;
 use Tightenco\Ziggy\Ziggy;  // si usas Ziggy para rutas en frontend
 
 class AppServiceProvider extends ServiceProvider
@@ -25,6 +26,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (config('app.env') === 'production') {
+        URL::forceScheme('https');
+    }
         // Customize verification email in Spanish with CID logo
         VerifyEmail::toMailUsing(function ($notifiable, $url) {
             $mail = (new MailMessage)
