@@ -1,54 +1,47 @@
 # Imagen base oficial de PHP con FPM
 FROM php:8.2-fpm
 
-# Establecer el directorio de trabajo
 WORKDIR /var/www/html
 
-# Instalar dependencias del sistema necesarias para Laravel
+# --- deps del sistema ---
 RUN apt-get update && apt-get install -y \
-    libzip-dev \
-    libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
-    libicu-dev \
-    libonig-dev \
-    libpq-dev \
-    git \
-    unzip \
-    curl \
-    npm \
-    zip \
-    && docker-php-ext-install pdo_pgsql mbstring zip exif pcntl bcmath intl \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    libzip-dev libpng-dev libjpeg62-turbo-dev libfreetype6-dev libicu-dev \
+    libonig-dev libpq-dev git unzip curl npm zip \
+ && docker-php-ext-install pdo_pgsql mbstring zip exif pcntl bcmath intl \
+ && docker-php-ext-configure gd --with-freetype --with-jpeg \
+ && docker-php-ext-install gd \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copiar todo el proyecto
+# --- RECIBE build args que vienen de Render ---
+ARG VITE_APP_URL
+ARG VITE_DEFAULT_CENTER_LAT
+ARG VITE_DEFAULT_CENTER_LNG
+ARG VITE_GMAPS_API_KEY
+ARG VITE_GMAPS_MAP_ID
+
+# Los expone como ENV para que Vite los vea en build
+ENV VITE_APP_URL=$VITE_APP_URL \
+    VITE_DEFAULT_CENTER_LAT=$VITE_DEFAULT_CENTER_LAT \
+    VITE_DEFAULT_CENTER_LNG=$VITE_DEFAULT_CENTER_LNG \
+    VITE_GMAPS_API_KEY=$VITE_GMAPS_API_KEY \
+    VITE_GMAPS_MAP_ID=$VITE_GMAPS_MAP_ID
+
+# Copiar proyecto
 COPY . .
 
-# Instalar Composer globalmente
+# Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Instalar dependencias de producción (sin dev para mantener la imagen ligera)
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-# Construir assets de frontend (Vite)
+# --- BUILD de assets (ahora con ENV ya presentes) ---
 RUN npm install && npm run build
 
-# 🔹 Limpiar caches anteriores
+# Limpieza y permisos
 RUN rm -rf bootstrap/cache/*.php
-
-# 🔹 Asignar permisos correctos (necesarios para storage y bootstrap/cache)
 RUN chmod -R 775 storage bootstrap/cache && chown -R www-data:www-data storage bootstrap/cache
 
-# Exponer puerto 8080
 EXPOSE 8080
 
-# 🔹 Comando de inicio:
-# - Migraciones + Seeders
-# - Optimización
-# - Servidor PHP
-# Nota: Laravel leerá automáticamente las variables de entorno de Render (AWS, mail, DB, Google)
 CMD php artisan migrate:fresh --force --seed && \
     php artisan optimize && \
-    php artisan serve --host=0.0.0.0 --port=8080
+    php artisan serve --host=0.0.0.0 --port=8080

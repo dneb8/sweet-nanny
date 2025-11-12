@@ -46,9 +46,9 @@ services:
       - key: MAIL_HOST
         value: smtp.gmail.com
       - key: MAIL_PORT
-        value: 587
+        value: 465
       - key: MAIL_ENCRYPTION
-        value: tls
+        value: ssl
       - key: MAIL_USERNAME
         value: sweetnanny.contact@gmail.com
       - key: MAIL_PASSWORD
@@ -57,7 +57,6 @@ services:
         value: sweetnanny.contact@gmail.com
       - key: MAIL_FROM_NAME
         value: ${APP_NAME}
-
 
       # --- Google Maps / Vite ---
       - key: VITE_APP_URL
@@ -93,7 +92,7 @@ services:
       - key: QUEUE_CONNECTION
         value: sync
       - key: CACHE_STORE
-        value: database
+        value: file
 
       # --- API de niñeras ---
       - key: FLASK_API_URL
