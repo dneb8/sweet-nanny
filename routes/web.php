@@ -45,6 +45,10 @@ Route::get('/test-flask', function () {
     return $response->json();
 });
 
+if (env('ENABLE_TEST_ROUTES', false)) {
+    require __DIR__.'/test.php';
+}
+
 
 
 

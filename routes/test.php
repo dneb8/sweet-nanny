@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Services\NannySearchService;
 
-// Rutas de prueba - solo en entorno local
 Route::get('/test-train', function () {
     $service = app()->make(NannySearchService::class);
     $allNannies = $service->previewAllNanniesJson();
@@ -26,7 +25,6 @@ Route::get('/test-search', function () {
     ];
 
     $service = app()->make(NannySearchService::class);
-
     $allNannies = $service->previewAllNanniesJson();
     $trainResponse = $service->sendAllNanniesToFlask($allNannies);
     $filterResponse = $service->sendFiltersToFlask($filters);
@@ -40,6 +38,7 @@ Route::get('/test-search', function () {
 Route::get('/test-env', function () {
     return response()->json([
         'env_var' => env('NANNY_API_KEY'),
-        'config_var' => config('services.flask.nanny_api_key')
+        'config_var' => config('services.flask.nanny_api_key'),
+        'flask_url' => config('services.flask.url'),
     ]);
 });
