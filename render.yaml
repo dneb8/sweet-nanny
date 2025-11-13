@@ -23,3 +23,4 @@ services:
         value: es
       - key: APP_FALLBACK_LOCALE
         value: en
+# sin llaves 
