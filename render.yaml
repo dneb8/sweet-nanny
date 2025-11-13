@@ -8,7 +8,7 @@ services:
     dockerfilePath: ./Dockerfile.prod
 
     envVars:
-      # --- Variables básicas de Laravel ---
+      # --- Variables mínimas necesarias en build ---
       - key: APP_NAME
         value: SweetNanny
       - key: APP_ENV
@@ -23,78 +23,8 @@ services:
         value: es
       - key: APP_FALLBACK_LOCALE
         value: en
-      - key: APP_KEY
-        value: base64:kJOpUzmg5vLJmCq7cteMQdQp7YKlOsIKvBgxSNjenqc=
 
-      # --- Base de datos ---
-      - key: DB_CONNECTION
-        value: pgsql
-      - key: DB_HOST
-        value: dpg-d49cvsmmcj7s73ee0qb0-a.oregon-postgres.render.com
-      - key: DB_PORT
-        value: 5432
-      - key: DB_DATABASE
-        value: sweetnanny_db
-      - key: DB_USERNAME
-        value: sweetnanny_user
-      - key: DB_PASSWORD
-        value: MuN5PG2kGJGDqDPp1HRS9WQ48rc9xqui
-
-      # --- Mail (Gmail) ---
-      - key: MAIL_MAILER
-        value: smtp
-      - key: MAIL_HOST
-        value: smtp.gmail.com
-      - key: MAIL_PORT
-        value: 465
-      - key: MAIL_ENCRYPTION
-        value: ssl
-      - key: MAIL_USERNAME
-        value: sweetnanny.contact@gmail.com
-      - key: MAIL_PASSWORD
-        value: olcclyxgleyqrvih
-      - key: MAIL_FROM_ADDRESS
-        value: sweetnanny.contact@gmail.com
-      - key: MAIL_FROM_NAME
-        value: ${APP_NAME}
-
-      # --- Google Maps / Vite ---
-      - key: VITE_APP_URL
-        value: https://sweet-nanny.onrender.com
-      - key: VITE_DEFAULT_CENTER_LAT
-        value: 20.6597
-      - key: VITE_DEFAULT_CENTER_LNG
-        value: -103.3496
-      - key: VITE_GMAPS_API_KEY
-        value: AIzaSyCFIDDy7FvxQJxcFPEBLf0AgzBjBAs5A-w
-      - key: VITE_GMAPS_MAP_ID
-        value: AIzaSyAGsvUiKV_DFO5aXrswzvK_2X6NCQ7bsT0
-
-      # --- Pusher / Broadcast ---
-      - key: BROADCAST_DRIVER
-        value: pusher
-      - key: PUSHER_APP_ID
-        value: local
-      - key: PUSHER_APP_KEY
-        value: local
-      - key: PUSHER_APP_SECRET
-        value: local
-      - key: PUSHER_HOST
-        value: 127.0.0.1
-      - key: PUSHER_PORT
-        value: 6001
-      - key: PUSHER_SCHEME
-        value: http
-      - key: PUSHER_APP_CLUSTER
-        value: mt1
-
-      # --- Cola de jobs y cache ---
-      - key: QUEUE_CONNECTION
-        value: sync
-      - key: CACHE_STORE
-        value: file
-
-      # --- API de niñeras ---
+      # --- API de niñeras (preparada para futuro) ---
       - key: FLASK_API_URL
         value: http://127.0.0.1:5000
       - key: NANNY_API_KEY
