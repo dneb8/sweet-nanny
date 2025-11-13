@@ -139,7 +139,7 @@ function submit() {
     }
     console.log('DEBUG EditAppointmentChildrenModal - appointment:', props.appointment, 'id:', props.appointment?.id)
     form.child_ids = selectedIds.value
-    form.patch(route('bookings.appointments.update-children', { booking: props.booking.id, appointment: props.appointment.id }), {
+    form.patch(route('bookings.appointments.update-children', { booking: props.booking.id, appointment: props.appointment.value.id }), {
         onSuccess: () => {
             // Backend now handles redirect with openAppointmentId
             // Just close the modal, don't call emit('saved') to avoid double navigation

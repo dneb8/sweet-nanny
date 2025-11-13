@@ -139,26 +139,32 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
       <!-- CARD LEFT -->
       <div class="rounded-3xl border border-white/25 bg-white/30 dark:border-white/10 dark:bg-white/5 backdrop-blur-2xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] p-4 sm:p-6">
         <!-- Header -->
-        <div class="flex items-start justify-between mb-5">
+        <div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between mb-5">
           <div class="leading-tight flex-1">
             <h3 class="text-xl font-semibold tracking-tight">
               {{ safeFmtReadable(props.appointment.start_date) }}
             </h3>
             <div class="mt-1 flex items-center gap-2">
-              <Badge :class="getBookingStatusBadgeClass(props.appointment.status)" :icon="getBookingStatusIconByString(props.appointment.status)" class="px-2.5 py-0.5 text-[11px] rounded-full">
+              <Badge
+                :class="getBookingStatusBadgeClass(props.appointment.status)"
+                :icon="getBookingStatusIconByString(props.appointment.status)"
+                class="px-2.5 py-0.5 text-[11px] rounded-full"
+              >
                 {{ getBookingStatusLabelByString(props.appointment.status) }}
               </Badge>
             </div>
           </div>
 
-          <!-- Action buttons moved to header -->
-          <div class="flex gap-2 items-center ml-4">
+          <!-- Action buttons -->
+          <div
+            class="flex flex-row gap-2 items-stretch w-full md:w-auto"
+          >
             <template v-if="props.appointment.status !== 'cancelled' && props.appointment.status !== 'completed'">
               <Button
                 v-if="props.canEditAppointment"
                 variant="outline"
                 size="sm"
-                class="h-8 rounded-xl hover:bg-white/50 dark:hover:bg-white/10"
+                class="h-8 rounded-xl hover:bg-white/50 dark:hover:bg-white/10 flex-1 md:flex-none md:w-auto"
                 @click="emit('openEditModal','dates', props.appointment)"
                 :title="safeGetDisabledReason(props.appointment) || 'Reprogramar fecha'"
               >
@@ -169,19 +175,23 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
               <Button
                 variant="destructive"
                 size="sm"
-                class="h-8 rounded-xl"
+                class="h-8 rounded-xl flex-1 md:flex-none md:w-auto"
                 @click="cancelarCita()"
               >
                 <Icon icon="lucide:x-circle" class="h-4 w-4 mr-2" />
                 Cancelar
               </Button>
             </template>
-            <div v-else-if="safeGetDisabledReason(props.appointment)" class="text-xs text-muted-foreground">
+
+            <div
+              v-else-if="safeGetDisabledReason(props.appointment)"
+              class="text-xs text-muted-foreground"
+            >
               {{ safeGetDisabledReason(props.appointment) }}
             </div>
           </div>
-        </div>
 
+        </div>
         <!-- Times -->
         <div class="grid grid-cols-2 gap-4 mb-5">
           <div>
