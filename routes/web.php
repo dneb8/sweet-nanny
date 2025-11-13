@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Http;
+
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -35,6 +37,13 @@ Route::get('/test-env', function () {
     ]);
 });
 
+Route::get('/test-flask', function () {
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . config('services.flask.nanny_api_key'),
+    ])->get(config('services.flask.url') . '/test');
+
+    return $response->json();
+});
 
 
 
