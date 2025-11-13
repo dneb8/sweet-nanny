@@ -91,10 +91,9 @@ watch([startDateISO, endDateISO, duration], () => {
 })
 
 function submit() {
-    form.patch(route('bookings.appointments.update-dates', { booking: props.booking.id, appointment: props.appointment.value.id }), {
+    form.patch(route('bookings.appointments.update-dates', { booking: props.booking.id, appointment: props.appointment.id }), {
         onSuccess: () => {
-            // Backend now handles redirect with openAppointmentId
-            // Just close the modal, don't call emit('saved') to avoid double navigation
+            emit('saved')
             emit('close')
         },
         preserveScroll: true,
