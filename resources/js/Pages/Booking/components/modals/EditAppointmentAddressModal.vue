@@ -95,7 +95,7 @@ function submit() {
     }
     console.log('DEBUG EditAppointmentAddressModal - appointment:', props.appointment, 'id:', props.appointment?.id)
     form.address_id = selectedAddressId.value
-    form.patch(route('bookings.appointments.update-address', { booking: props.booking.id, appointment: props.appointment.value.id }), {
+    form.patch(route('bookings.appointments.update-address', { booking: props.booking.id, appointment: props.appointment.id }), {
         onSuccess: () => {
             // Backend redirects to bookings.show with openAppointmentId
             // Close modal and let Inertia follow the redirect to reload data
