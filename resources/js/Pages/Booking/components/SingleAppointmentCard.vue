@@ -17,8 +17,7 @@ function cancelarCita() {
       booking: props.booking.id,        // {booking}
       appointment: props.appointment.id // {appointment}
     }),
-    {},
-    { preserveScroll: true, preserveState: true }
+    {}
   )
 }
 
