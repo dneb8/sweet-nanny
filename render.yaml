@@ -23,9 +23,3 @@ services:
         value: es
       - key: APP_FALLBACK_LOCALE
         value: en
-
-      # --- API de niñeras (preparada para futuro) ---
-      - key: FLASK_API_URL
-        value: http://127.0.0.1:5000
-      - key: NANNY_API_KEY
-        value: a23g9511
