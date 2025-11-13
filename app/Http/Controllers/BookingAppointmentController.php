@@ -187,6 +187,7 @@ class BookingAppointmentController extends Controller
 
         return redirect()
             ->route('bookings.show', $booking->id)
+            ->with('openAppointmentId', $appointment->id)
             ->with('success', 'Cita cancelada exitosamente');
     }
 
