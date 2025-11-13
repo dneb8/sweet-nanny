@@ -1,10 +1,7 @@
-# 🔹 Imagen base oficial de PHP con FPM
 FROM php:8.2-fpm
 
-# 🔹 Directorio de trabajo
 WORKDIR /var/www/html
 
-# 🔹 Dependencias del sistema necesarias para Laravel
 RUN apt-get update && apt-get install -y \
     libzip-dev libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
     libicu-dev libonig-dev libpq-dev git unzip curl npm zip \
@@ -13,10 +10,8 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install gd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 🔹 Copiar package.json primero para instalar dependencias npm (caché de Docker)
 COPY package*.json ./
 
-# 🔹 Build args para Vite (Google Maps y frontend)
 ARG VITE_APP_URL
 ARG VITE_DEFAULT_CENTER_LAT
 ARG VITE_DEFAULT_CENTER_LNG
@@ -29,30 +24,29 @@ ENV VITE_DEFAULT_CENTER_LNG=$VITE_DEFAULT_CENTER_LNG
 ENV VITE_GMAPS_API_KEY=$VITE_GMAPS_API_KEY
 ENV VITE_GMAPS_MAP_ID=$VITE_GMAPS_MAP_ID
 
-# 🔹 Instalar dependencias de frontend
 RUN npm ci
 
-# 🔹 Copiar el resto del proyecto
+
 COPY . .
 
-# 🔹 Instalar Composer globalmente
+
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# 🔹 Instalar dependencias de Laravel (producción)
+
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-# 🔹 Build de frontend (Vite)
+
 RUN npm run build
 
-# 🔹 Crear directorios necesarios y asignar permisos
+
 RUN mkdir -p storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 
-# 🔹 Exponer puerto
+
 EXPOSE 8080
 
-# 🔹 Comando de inicio (runtime)
+
 CMD php artisan optimize:clear && \
     php artisan migrate:fresh --force --seed && \
     php artisan optimize && \
