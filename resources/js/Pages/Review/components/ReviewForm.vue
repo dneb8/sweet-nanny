@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { watch, computed } from 'vue';
 import { FormControl, FormField, FormItem, FormMessage, FormLabel } from '@/components/ui/form';
-import { Label } from '@/components/ui/label';
+// import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@iconify/vue';
@@ -34,7 +34,7 @@ const setRating = (rating: number) => {
 };
 
 const canSubmit = computed(() => {
-    return values.rating > 0 && values.comments.trim().length > 0 && !loading.value;
+    return (values.rating ?? 0) > 0 && (values.comments ?? '').trim().length > 0 && !loading.value;
 });
 
 watch(
@@ -61,7 +61,7 @@ const cancel = () => {
 <template>
     <div class="space-y-6">
         <!-- Rating Stars -->
-        <FormField v-slot="{ componentField: _componentField }" name="rating">
+        <FormField name="rating">
             <FormItem>
                 <FormLabel class="text-base font-medium">Calificación *</FormLabel>
                 <FormControl>

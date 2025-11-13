@@ -61,11 +61,11 @@ class BookingAppointmentPolicy
             return Response::deny('No cuentas con el permiso para elegir niñera.');
         }
 
-        if ($appointment->status->value !== StatusEnum::DRAFT->value) {
-            return Response::deny('Solo se puede elegir niñera cuando la cita está en borrador.');
+        if ($appointment->status->value !== StatusEnum::DRAFT->value && $appointment->status->value !== StatusEnum::PENDING->value) {
+            return Response::deny('Solo se puede elegir niñera cuando la cita está en borrador o pendiente.');
         }
 
-        if ($appointment->nanny_id !== null) {
+        if ($appointment->nanny_id !== null && $appointment->status->value !== StatusEnum::PENDING->value) {
             return Response::deny('Esta cita ya tiene una niñera asignada.');
         }
 

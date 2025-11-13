@@ -63,8 +63,7 @@ class BookingController extends Controller
             'tutor.addresses',
             'bookingAppointments.nanny.user',
             'bookingAppointments.addresses',
-            'bookingAppointments.childrenWithTrashed',
-            'bookingAppointments.children',
+            'bookingAppointments.children' => fn ($q) => $q->withTrashed(),
         ]);
 
         // Actualizar estado basado en horarios de citas

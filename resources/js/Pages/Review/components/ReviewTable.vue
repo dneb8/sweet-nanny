@@ -56,7 +56,7 @@ const getStars = (rating: number): string => {
         <!-- Comentario -->
         <Column header="Comentario">
             <template #body="{ record }">
-                <div class="max-w-sm">
+                <div class="max-w-58">
                 <template v-if="record?.comments">
                     <div
                     class="rounded-md border bg-background/50 overflow-x-auto"
