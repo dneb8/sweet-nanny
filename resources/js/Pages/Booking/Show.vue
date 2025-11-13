@@ -210,7 +210,6 @@ const hasAnyRequirements = computed(() => {
               :fmt-time-tz="svc.fmtTimeTZ"
               @openEditModal="svc.openEditModal"
               @handleModalSaved="svc.handleModalSaved"
-              @changeNanny="() => svc.handleChangeNanny(appointment)"
               @routerGet="(params: any) => router.get(params)"
             />
           </TabsContent>
@@ -232,7 +231,6 @@ const hasAnyRequirements = computed(() => {
               :fmt-time-tz="svc.fmtTimeTZ"
               @openEditModal="svc.openEditModal"
               @handleModalSaved="svc.handleModalSaved"
-              @changeNanny="() => svc.handleChangeNanny(svc.appointments()[0])"
               @routerGet="(params: any) => router.get(params)" />
           </div>
         </template>

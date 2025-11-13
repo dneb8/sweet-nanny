@@ -35,14 +35,6 @@ class BookingAppointmentNannyController extends Controller
             abort(404);
         }
 
-        // Si la cita ya tiene niñera asignada, no se puede elegir de nuevo.
-        if ($appointment->nanny_id !== null) {
-            return Inertia::render('Error', [
-                'status' => 400,
-                'message' => 'Esta cita ya tiene una niñera asignada.',
-            ]);
-        }
-
         // 1) Disponibilidad base:
         //    - Se toma de nuestros servicios internos (availableBetween)
         //    - Esta es la lista local de niñeras disponibles en ese rango.
