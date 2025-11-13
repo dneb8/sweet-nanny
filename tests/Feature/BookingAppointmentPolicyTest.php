@@ -14,7 +14,7 @@ beforeEach(function () {
     Role::firstOrCreate(['name' => 'tutor']);
 });
 
-test('admin can choose nanny for any appointment', function () {
+test('admin can choose nanny for any appointment in draft', function () {
     $admin = User::factory()->create();
     $admin->assignRole('admin');
 
@@ -23,12 +23,28 @@ test('admin can choose nanny for any appointment', function () {
     $appointment = BookingAppointment::factory()->create([
         'booking_id' => $booking->id,
         'nanny_id' => null,
+        'status' => 'draft',
     ]);
 
     expect(Gate::forUser($admin)->allows('chooseNanny', $appointment))->toBeTrue();
 });
 
-test('tutor can choose nanny for their own appointments', function () {
+test('admin can choose nanny for any appointment in pending', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $tutor = Tutor::factory()->create();
+    $booking = Booking::factory()->create(['tutor_id' => $tutor->id]);
+    $appointment = BookingAppointment::factory()->create([
+        'booking_id' => $booking->id,
+        'nanny_id' => null,
+        'status' => 'pending',
+    ]);
+
+    expect(Gate::forUser($admin)->allows('chooseNanny', $appointment))->toBeTrue();
+});
+
+test('tutor can choose nanny for their own appointments in draft', function () {
     $user = User::factory()->create();
     $user->assignRole('tutor');
     $tutor = Tutor::factory()->create(['user_id' => $user->id]);
@@ -37,9 +53,41 @@ test('tutor can choose nanny for their own appointments', function () {
     $appointment = BookingAppointment::factory()->create([
         'booking_id' => $booking->id,
         'nanny_id' => null,
+        'status' => 'draft',
     ]);
 
     expect(Gate::forUser($user)->allows('chooseNanny', $appointment))->toBeTrue();
+});
+
+test('tutor can reassign nanny for their own appointments in pending', function () {
+    $user = User::factory()->create();
+    $user->assignRole('tutor');
+    $tutor = Tutor::factory()->create(['user_id' => $user->id]);
+
+    $nanny = \App\Models\Nanny::factory()->create();
+    $booking = Booking::factory()->create(['tutor_id' => $tutor->id]);
+    $appointment = BookingAppointment::factory()->create([
+        'booking_id' => $booking->id,
+        'nanny_id' => $nanny->id,
+        'status' => 'pending',
+    ]);
+
+    expect(Gate::forUser($user)->allows('chooseNanny', $appointment))->toBeTrue();
+});
+
+test('tutor cannot choose nanny for appointments not in draft or pending', function () {
+    $user = User::factory()->create();
+    $user->assignRole('tutor');
+    $tutor = Tutor::factory()->create(['user_id' => $user->id]);
+
+    $booking = Booking::factory()->create(['tutor_id' => $tutor->id]);
+    $appointment = BookingAppointment::factory()->create([
+        'booking_id' => $booking->id,
+        'nanny_id' => null,
+        'status' => 'confirmed',
+    ]);
+
+    expect(Gate::forUser($user)->allows('chooseNanny', $appointment))->toBeFalse();
 });
 
 test('tutor cannot choose nanny for other tutors appointments', function () {

@@ -53,7 +53,9 @@ class BookingAppointmentPolicy
     }
 
     /**
-     * Elegir/buscar niñeras (solo en draft y sin niñera asignada)
+     * Elegir/buscar niñeras
+     * - Permite elegir cuando status es DRAFT y no hay nanny
+     * - Permite reasignar cuando status es PENDING (con o sin nanny asignada)
      */
     public function chooseNanny(User $user, BookingAppointment $appointment): Response
     {
@@ -61,12 +63,9 @@ class BookingAppointmentPolicy
             return Response::deny('No cuentas con el permiso para elegir niñera.');
         }
 
-        if ($appointment->status->value !== StatusEnum::DRAFT->value && $appointment->status->value !== StatusEnum::PENDING->value) {
+        // Regla de negocio: permitir en DRAFT o PENDING
+        if (! in_array($appointment->status->value, [StatusEnum::DRAFT->value, StatusEnum::PENDING->value], true)) {
             return Response::deny('Solo se puede elegir niñera cuando la cita está en borrador o pendiente.');
-        }
-
-        if ($appointment->nanny_id !== null && $appointment->status->value !== StatusEnum::PENDING->value) {
-            return Response::deny('Esta cita ya tiene una niñera asignada.');
         }
 
         if ($user->hasRole(RoleEnum::ADMIN->value)) {
