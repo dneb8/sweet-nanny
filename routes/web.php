@@ -25,3 +25,14 @@ require __DIR__.'/children.php';
 require __DIR__.'/enums.php';
 require __DIR__.'/reviews.php';
 require __DIR__.'/notifications.php';
+
+
+// Prueba api (entorno local)
+if (app()->environment('local')) {
+    require __DIR__.'/test.php';
+}
+
+
+
+
+
