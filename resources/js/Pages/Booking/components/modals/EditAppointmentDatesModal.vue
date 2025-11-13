@@ -120,7 +120,7 @@ function submit() {
   form.patch(
     route('bookings.appointments.update-dates', {
       booking: props.booking.id,
-      appointment: props.appointment.id,
+      appointment: props.appointment.value.id,
     }),
     {
       onSuccess: () => {
