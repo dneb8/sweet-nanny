@@ -116,17 +116,18 @@ watch([startDateISO, endDateISO, duration], () => {
 })
 
 function submit() {
+  console.log('DEBUG EditAppointmentDatesModal - appointment:', props.appointment, 'id:', props.appointment?.id)
   form.patch(
     route('bookings.appointments.update-dates', {
       booking: props.booking.id,
-      appointment: props.appointment.value.id,
+      appointment: props.appointment.id,
     }),
     {
       onSuccess: () => {
-        // Backend maneja redirect con openAppointmentId
+        // Backend redirects to bookings.show with openAppointmentId
+        // Close modal and let Inertia follow the redirect to reload data
         emit('close')
       },
-      preserveScroll: true,
     }
   )
 }
