@@ -28,9 +28,12 @@ require __DIR__.'/notifications.php';
 
 
 // Prueba api (entorno local)
-if (app()->environment('local')) {
-    require __DIR__.'/test.php';
-}
+Route::get('/test-env', function () {
+    return response()->json([
+        'env_var' => env('NANNY_API_KEY'),
+        'config_var' => config('services.flask.nanny_api_key')
+    ]);
+});
 
 
 
