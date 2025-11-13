@@ -74,6 +74,7 @@ class BookingController extends Controller
         return Inertia::render('Booking/Show', [
             'booking' => $booking,
             'kinkships' => $kinkships,
+            'openAppointmentId' => session('openAppointmentId'),
             'can' => [
                 'update' => Gate::allows('update', $booking),
                 'delete' => Gate::allows('delete', $booking),

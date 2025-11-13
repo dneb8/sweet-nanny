@@ -140,7 +140,7 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
       <div class="rounded-3xl border border-white/25 bg-white/30 dark:border-white/10 dark:bg-white/5 backdrop-blur-2xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] p-4 sm:p-6">
         <!-- Header -->
         <div class="flex items-start justify-between mb-5">
-          <div class="leading-tight">
+          <div class="leading-tight flex-1">
             <h3 class="text-xl font-semibold tracking-tight">
               {{ safeFmtReadable(props.appointment.start_date) }}
             </h3>
@@ -151,20 +151,34 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
             </div>
           </div>
 
-          <div v-if="props.canEditAppointment">
-            <Button
-              variant="ghost"
-              size="sm"
-              class="h-8 hover:bg-white/50 dark:hover:bg-white/10"
-              @click="emit('openEditModal','dates')"
-              :title="safeGetDisabledReason(props.appointment) || 'Editar fechas'"
-            >
-              <Icon icon="lucide:calendar-clock" class="h-4 w-4 mr-2 opacity-80" />
-              <span class="opacity-90">Editar</span>
-            </Button>
-          </div>
-          <div v-else-if="safeGetDisabledReason(props.appointment)" class="text-xs text-muted-foreground">
-            {{ safeGetDisabledReason(props.appointment) }}
+          <!-- Action buttons moved to header -->
+          <div class="flex gap-2 items-center ml-4">
+            <template v-if="props.appointment.status !== 'cancelled' && props.appointment.status !== 'completed'">
+              <Button
+                v-if="props.canEditAppointment"
+                variant="outline"
+                size="sm"
+                class="h-8 rounded-xl hover:bg-white/50 dark:hover:bg-white/10"
+                @click="emit('openEditModal','dates')"
+                :title="safeGetDisabledReason(props.appointment) || 'Reprogramar fecha'"
+              >
+                <Icon icon="lucide:calendar-clock" class="h-4 w-4 mr-2 opacity-80" />
+                <span class="opacity-90">Reprogramar</span>
+              </Button>
+
+              <Button
+                variant="destructive"
+                size="sm"
+                class="h-8 rounded-xl"
+                @click="cancelarCita()"
+              >
+                <Icon icon="lucide:x-circle" class="h-4 w-4 mr-2" />
+                Cancelar
+              </Button>
+            </template>
+            <div v-else-if="safeGetDisabledReason(props.appointment)" class="text-xs text-muted-foreground">
+              {{ safeGetDisabledReason(props.appointment) }}
+            </div>
           </div>
         </div>
 
@@ -285,38 +299,18 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
           </div>
         </div>
 
-        <!-- Acciones -->
-        <div class="mt-5 pt-4 border-t border-white/20">
-          <div v-if="props.appointment.status === 'cancelled'" class="flex items-center justify-center gap-2 text-sm text-rose-500/90 bg-rose-50/60 dark:bg-rose-900/10 border border-rose-200/60 dark:border-rose-900/30 rounded-2xl py-2">
+        <!-- Status messages for cancelled/completed -->
+        <div v-if="props.appointment.status === 'cancelled'" class="mt-5 pt-4 border-t border-white/20">
+          <div class="flex items-center justify-center gap-2 text-sm text-rose-500/90 bg-rose-50/60 dark:bg-rose-900/10 border border-rose-200/60 dark:border-rose-900/30 rounded-2xl py-2">
             <Icon icon="lucide:ban" class="h-4 w-4" />
             Cita cancelada
           </div>
+        </div>
 
-          <div v-else-if="props.appointment.status === 'completed'" class="flex items-center justify-center gap-2 text-sm text-emerald-600/90 bg-emerald-50/70 dark:bg-emerald-900/10 border border-emerald-200/70 dark:border-emerald-800/30 rounded-2xl py-2">
+        <div v-else-if="props.appointment.status === 'completed'" class="mt-5 pt-4 border-t border-white/20">
+          <div class="flex items-center justify-center gap-2 text-sm text-emerald-600/90 bg-emerald-50/70 dark:bg-emerald-900/10 border border-emerald-200/70 dark:border-emerald-800/30 rounded-2xl py-2">
             <Icon icon="lucide:check-circle2" class="h-4 w-4" />
             Cita completada
-          </div>
-
-          <div v-else class="flex flex-col sm:flex-row gap-2">
-            <Button
-              variant="destructive"
-              size="sm"
-              class="flex-1 rounded-xl"
-              @click="cancelarCita()"
-            >
-              <Icon icon="lucide:x-circle" class="mr-2 h-4 w-4" />
-              Cancelar cita
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              class="flex-1 rounded-xl"
-              @click="emit('openEditModal','dates')"
-            >
-              <Icon icon="lucide:calendar-clock" class="mr-2 h-4 w-4" />
-              Reprogramar
-            </Button>
           </div>
         </div>
       </div>
