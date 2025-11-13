@@ -94,7 +94,7 @@ function submit() {
         return
     }
     form.address_id = selectedAddressId.value
-    form.patch(route('bookings.appointments.update-address', { booking: props.booking.id, appointment: props.appointment.id }), {
+    form.patch(route('bookings.appointments.update-address', { booking: props.booking.id, appointment: props.appointment.value.id }), {
         onSuccess: () => {
             emit('saved')
             emit('close')

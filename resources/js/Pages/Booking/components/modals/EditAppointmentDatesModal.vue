@@ -14,35 +14,60 @@ import type { BookingAppointment } from '@/types/BookingAppointment'
 import type { Booking } from '@/types/Booking'
 
 const props = defineProps<{
-    appointment: BookingAppointment
-    booking: Booking
+  appointment: BookingAppointment
+  booking: Booking
 }>()
 
 const emit = defineEmits<{
-    (e: 'close'): void
-    (e: 'saved'): void
+  (e: 'close'): void
+  (e: 'saved'): void
 }>()
 
 const tz = getLocalTimeZone()
 const df = new DateFormatter('es-MX', { dateStyle: 'short' })
 const minDate = today(tz).add({ days: 1 })
 
-// Parse the existing start_date and end_date
-function parseToLocalDateTime(s: string): Date {
-    const match = s?.match?.(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})(?::\d{2})?(?:\.\d+)?(?:Z|[+\-]\d{2}:\d{2})?$/)
-    const base = match ? match[1] + ':00' : s
-    const d = new Date(base)
-    return new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), 0, 0)
+// 🔥 Helper seguro para parsear fecha/hora
+function parseToLocalDateTime(s?: string | null): Date {
+  // Si viene vacío / null → caemos en un fallback (mañana a las 10:00)
+  if (!s) {
+    const now = new Date()
+    return new Date( now.getFullYear(), now.getMonth(), now.getDate() + 1, 10, 0, 0, 0
+    )
+  }
+
+  // Intenta normalizar un ISO tipo "YYYY-MM-DDTHH:MM"
+  const match = s.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})(?::\d{2})?(?:\.\d+)?(?:Z|[+\-]\d{2}:\d{2})?$/)
+  const base = match ? match[1] + ':00' : s
+  const d = new Date(base)
+
+  // Si sigue siendo inválida, usa el mismo fallback (mañana 10:00)
+  if (isNaN(d.getTime())) {
+    const now = new Date()
+    return new Date( now.getFullYear(), now.getMonth(), now.getDate() + 1, 10, 0, 0, 0
+    )
+  }
+
+  // Normaliza a precisión de minutos
+  return new Date( d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), 0, 0
+  )
 }
 
 function toLocalISO(d: Date): string {
-    const pad = (n: number) => String(n).padStart(2, '0')
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:00`
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:00`
 }
 
+// 🔥 Siempre vamos a tener un start/end válidos gracias al helper
 const start = parseToLocalDateTime(props.appointment.start_date)
-const end = parseToLocalDateTime(props.appointment.end_date)
-const durH = Math.max(1, Math.round((+end - +start) / 36e5))
+const endRaw = props.appointment.end_date
+  ? parseToLocalDateTime(props.appointment.end_date)
+  : new Date(start.getTime() + 60 * 60 * 1000) // si no hay end, 1h después
+
+let durH = Math.round((+endRaw - +start) / 36e5)
+if (!Number.isFinite(durH) || durH <= 0) {
+  durH = 1
+}
 
 const dateVal = ref<any>(fromDate(new Date(start), tz))
 const time = ref(`${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`)
@@ -51,55 +76,62 @@ const duration = ref(durH)
 const toJsDate = (val: any): Date | null => val?.toDate?.(tz) ?? (val instanceof Date ? val : null)
 
 const endDate = computed(() => {
-    const base = toJsDate(dateVal.value)
-    if (!base || !time.value || !duration.value) return null
-    const [h, m] = time.value.split(':').map(Number)
-    const startDate = new Date(base)
-    startDate.setHours(h, m, 0, 0)
-    const endDate = new Date(startDate)
-    endDate.setHours(endDate.getHours() + duration.value)
-    return endDate
+  const base = toJsDate(dateVal.value)
+  if (!base || !time.value || !duration.value) return null
+  const [h, m] = time.value.split(':').map(Number)
+  const startDate = new Date(base)
+  startDate.setHours(h, m, 0, 0)
+  const endDate = new Date(startDate)
+  endDate.setHours(endDate.getHours() + duration.value)
+  return endDate
 })
 
 const endDateISO = computed(() => {
-    if (!endDate.value) return ''
-    return toLocalISO(endDate.value)
+  if (!endDate.value) return ''
+  return toLocalISO(endDate.value)
 })
 
 const startDateISO = computed(() => {
-    const base = toJsDate(dateVal.value)
-    if (!base || !time.value) return ''
-    const [h, m] = time.value.split(':').map(Number)
-    const startDate = new Date(base)
-    startDate.setHours(h, m, 0, 0)
-    return toLocalISO(startDate)
+  const base = toJsDate(dateVal.value)
+  if (!base || !time.value) return ''
+  const [h, m] = time.value.split(':').map(Number)
+  const startDate = new Date(base)
+  startDate.setHours(h, m, 0, 0)
+  return toLocalISO(startDate)
 })
 
 const isComplete = computed(() => !!(dateVal.value && time.value && duration.value > 0))
 
 const form = useInertiaForm({
-    start_date: startDateISO.value,
-    end_date: endDateISO.value,
-    duration: duration.value,
+  start_date: startDateISO.value,
+  end_date: endDateISO.value,
+  duration: duration.value,
 })
 
 // Update form when values change
 watch([startDateISO, endDateISO, duration], () => {
-    form.start_date = startDateISO.value
-    form.end_date = endDateISO.value
-    form.duration = duration.value
+  form.start_date = startDateISO.value
+  form.end_date = endDateISO.value
+  form.duration = duration.value
 })
 
 function submit() {
-    form.patch(route('bookings.appointments.update-dates', { booking: props.booking.id, appointment: props.appointment.id }), {
-        onSuccess: () => {
-            emit('saved')
-            emit('close')
-        },
-        preserveScroll: true,
-    })
+  form.patch(
+    route('bookings.appointments.update-dates', {
+      booking: props.booking.id,
+      appointment: props.appointment.value.id,
+    }),
+    {
+      onSuccess: () => {
+        // Backend maneja redirect con openAppointmentId
+        emit('close')
+      },
+      preserveScroll: true,
+    }
+  )
 }
 </script>
+
 
 <template>
     <div class="space-y-4">

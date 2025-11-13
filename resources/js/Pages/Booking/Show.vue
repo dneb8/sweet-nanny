@@ -173,48 +173,48 @@ const hasAnyRequirements = computed(() => {
 
         <!-- Tabs para servicios recurrentes -->
         <template v-if="props.booking.recurrent && svc.appointments().length > 0">
-<Tabs
-  :default-value="String(props.openAppointmentId || (svc.appointments()[0] && svc.appointments()[0].id) || '')"
-  class="w-full"
->
-  <TabsList
-    class="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 h-auto p-2 bg-white/5 backdrop-blur-xl border border-white/30 dark:border-white/10"
-  >
-    <TabsTrigger
-      v-for="(appointment, idx) in svc.appointments().slice(0, 10)"
-      :key="appointment.id"
-      :value="String(appointment.id)"
-      :class="['data-[state=active]:shadow-sm flex flex-col items-start p-3 h-auto text-left', svc.statusBadge(appointment.status)]"
-    >
-      <span class="text-[10px] opacity-70 mb-1">Cita {{ idx + 1 }}</span>
-      <span class="text-xs font-medium line-clamp-2">
-        {{ svc.fmtReadableDateTime(appointment.start_date) }}
-      </span>
-    </TabsTrigger>
-  </TabsList>
+        <Tabs
+          :default-value="String(props.openAppointmentId || (svc.appointments()[0] && svc.appointments()[0].id) || '')"
+          class="w-full"
+        >
+          <TabsList
+            class="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 h-auto p-2 bg-white/5 backdrop-blur-xl border border-white/30 dark:border-white/10"
+          >
+            <TabsTrigger
+              v-for="(appointment, idx) in svc.appointments().slice(0, 10)"
+              :key="appointment.id"
+              :value="String(appointment.id)"
+              :class="['data-[state=active]:shadow-sm flex flex-col items-start p-3 h-auto text-left', svc.statusBadge(appointment.status)]"
+            >
+              <span class="text-[10px] opacity-70 mb-1">Cita {{ idx + 1 }}</span>
+              <span class="text-xs font-medium line-clamp-2">
+                {{ svc.fmtReadableDateTime(appointment.start_date) }}
+              </span>
+            </TabsTrigger>
+          </TabsList>
 
-  <TabsContent
-    v-for="appointment in svc.appointments().slice(0, 10)"
-    :key="appointment.id"
-    :value="String(appointment.id)"
-    class="mt-4"
-  >
-    <SingleAppointmentCard
-      :appointment="appointment"
-      :booking="props.booking"
-      :can-edit-appointment="svc.canEditAppointment()"
-      :can-choose-nanny="svc.canChooseNanny(appointment)"
-      :can-change-nanny="svc.canChangeNanny(appointment)"
-      :get-edit-disabled-reason="svc.getEditDisabledReason"
-      :fmt-readable-date-time="svc.fmtReadableDateTime"
-      :fmt-time-tz="svc.fmtTimeTZ"
-      @openEditModal="svc.openEditModal"
-      @handleModalSaved="svc.handleModalSaved"
-      @changeNanny="() => svc.handleChangeNanny(appointment)"
-      @routerGet="(params: any) => router.get(params)"
-    />
-  </TabsContent>
-</Tabs>
+          <TabsContent
+            v-for="appointment in svc.appointments().slice(0, 10)"
+            :key="appointment.id"
+            :value="String(appointment.id)"
+            class="mt-4"
+          >
+            <SingleAppointmentCard
+              :appointment="appointment"
+              :booking="props.booking"
+              :can-edit-appointment="svc.canEditAppointment()"
+              :can-choose-nanny="svc.canChooseNanny(appointment)"
+              :can-change-nanny="svc.canChangeNanny(appointment)"
+              :get-edit-disabled-reason="svc.getEditDisabledReason"
+              :fmt-readable-date-time="svc.fmtReadableDateTime"
+              :fmt-time-tz="svc.fmtTimeTZ"
+              @openEditModal="svc.openEditModal"
+              @handleModalSaved="svc.handleModalSaved"
+              @changeNanny="() => svc.handleChangeNanny(appointment)"
+              @routerGet="(params: any) => router.get(params)"
+            />
+          </TabsContent>
+        </Tabs>
 
         </template>
 

@@ -241,6 +241,8 @@ class BookingAppointmentController extends Controller
     {
         Gate::authorize('updateAddress', $appointment);
 
+        dd($request->all(), 'Reached updateAddress', $appointment, $booking);
+
         $validator = Validator::make($request->all(), [
             'address_id' => ['required', 'integer', 'exists:addresses,id'],
         ]);
