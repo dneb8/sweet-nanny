@@ -184,9 +184,9 @@ const hasAnyRequirements = computed(() => {
               v-for="(appointment, idx) in svc.appointments().slice(0, 10)"
               :key="appointment.id"
               :value="String(appointment.id)"
-              :class="['data-[state=active]:shadow-sm flex flex-col items-start p-3 h-auto text-left', svc.statusBadge(appointment.status)]"
+              class="data-[state=active]:bg-white dark:data-[state=active]:bg-white/10 data-[state=active]:shadow-sm flex flex-col items-start p-3 h-auto text-left"
             >
-              <span class="text-[10px] opacity-70 mb-1">Cita {{ idx + 1 }}</span>
+              <span class="text-[10px] text-muted-foreground mb-1">Cita {{ idx + 1 }}</span>
               <span class="text-xs font-medium line-clamp-2">
                 {{ svc.fmtReadableDateTime(appointment.start_date) }}
               </span>
