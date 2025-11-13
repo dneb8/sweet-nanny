@@ -25,7 +25,7 @@ function cancelarCita() {
 
 /* ==== Emits ==== */
 const emit = defineEmits<{
-  (e: 'openEditModal', section: 'dates' | 'children' | 'address'): void
+  (e: 'openEditModal', section: 'dates' | 'children' | 'address', appointment: BookingAppointment): void
   (e: 'routerGet', url: string): void
   (e: 'changeNanny'): void
 }>()
@@ -159,7 +159,7 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
                 variant="outline"
                 size="sm"
                 class="h-8 rounded-xl hover:bg-white/50 dark:hover:bg-white/10"
-                @click="emit('openEditModal','dates')"
+                @click="emit('openEditModal','dates', props.appointment)"
                 :title="safeGetDisabledReason(props.appointment) || 'Reprogramar fecha'"
               >
                 <Icon icon="lucide:calendar-clock" class="h-4 w-4 mr-2 opacity-80" />
@@ -265,7 +265,7 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
               size="sm"
               class="h-7 text-xs hover:bg-white/50 dark:hover:bg-white/10"
 
-              @click="emit('openEditModal','children')"
+              @click="emit('openEditModal','children', props.appointment)"
             >
               <Icon icon="lucide:edit-3" class="h-3.5 w-3.5 mr-1" />
               Editar
@@ -329,7 +329,7 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
             variant="ghost"
             size="sm"
             class="h-7 text-xs hover:bg-white/50 dark:hover:bg-white/10"
-            @click="emit('openEditModal','address')"
+            @click="emit('openEditModal','address', props.appointment)"
           >
             <Icon icon="lucide:edit-3" class="h-3.5 w-3.5 mr-1" />
             Editar

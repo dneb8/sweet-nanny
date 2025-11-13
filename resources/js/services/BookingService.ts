@@ -161,8 +161,14 @@ export function useBookingService(booking: Booking) {
     return type === 'dates' || type === 'address'
   }
 
-  function openEditModal(type: 'dates' | 'address' | 'children') {
+  function openEditModal(type: 'dates' | 'address' | 'children', appointment: BookingAppointment) {
+    // CRITICAL: Set the selected appointment FIRST before any checks
+    // This ensures the modal uses the correct appointment, not the first one
+    selectedAppointmentId.value = appointment.id ?? null
+    
+    // Now check permissions based on the newly selected appointment
     if (!canEditAppointment()) return
+    
     if (needsConfirmation(type)) {
       pendingModalAction.value = type
       showConfirmModal.value = true

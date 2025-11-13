@@ -137,10 +137,12 @@ function submit() {
     if (selectedIds.value.length === 0) {
         return
     }
+    console.log('DEBUG EditAppointmentChildrenModal - appointment:', props.appointment, 'id:', props.appointment?.id)
     form.child_ids = selectedIds.value
     form.patch(route('bookings.appointments.update-children', { booking: props.booking.id, appointment: props.appointment.id }), {
         onSuccess: () => {
-            emit('saved')
+            // Backend now handles redirect with openAppointmentId
+            // Just close the modal, don't call emit('saved') to avoid double navigation
             emit('close')
         },
         preserveScroll: true,

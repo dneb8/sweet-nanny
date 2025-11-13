@@ -93,10 +93,12 @@ function submit() {
     if (!selectedAddressId.value) {
         return
     }
+    console.log('DEBUG EditAppointmentAddressModal - appointment:', props.appointment, 'id:', props.appointment?.id)
     form.address_id = selectedAddressId.value
-    form.patch(route('bookings.appointments.update-address', { booking: props.booking.id, appointment: props.appointment.value.id }), {
+    form.patch(route('bookings.appointments.update-address', { booking: props.booking.id, appointment: props.appointment.id }), {
         onSuccess: () => {
-            emit('saved')
+            // Backend now handles redirect with openAppointmentId
+            // Just close the modal, don't call emit('saved') to avoid double navigation
             emit('close')
         },
         preserveScroll: true,
