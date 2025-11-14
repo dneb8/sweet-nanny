@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { useForm as useInertiaForm } from '@inertiajs/vue3'
+import { ref, computed, watch, unref } from 'vue'
+import { useForm as useInertiaForm, router } from '@inertiajs/vue3'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -124,9 +124,17 @@ function submit() {
     }),
     {
       onSuccess: () => {
-        // Backend redirects to bookings.show with openAppointmentId
-        // Close modal and let Inertia follow the redirect to reload data
+        const appt = unref(props.appointment)
         emit('close')
+        // Force full reload of Booking/Show with the edited appointment tab open
+        router.visit(
+          route('bookings.show', appt.booking_id),
+          {
+            data: { openAppointmentId: appt.id },
+            preserveScroll: true,
+            preserveState: false,
+          }
+        )
       },
     }
   )

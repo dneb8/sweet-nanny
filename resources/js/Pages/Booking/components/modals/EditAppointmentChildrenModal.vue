@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useForm as useInertiaForm } from '@inertiajs/vue3'
+import { ref, computed, unref } from 'vue'
+import { useForm as useInertiaForm, router } from '@inertiajs/vue3'
 import axios from 'axios'
 import { route } from 'ziggy-js'
 import { Icon } from '@iconify/vue'
@@ -141,9 +141,17 @@ function submit() {
     form.child_ids = selectedIds.value
     form.patch(route('bookings.appointments.update-children', { booking: props.booking.id, appointment: props.appointment.value.id }), {
         onSuccess: () => {
-            // Backend redirects to bookings.show with openAppointmentId
-            // Close modal and let Inertia follow the redirect to reload data
+            const appt = unref(props.appointment)
             emit('close')
+            // Force full reload of Booking/Show with the edited appointment tab open
+            router.visit(
+                route('bookings.show', appt.booking_id),
+                {
+                    data: { openAppointmentId: appt.id },
+                    preserveScroll: true,
+                    preserveState: false,
+                }
+            )
         },
     })
 }
