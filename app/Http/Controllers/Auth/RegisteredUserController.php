@@ -44,10 +44,10 @@ class RegisteredUserController extends Controller
         ]);
 
         $user->assignRole(RoleEnum::TUTOR->value);
-        $user->save();
 
         // Create empty Tutor instance for the user
         $user->tutor()->create([]);
+        $user->save();
 
         event(new Registered($user));
 

@@ -7,11 +7,51 @@ use App\Models\Tutor;
 use App\Models\User;
 use App\Models\Address;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class TutorSeeder extends Seeder
 {
+    /** Nombres comunes para inferir género (puedes ampliar). */
+    private const FEMALE_NAMES = [
+        'alejandra','maria','maría','irene','laura','sylvia','sandra','imelda','karla','nadia',
+        'fabiola','josefina','gabriela','paola','sofia','sofía','valeria','brenda','giselle',
+        'monica','mónica','julia','daniela','elena','teresa','jimena','maribel','carolina',
+        'yamil','yamileth','denisse','guadalupe','susana'
+    ];
+
+    private const MALE_NAMES = [
+        'francisco','erick','david','daniel','alejandro','federico','julio','uriel'
+    ];
+
     public function run(): void
     {
+        /**
+         * Generadores de avatares (0..99). Si se agotan, ciclan por índice.
+         */
+        $women = array_map(fn ($i) => "https://randomuser.me/api/portraits/women/{$i}.jpg", range(0, 99));
+        $men   = array_map(fn ($i) => "https://randomuser.me/api/portraits/men/{$i}.jpg",   range(0, 99));
+
+        $pickAvatar = function (string $name, int $idx, ?string $forced = null) use ($women, $men): array {
+            // Forzar por campo 'gender' si viene definido en el registro
+            if ($forced === 'female') return [$women[$idx % 100], 'female'];
+            if ($forced === 'male')   return [$men[$idx % 100],   'male'];
+
+            $first = Str::of($name)->lower()->explode(' ')->first(); // primer token del name
+            $isFemale = in_array($first, self::FEMALE_NAMES, true);
+            $isMale   = in_array($first, self::MALE_NAMES, true);
+
+            if ($isFemale && !$isMale) return [$women[$idx % 100], 'female'];
+            if ($isMale && !$isFemale) return [$men[$idx % 100],   'male'];
+
+            // Ambiguo/no encontrado: alterna por índice
+            return ($idx % 2 === 0)
+                ? [$women[$idx % 100], 'female']
+                : [$men[$idx % 100],   'male'];
+        };
+
+        // =========================
+        // Tutores (puedes añadir 'gender' => 'female'|'male' para forzar)
+        // =========================
         $tutores = [
             ['name' => 'Alejandra Fabiola', 'surnames' => 'López González', 'email' => 'ale89R@gmail.com', 'number' => '+52 33 1253 8099', 'emergency_contact' => 'Evelyn Alvárez', 'emergency_number' => '+52 33 8923 7481', 'address' => ['name' => 'Casa', 'postal_code' => '45030', 'street' => 'Calle Arquitectos', 'neighborhood' => 'Jardines de Guadalupe', 'type' => 'casa', 'zone' => 'guadalajara', 'latitude' => '20.662889', 'longitude' => '-103.424639', 'external_number' => '763']],
             ['name' => 'Francisco Daniel', 'surnames' => 'Carrillo Sandoval', 'email' => 'carfranT9@hotmail.com', 'number' => '+52 33 9848 7746', 'emergency_contact' => 'Karina Carrillo Fuentes', 'emergency_number' => '+52 33 8749 8277', 'address' => ['name' => 'Casa', 'postal_code' => '44960', 'street' => 'Calle José Othón Núñez', 'neighborhood' => 'Lomas de Polanco', 'type' => 'casa', 'zone' => 'guadalajara', 'latitude' => '20.631778', 'longitude' => '-103.372278', 'external_number' => '3371']],
@@ -27,7 +67,8 @@ class TutorSeeder extends Seeder
             ['name' => 'Nadia Guadalupe', 'surnames' => 'Martínez Campo', 'email' => 'nalla22.2@gmail.com', 'number' => '+52 9884 1102', 'emergency_contact' => 'Fabiola Paola Campo', 'emergency_number' => '+52 33 4712 7273', 'address' => ['name'=> 'Casa', 'postal_code' => '44298', 'street' => 'Calle Francisco Martin del Campo', 'neighborhood' => 'Jardines Alcalde', 'type' => 'casa', 'zone' => 'guadalajara', 'latitude' => '20.708333', 'longitude' => '-103.342500', 'external_number' => '766']],
         ];
 
-        foreach ($tutores as $data) {
+        foreach ($tutores as $idx => $data) {
+            // 1) User
             $user = User::create([
                 'name' => $data['name'],
                 'surnames' => $data['surnames'],
@@ -37,12 +78,14 @@ class TutorSeeder extends Seeder
             ]);
             $user->assignRole(RoleEnum::TUTOR);
 
+            // 2) Tutor
             $tutor = Tutor::create([
                 'user_id' => $user->id,
                 'emergency_contact' => $data['emergency_contact'],
                 'emergency_number' => $data['emergency_number'],
             ]);
 
+            // 3) Address (morph)
             Address::create([
                 'name' => $data['address']['name'],
                 'postal_code' => $data['address']['postal_code'],
@@ -56,6 +99,24 @@ class TutorSeeder extends Seeder
                 'addressable_id' => $tutor->id,
                 'addressable_type' => Tutor::class,
             ]);
+
+            // 4) Avatar según nombre (o 'gender' forzado si existe)
+            try {
+                $forced = $data['gender'] ?? null; // opcional en tu array
+                [$avatarUrl, $gender] = $pickAvatar($data['name'], $idx, $forced);
+
+                $user->addMediaFromUrl($avatarUrl)
+                    ->usingFileName(Str::slug("{$user->name}-{$user->surnames}").'.jpg')
+                    ->withCustomProperties([
+                        'status'  => 'approved',
+                        'note'    => 'seeded',
+                        'gender'  => $gender,
+                        'source'  => 'randomuser',
+                    ])
+                    ->toMediaCollection('images'); // definido en User::registerMediaCollections()
+            } catch (\Throwable $e) {
+                $this->command->warn("No se pudo asignar avatar a {$user->email}: {$e->getMessage()}");
+            }
         }
     }
 }

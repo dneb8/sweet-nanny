@@ -20,13 +20,48 @@ const loading = ref(false);
 export function useNotifications() {
     const { notifySuccess, notifyError, notifyInfo } = useNotify();
 
-    const fetchNotifications = async () => {
+    const fetchNotifications = async (signal?: AbortSignal) => {
         try {
             loading.value = true;
-            const response = await axios.get(route('notifications.index'));
-            notifications.value = response.data.notifications;
-            unreadCount.value = response.data.unread_count;
+            const response = await axios.get(route('notifications.index'), {
+                signal,
+            });
+            
+            // Only update if data is different to avoid unnecessary re-renders
+            const newNotifications = response.data.notifications;
+            const newUnreadCount = response.data.unread_count;
+            
+            // Optimized comparison: check length, count, and ID mapping
+            let hasChanged = 
+                notifications.value.length !== newNotifications.length ||
+                unreadCount.value !== newUnreadCount;
+            
+            // If basic checks pass, check if notification IDs or read status changed
+            if (!hasChanged && notifications.value.length > 0) {
+                // Create maps for O(n) comparison regardless of order
+                const oldMap = new Map(
+                    notifications.value.map((n: Notification) => [n.id, n.read_at])
+                );
+                const newMap = new Map(
+                    newNotifications.map((n: Notification) => [n.id, n.read_at])
+                );
+                
+                // Check if any ID or read_at status changed
+                hasChanged = oldMap.size !== newMap.size || 
+                    Array.from(oldMap.entries()).some(([id, read_at]) => 
+                        newMap.get(id) !== read_at
+                    );
+            }
+            
+            if (hasChanged) {
+                notifications.value = newNotifications;
+                unreadCount.value = newUnreadCount;
+            }
         } catch (error) {
+            // Don't log abort errors
+            if (axios.isCancel(error) || (error instanceof Error && error.name === 'AbortError')) {
+                return;
+            }
             console.error('Failed to fetch notifications:', error);
         } finally {
             loading.value = false;

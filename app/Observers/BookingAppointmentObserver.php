@@ -76,9 +76,9 @@ class BookingAppointmentObserver
         $now = now();
         if ($appointment->status === StatusEnum::CONFIRMED->value) {
             if ($appointment->start_date <= $now && $appointment->end_date >= $now) {
-                $appointment->status = StatusEnum::IN_PROGRESS->value;
+                $appointment->status = StatusEnum::IN_PROGRESS;
             } elseif ($appointment->end_date < $now) {
-                $appointment->status = StatusEnum::COMPLETED->value;
+                $appointment->status = StatusEnum::COMPLETED;
             }
         }
     }

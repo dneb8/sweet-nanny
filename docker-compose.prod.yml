@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        WWW_USER_ID: ${DOCKER_UID:-1000}
+        WWW_GROUP_ID: ${DOCKER_GID:-1000}
+    image: sweet-nanny-app
+    container_name: sweet-nanny-app
+    restart: unless-stopped
+    environment:
+      APP_ENV: production
+      APP_DEBUG: false
+      SERVICE_NAME: app
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  webserver:
+    image: nginx:alpine
+    container_name: sweet-nanny-nginx
+    restart: unless-stopped
+    ports:
+      - "${DOCKER_WEB_PORT:-8085}:80"
+    volumes:
+      - ./:/var/www
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - app
+    networks:
+      - app-network
+
+  db:
+    image: mariadb:10.9.4
+    container_name: sweet-nanny-db
+    restart: unless-stopped
+    ports:
+      - "${DOCKER_DB_PORT:-3314}:3306"
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      LANG: C.UTF-8
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./mysql/my.cnf:/etc/mysql/my.cnf
+    networks:
+      - app-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: sweet-nanny-phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DOCKER_PHPMYADMIN_PORT:-7071}:80"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  dbdata:

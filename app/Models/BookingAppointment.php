@@ -19,12 +19,16 @@ class BookingAppointment extends Model
         'payment_status',
         'extra_hours',
         'total_cost',
+        'reviewed_by_tutor',
+        'reviewed_by_nanny',
     ];
 
     protected $casts = [
         'status' => StatusEnum::class,
         'start_date' => 'datetime',
         'end_date' => 'datetime',
+        'reviewed_by_tutor' => 'boolean',
+        'reviewed_by_nanny' => 'boolean',
     ];
 
     public function booking()

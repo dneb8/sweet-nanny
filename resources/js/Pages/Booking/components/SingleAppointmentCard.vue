@@ -5,15 +5,57 @@ import { Badge } from '@/components/ui/badge'
 import GoogleMap from '@/components/GoogleMap.vue'
 import type { Booking } from '@/types/Booking'
 import type { BookingAppointment } from '@/types/BookingAppointment'
-import { computed } from 'vue'
-import { useBookingView } from '@/services/BookingService'
+import { computed, ref } from 'vue'
+import { Avatar, AvatarImage } from '@/components/ui/avatar'
+import {
+  getBookingStatusLabelByString,
+  getBookingStatusBadgeClass,
+  getBookingStatusIconByString
+} from '@/enums/booking/status.enum'
+import {
+  getAddressTypeLabelByString,
+  getAddressTypeBadgeClass
+} from '@/enums/addresses/type.enum'
+import { router } from '@inertiajs/vue3'
+import CtaModal from '@/components/common/CtaModal.vue'
+
+/* ==== Props ==== */
+const props = defineProps<{
+  booking: Booking
+  appointment: BookingAppointment
+  canEditAppointment: boolean
+  canChooseNanny?: boolean
+  canChangeNanny?: boolean
+  getEditDisabledReason?: (a: BookingAppointment) => string
+  fmtReadableDateTime?: (iso: string) => string
+  fmtTimeTZ?: (iso: string) => string
+}>()
 
 /* ==== Emits ==== */
 const emit = defineEmits<{
-  (e: 'openEditModal', section: 'dates' | 'children' | 'address'): void
+  (e: 'openEditModal', section: 'dates' | 'children' | 'address', appointment: BookingAppointment): void
   (e: 'routerGet', url: string): void
   (e: 'changeNanny'): void
 }>()
+
+/* ==== Cancel modal ==== */
+const showCancelModal = ref(false)
+
+function openCancelModal() {
+  showCancelModal.value = true
+}
+
+function confirmCancelCita() {
+  router.post(
+    route('bookings.appointments.cancel', {
+      booking: props.booking.id,
+      appointment: props.appointment.id,
+    }),
+    {},
+    { preserveScroll: true },
+  )
+  showCancelModal.value = false
+}
 
 /* ==== Helpers base ==== */
 const MX_TZ = 'America/Mexico_City'
@@ -43,7 +85,9 @@ function parseDateFlexible(iso: string): Date {
 
   if (hasExplicitTZ(s)) return new Date(s)
 
-  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/)
+  const m = s.match(
+    /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/,
+  )
   if (!m) return new Date(s)
 
   const [, Y, MM, DD, hh, mm, ss] = m
@@ -54,12 +98,11 @@ function parseDateFlexible(iso: string): Date {
     Number(hh),
     Number(mm),
     Number(ss ?? 0),
-    0
+    0,
   )
 }
 
 /* ==== Formateadores con compensación +6 h ==== */
-/** Siempre suma +6 h para contrarrestar el corrimiento que ves en UI. */
 function fmtTimeMX12_plus6(iso: string): string {
   const parsed = parseDateFlexible(iso)
   const shifted = addHours(parsed, 6)
@@ -87,20 +130,6 @@ function fmtDateTimeMX12_plus6(iso: string): string {
   return `${fd} · ${ft}`
 }
 
-/* ==== Props ==== */
-const props = defineProps<{
-  booking: Booking
-  appointment: BookingAppointment
-  canEditAppointment: boolean
-  canChooseNanny?: boolean
-  canChangeNanny?: boolean
-  getEditDisabledReason?: (a: BookingAppointment) => string
-  fmtReadableDateTime?: (iso: string) => string
-  fmtTimeTZ?: (iso: string) => string
-}>()
-
-const v = useBookingView(props.booking)
-
 /* ==== Wrappers (usan +6 h por defecto) ==== */
 const safeGetDisabledReason = (a: BookingAppointment) =>
   (props.getEditDisabledReason ? props.getEditDisabledReason(a) : '') || ''
@@ -113,132 +142,214 @@ const safeFmtTime = (iso: string) =>
 
 /* ==== Derivados ==== */
 const appointmentChildren = computed(() => props.appointment?.children ?? [])
-const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? null)
+const appointmentAddress = computed(() => props.appointment?.addresses?.[0] ?? null)
 </script>
 
 <template>
   <div class="grid gap-4 md:grid-cols-12">
     <!-- LEFT -->
     <div class="md:col-span-8 space-y-4">
-      <div class="rounded-3xl border border-white/30 bg-white/20 dark:border-white/10 dark:bg-white/5 backdrop-blur-xl shadow-lg p-4 sm:p-5">
-        <div class="flex items-start justify-between mb-4">
-          <div>
-            <h3 class="text-lg font-semibold mb-1">
+      <!-- CARD LEFT -->
+      <div
+        class="rounded-3xl border border-white/25 bg-white/30 dark:border-white/10 dark:bg-white/5 backdrop-blur-2xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] p-4 sm:p-6"
+      >
+        <!-- Header -->
+        <div
+          class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between mb-5"
+        >
+          <div class="leading-tight flex-1">
+            <h3 class="text-xl font-semibold tracking-tight">
               {{ safeFmtReadable(props.appointment.start_date) }}
             </h3>
-            <div class="flex items-center gap-2">
-              <Badge :class="v.statusBadge(props.booking.status)" class="px-2 py-0.5 text-[11px]">
-                {{ props.appointment.status }}
+            <div class="mt-1 flex items-center gap-2">
+              <Badge
+                :class="getBookingStatusBadgeClass(props.appointment.status)"
+                :icon="getBookingStatusIconByString(props.appointment.status)"
+                class="px-2.5 py-0.5 text-[11px] rounded-full"
+              >
+                {{ getBookingStatusLabelByString(props.appointment.status) }}
               </Badge>
             </div>
           </div>
 
-          <div v-if="props.canEditAppointment">
-            <Button
-              variant="ghost"
-              size="sm"
-              @click="emit('openEditModal','dates')"
-              :title="safeGetDisabledReason(props.appointment) || 'Editar fechas'"
+          <!-- Action buttons -->
+          <div class="flex flex-row gap-2 items-stretch w-full md:w-auto">
+            <template
+              v-if="
+                props.appointment.status !== 'cancelled' &&
+                props.appointment.status !== 'completed'
+              "
             >
-              <Icon icon="lucide:calendar-clock" class="h-4 w-4 mr-2 opacity-80" />
-              <span class="opacity-90">Editar fechas</span>
-            </Button>
-          </div>
-          <div v-else-if="safeGetDisabledReason(props.appointment)" class="text-xs text-muted-foreground">
-            {{ safeGetDisabledReason(props.appointment) }}
+              <Button
+                v-if="props.canEditAppointment"
+                variant="outline"
+                size="sm"
+                class="h-8 rounded-xl hover:bg-white/50 dark:hover:bg-white/10 flex-1 md:flex-none md:w-auto"
+                @click="emit('openEditModal', 'dates', props.appointment)"
+                :title="safeGetDisabledReason(props.appointment) || 'Reprogramar fecha'"
+              >
+                <Icon
+                  icon="lucide:calendar-clock"
+                  class="h-4 w-4 mr-2 opacity-80"
+                />
+                <span class="opacity-90">Reprogramar</span>
+              </Button>
+
+              <Button
+                variant="destructive"
+                size="sm"
+                class="h-8 rounded-xl flex-1 md:flex-none md:w-auto"
+                @click="openCancelModal"
+              >
+                <Icon icon="lucide:x-circle" class="h-4 w-4 mr-2" />
+                Cancelar
+              </Button>
+            </template>
+
+            <div
+              v-else-if="safeGetDisabledReason(props.appointment)"
+              class="text-xs text-muted-foreground"
+            >
+              {{ safeGetDisabledReason(props.appointment) }}
+            </div>
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 mb-4">
+        <!-- Times -->
+        <div class="grid grid-cols-2 gap-4 mb-5">
           <div>
-            <p class="text-[11px] text-muted-foreground mb-1">Hora inicio</p>
-            <p class="font-medium flex items-center gap-1">
+            <p
+              class="text-[11px] text-muted-foreground mb-1 uppercase tracking-wide"
+            >
+              Hora inicio
+            </p>
+            <p class="font-medium flex items-center gap-1.5">
               <Icon icon="lucide:clock" class="h-4 w-4 opacity-70" />
               {{ safeFmtTime(props.appointment.start_date) }}
             </p>
           </div>
           <div>
-            <p class="text-[11px] text-muted-foreground mb-1">Hora fin</p>
-            <p class="font-medium flex items-center gap-1">
+            <p
+              class="text-[11px] text-muted-foreground mb-1 uppercase tracking-wide"
+            >
+              Hora fin
+            </p>
+            <p class="font-medium flex items-center gap-1.5">
               <Icon icon="lucide:clock" class="h-4 w-4 opacity-70" />
               {{ safeFmtTime(props.appointment.end_date) }}
             </p>
           </div>
         </div>
 
-        <!-- <div v-if="props.appointment.total_cost" class="mb-4">
-          <p class="text-[11px] text-muted-foreground mb-1">Costo total</p>
-          <p class="text-xl font-semibold">${{ props.appointment.total_cost }}</p>
-        </div> -->
-
         <!-- Niñera -->
         <div class="pt-4 border-t border-white/20">
-          <p class="text-[11px] text-muted-foreground mb-2">Niñera asignada</p>
-          
+          <p
+            class="text-[11px] text-muted-foreground mb-2 uppercase tracking-wide"
+          >
+            Niñera asignada
+          </p>
+
           <!-- Nanny assigned -->
-          <div v-if="props.appointment.nanny">
-            <div class="flex items-center gap-3 p-3 rounded-xl bg-white/40 dark:bg-white/10">
-              <div class="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Icon icon="lucide:user" class="h-5 w-5 text-primary" />
-              </div>
-              <div class="flex-1">
-                <p class="text-sm font-medium">
-                  {{ props.appointment.nanny.user.name }} {{ props.appointment.nanny.user.surnames }}
+          <div v-if="props.appointment.nanny" class="space-y-3">
+            <div
+              class="flex items-center gap-3 p-3 rounded-2xl bg-white/60 dark:bg-white/10 border border-white/30"
+            >
+              <Avatar class="h-14 w-14 ring-1 ring-border">
+                <AvatarImage
+                  :src="props.appointment.nanny.user.avatar_url || undefined"
+                />
+              </Avatar>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium truncate">
+                  {{ props.appointment.nanny.user.name }}
+                  {{ props.appointment.nanny.user.surnames }}
                 </p>
-                <p class="text-[12px] text-muted-foreground">{{ props.appointment.nanny.user.email }}</p>
+                <p
+                  class="text-[12px] text-muted-foreground truncate"
+                >
+                  {{ props.appointment.nanny.user.email }}
+                </p>
               </div>
             </div>
-            
+
             <!-- Change Nanny button -->
-            <div v-if="props.canChangeNanny" class="mt-3 text-center">
+            <div v-if="props.canChangeNanny" class="text-center">
               <Button
                 variant="outline"
                 size="sm"
-                class="w-full sm:w-auto"
-                @click="emit('changeNanny')"
+                class="w-full sm:w-auto rounded-xl"
+                @click="
+                  emit(
+                    'routerGet',
+                    route('bookings.appointments.nannies.choose', {
+                      booking: props.booking.id,
+                      appointment: props.appointment.id,
+                    }),
+                  )
+                "
               >
                 <Icon icon="lucide:repeat" class="mr-2 h-4 w-4" />
                 Cambiar niñera
               </Button>
             </div>
           </div>
-          
+
           <!-- No nanny assigned -->
-          <div v-else>
-            <div v-if="props.canChooseNanny" class="text-center py-4">
-              <p class="text-sm text-muted-foreground mb-3">No hay niñera asignada</p>
+          <div
+            v-else
+            class="text-center py-4 rounded-2xl border border-dashed border-white/30 bg-white/30 dark:bg-white/5"
+          >
+            <div
+              class="flex items-center justify-center gap-2 text-muted-foreground mb-3"
+            >
+              <Icon icon="lucide:user-plus" class="h-4 w-4" />
+              <span class="text-sm">No hay niñera asignada</span>
+            </div>
+            <div v-if="props.canChooseNanny">
               <Button
                 variant="default"
-                class="w-full sm:w-auto"
-                @click="emit('routerGet', route('bookings.appointments.nannies.choose', { booking: props.booking.id, appointment: props.appointment.id }))"
+                class="w-full sm:w-auto rounded-xl"
+                @click="
+                  emit(
+                    'routerGet',
+                    route('bookings.appointments.nannies.choose', {
+                      booking: props.booking.id,
+                      appointment: props.appointment.id,
+                    }),
+                  )
+                "
               >
-                <Icon icon="lucide:user-plus" class="mr-2 h-4 w-4" />
                 Elegir niñera
               </Button>
             </div>
-            <div v-else class="text-sm text-muted-foreground py-2">No hay niñera asignada</div>
           </div>
         </div>
 
         <!-- Niños -->
-        <div class="mt-4 pt-4 border-t border-white/20">
+        <div class="mt-5 pt-4 border-t border-white/20">
           <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-semibold flex items-center gap-2">
-              <Icon icon="lucide:baby" class="h-4 w-4" /> Niños ({{ appointmentChildren.length }})
+              <Icon icon="lucide:baby" class="h-4 w-4" /> Niños ({{
+                appointmentChildren.length
+              }})
             </h3>
             <Button
               v-if="props.canEditAppointment"
               variant="ghost"
               size="sm"
-              @click="emit('openEditModal','children')"
-              class="h-7 text-xs"
+              class="h-7 text-xs hover:bg-white/50 dark:hover:bg-white/10"
+              @click="emit('openEditModal', 'children', props.appointment)"
             >
               <Icon icon="lucide:edit-3" class="h-3.5 w-3.5 mr-1" />
               Editar
             </Button>
           </div>
 
-          <div v-if="appointmentChildren.length === 0" class="text-[13px] text-muted-foreground">
+          <div
+            v-if="appointmentChildren.length === 0"
+            class="text-[13px] text-muted-foreground flex items-center gap-2 bg-white/30 dark:bg-white/5 border border-dashed border-white/30 rounded-2xl px-3 py-3"
+          >
+            <Icon icon="lucide:info" class="h-4 w-4" />
             No hay niños asignados
           </div>
 
@@ -246,39 +357,57 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
             <div
               v-for="child in appointmentChildren"
               :key="child.id"
-              class="flex items-center gap-2 rounded-xl border border-white/20 bg-white/40 dark:bg-white/10 backdrop-blur-md px-3 py-2"
+              class="flex items-center gap-3 rounded-2xl border border-white/25 bg-white/50 dark:bg-white/10 backdrop-blur-md px-3 py-2.5"
             >
-              <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 shrink-0">
+              <span
+                class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/10 shrink-0"
+              >
                 <Icon icon="lucide:user-round" class="h-4 w-4 text-primary" />
               </span>
               <div class="leading-tight min-w-0">
                 <p class="text-sm font-medium truncate">
                   {{ child.name }}
-                  <Badge v-if="child.deleted_at" variant="outline" class="ml-1 px-1.5 py-0.5 text-[10px]">Eliminado</Badge>
+                  <Badge
+                    v-if="child.deleted_at"
+                    variant="outline"
+                    class="ml-1 px-1.5 py-0.5 text-[10px] rounded-full"
+                    >Eliminado</Badge
+                  >
                 </p>
                 <p class="text-[12px] text-muted-foreground">
-                  {{ child.birthdate ? new Date(child.birthdate).toLocaleDateString('es-MX') : '—' }}
+                  {{
+                    child.birthdate
+                      ? new Date(child.birthdate).toLocaleDateString('es-MX')
+                      : '—'
+                  }}
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Acciones -->
-        <div class="flex gap-2 mt-4 pt-4 border-t border-white/20">
-          <Button
-            v-if="props.appointment.status !== 'cancelled'"
-            variant="destructive"
-            size="sm"
-            class="flex-1"
-            @click="emit('routerGet', route('bookings.appointments.cancel', { booking: props.booking.id, appointment: props.appointment.id }))"
+        <!-- Status messages for cancelled/completed -->
+        <div
+          v-if="props.appointment.status === 'cancelled'"
+          class="mt-5 pt-4 border-t border-white/20"
+        >
+          <div
+            class="flex items-center justify-center gap-2 text-sm text-rose-500/90 bg-rose-50/60 dark:bg-rose-900/10 border border-rose-200/60 dark:border-rose-900/30 rounded-2xl py-2"
           >
-            <Icon icon="lucide:x-circle" class="mr-2 h-4 w-4" />
-            Cancelar cita
-          </Button>
-          <div v-else class="flex-1 flex items-center justify-center gap-2 text-sm text-muted-foreground py-2">
             <Icon icon="lucide:ban" class="h-4 w-4" />
-            <span>Cita cancelada</span>
+            Cita cancelada
+          </div>
+        </div>
+
+        <div
+          v-else-if="props.appointment.status === 'completed'"
+          class="mt-5 pt-4 border-t border-white/20"
+        >
+          <div
+            class="flex items-center justify-center gap-2 text-sm text-emerald-600/90 bg-emerald-50/70 dark:bg-emerald-900/10 border border-emerald-200/70 dark:border-emerald-800/30 rounded-2xl py-2"
+          >
+            <Icon icon="lucide:check-circle2" class="h-4 w-4" />
+            Cita completada
           </div>
         </div>
       </div>
@@ -286,7 +415,10 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
 
     <!-- RIGHT: Dirección + Mapa -->
     <aside class="md:col-span-4 space-y-4">
-      <div class="rounded-3xl border border-white/30 bg-white/25 dark:border-white/10 dark:bg-white/5 backdrop-blur-xl shadow-lg p-4 sm:p-5">
+      <!-- CARD RIGHT -->
+      <div
+        class="rounded-3xl border border-white/25 bg-white/30 dark:border-white/10 dark:bg-white/5 backdrop-blur-2xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] p-4 sm:p-6"
+      >
         <div class="flex items-center justify-between mb-3">
           <h3 class="text-sm font-semibold flex items-center gap-2">
             <Icon icon="lucide:map-pin" class="h-4 w-4" /> Dirección
@@ -295,38 +427,72 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
             v-if="props.canEditAppointment"
             variant="ghost"
             size="sm"
-            @click="emit('openEditModal','address')"
-            class="h-7 text-xs"
+            class="h-7 text-xs hover:bg-white/50 dark:hover:bg-white/10"
+            @click="emit('openEditModal', 'address', props.appointment)"
           >
             <Icon icon="lucide:edit-3" class="h-3.5 w-3.5 mr-1" />
             Editar
           </Button>
         </div>
 
-        <div v-if="!appointmentAddress" class="text-[13px] text-muted-foreground">No especificada</div>
+        <div
+          v-if="!appointmentAddress"
+          class="text-[13px] text-muted-foreground flex items-center gap-2 bg-white/30 dark:bg-white/5 border border-dashed border-white/30 rounded-2xl px-3 py-3"
+        >
+          <Icon icon="lucide:info" class="h-4 w-4" />
+          No especificada
+        </div>
+
         <div v-else class="space-y-3 text-[13px]">
           <div class="space-y-1.5">
             <p class="font-medium">
-                {{ appointmentAddress.name }}
-              <span v-if="appointmentAddress.internal_number">, Int. {{ appointmentAddress.internal_number }}</span>
-              
+              {{ appointmentAddress.name }}
+              <span v-if="appointmentAddress.internal_number"
+                >, Int. {{ appointmentAddress.internal_number }}</span
+              >
             </p>
-            <p class="text-muted-foreground">{{ appointmentAddress.street }} {{ appointmentAddress.external_number }},{{ appointmentAddress.neighborhood }}</p>
-            <p class="text-muted-foreground">CP: {{ appointmentAddress.postal_code }}</p>
-            <Badge v-if="appointmentAddress.type" variant="secondary" class="mt-1 px-2 py-0.5 text-[11px]">
-              {{ appointmentAddress.type }}
+            <p class="text-muted-foreground">
+              {{ appointmentAddress.street }}
+              {{ appointmentAddress.external_number }},
+              {{ appointmentAddress.neighborhood }}
+            </p>
+            <p class="text-muted-foreground">
+              CP: {{ appointmentAddress.postal_code }}
+            </p>
+            <Badge
+              v-if="appointmentAddress.type"
+              :class="getAddressTypeBadgeClass(appointmentAddress.type)"
+              class="mt-1 px-2.5 py-0.5 text-[11px] rounded-full"
+            >
+              {{ getAddressTypeLabelByString(appointmentAddress.type) }}
             </Badge>
           </div>
 
-          <GoogleMap
-            :latitude="+(appointmentAddress?.latitude ?? 19.704)"
-            :longitude="+(appointmentAddress?.longitude ?? -103.344)"
-            :zoom="16"
-            height="300px"
-            :showMarker="true"
+          <div
+            class="overflow-hidden rounded-2xl ring-1 ring-white/40 dark:ring-white/10"
+          >
+            <GoogleMap
+              :latitude="+(appointmentAddress?.latitude ?? 19.704)"
+              :longitude="+(appointmentAddress?.longitude ?? -103.344)"
+              :zoom="16"
+              height="300px"
+              :showMarker="true"
             />
+          </div>
         </div>
       </div>
     </aside>
   </div>
+
+  <!-- Cancel Appointment Confirmation Modal -->
+  <CtaModal
+    :show="showCancelModal"
+    @update:show="showCancelModal = $event"
+    type="warning"
+    title="Cancelar cita"
+    message="¿Estás seguro de que deseas cancelar esta cita? Esta acción no se puede deshacer."
+    confirmText="Sí, cancelar cita"
+    cancelText="No, mantener cita"
+    :onConfirm="confirmCancelCita"
+  />
 </template>

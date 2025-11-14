@@ -7,7 +7,7 @@ import AddressCard from './information/Address.vue'
 import CoursesCard from './information/Course.vue'
 import CareersCard from './information/Career.vue'
 import QualitiesCard from './information/Quality.vue'
-import ServicesCard from './information/Booking.vue'
+// import ServicesCard from './information/Booking.vue'
 import { Head } from '@inertiajs/vue3'
 
 const props = defineProps<{
@@ -31,8 +31,8 @@ bookings: any
     </div>
 
     <!-- Servicios -->
-    <div class="space-y-6">
+    <!-- <div class="space-y-6">
       <ServicesCard :nanny="props.nanny" :bookings="props.bookings" />
-    </div>
+    </div> -->
   </div>
 </template>

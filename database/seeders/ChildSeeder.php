@@ -26,7 +26,7 @@ class ChildSeeder extends Seeder
                 $childrenCount = rand(1, 5);
 
                 for ($i = 0; $i < $childrenCount; $i++) {
-                    $childName = Arr::random($firstNames) . ' ' . ($tutor->user->surnames ?? '');
+                    $childName = Arr::random($firstNames);
 
                     Child::create([
                         'tutor_id' => $tutor->id,

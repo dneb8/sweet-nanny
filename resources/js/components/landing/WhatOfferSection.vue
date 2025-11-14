@@ -138,7 +138,7 @@ const services = [
   {
     title: 'Actividades variadas',
     text: 'Nos empeñamos en ofrecer a tus pequeños un ambiente educativo y creativo priorizando tu tranquilidad',
-    details: '<span style="text-shadow: 0 1px 3px rgba(0,0,0,0.6);">Priorizamos formas educativas de juevo, creatividad, danza y actividades a tu gusto</span>',
+    details: '<span style="text-shadow: 0 1px 3px rgba(0,0,0,0.6);">Priorizamos formas educativas de juego, creatividad, danza y actividades a tu gusto</span>',
     image: '/images/landing/two-nanny-landing.jpg',
     icon: PuzzleIcon,
     overlay: 'rgba(255, 241, 214, 0.4)',

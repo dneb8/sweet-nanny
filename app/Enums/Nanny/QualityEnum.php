@@ -25,7 +25,7 @@ enum QualityEnum: string
             self::OBSERVADORA => 'Observadora',
             self::ASERTIVA => 'Asertiva',
             self::PROACTIVA => 'Proactiva',
-            self::FLEXIBLE => 'Flexible',
+            self::FLEXIBLE => 'Horario Flexible',
             self::LUDICA => 'Lúdica',
             self::BILINGUE => 'Bilingüe',
         };

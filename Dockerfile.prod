@@ -1,56 +1,51 @@
-# Imagen base oficial de PHP con FPM
 FROM php:8.2-fpm
 
-# Establecer el directorio de trabajo
 WORKDIR /var/www/html
 
-# Instalar dependencias del sistema necesarias para Laravel
 RUN apt-get update && apt-get install -y \
-    libzip-dev \
-    libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
-    libicu-dev \
-    git \
-    unzip \
-    curl \
-    npm \
-    zip \
-    && docker-php-ext-install pdo_mysql mbstring zip exif pcntl bcmath intl \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    libzip-dev libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
+    libicu-dev libonig-dev libpq-dev git unzip curl npm zip \
+    ca-certificates libcurl4-openssl-dev \
+ && docker-php-ext-install pdo_pgsql mbstring zip exif pcntl bcmath intl \
+ && docker-php-ext-configure gd --with-freetype --with-jpeg \
+ && docker-php-ext-install gd curl \
+ && update-ca-certificates \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Crear usuario "www" para correr la app (evita errores en Render)
-ARG WWW_GROUP_ID=1000
-ARG WWW_USER_ID=1000
-RUN groupadd -g ${WWW_GROUP_ID} www \
-    && useradd -u ${WWW_USER_ID} -ms /bin/bash -g www www
+COPY package*.json ./
+ARG VITE_GMAPS_API_KEY
+ARG VITE_GMAPS_MAP_ID
 
-# Instalar Composer globalmente
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+ENV VITE_APP_URL=$VITE_APP_URL \
+    VITE_DEFAULT_CENTER_LAT=$VITE_DEFAULT_CENTER_LAT \
+    VITE_DEFAULT_CENTER_LNG=$VITE_DEFAULT_CENTER_LNG \
+    VITE_GMAPS_API_KEY=$VITE_GMAPS_API_KEY \
+    VITE_GMAPS_MAP_ID=$VITE_GMAPS_MAP_ID
 
-# Copiar solo los archivos de Composer primero (mejor cache)
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+RUN npm ci
 
-# Copiar el resto del proyecto
+
 COPY . .
 
-# Construir los assets de frontend (si usas Vite o npm run build)
-RUN npm install && npm run build
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Limpiar y generar caches de Laravel
-RUN php artisan config:clear && php artisan route:clear && php artisan view:clear && php artisan optimize
 
-# Asignar permisos correctos a storage y bootstrap/cache
-RUN chown -R www-data:www-data storage bootstrap/cache
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-# Cambiar al usuario no root
-USER www
 
-# Exponer el puerto 8080 (Render lo detecta automáticamente)
+RUN npm run build
+
+RUN mkdir -p storage bootstrap/cache \
+ && chmod -R 775 storage bootstrap/cache \
+ && chown -R www-data:www-data storage bootstrap/cache
+
+
 EXPOSE 8080
 
-# Comando de inicio para producción
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
+
+CMD php artisan optimize:clear && \
+    php artisan migrate:fresh --force --seed && \
+    php artisan optimize && \
+    php artisan storage:link || true; \
+    php artisan serve --host=0.0.0.0 --port=8080
+#sin llaves

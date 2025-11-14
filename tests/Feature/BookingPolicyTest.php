@@ -222,3 +222,75 @@ test('tutor cannot delete other tutors booking', function () {
 
     expect(Gate::forUser($user)->allows('delete', $booking))->toBeFalse();
 });
+
+test('nanny can view booking with their appointment', function () {
+    $nannyUser = User::factory()->create();
+    $nannyUser->assignRole('nanny');
+    $nanny = Nanny::factory()->create(['user_id' => $nannyUser->id]);
+
+    $tutor = Tutor::factory()->create();
+    $booking = Booking::factory()->create(['tutor_id' => $tutor->id]);
+    BookingAppointment::factory()->create([
+        'booking_id' => $booking->id,
+        'nanny_id' => $nanny->id,
+        'status' => 'pending',
+    ]);
+
+    expect(Gate::forUser($nannyUser)->allows('view', $booking))->toBeTrue();
+});
+
+test('nanny cannot view booking without their appointment', function () {
+    $nannyUser = User::factory()->create();
+    $nannyUser->assignRole('nanny');
+    $nanny = Nanny::factory()->create(['user_id' => $nannyUser->id]);
+
+    $otherNanny = Nanny::factory()->create();
+
+    $tutor = Tutor::factory()->create();
+    $booking = Booking::factory()->create(['tutor_id' => $tutor->id]);
+    BookingAppointment::factory()->create([
+        'booking_id' => $booking->id,
+        'nanny_id' => $otherNanny->id,
+        'status' => 'pending',
+    ]);
+
+    expect(Gate::forUser($nannyUser)->allows('view', $booking))->toBeFalse();
+});
+
+test('nanny can view booking with multiple appointments if at least one is theirs', function () {
+    $nannyUser = User::factory()->create();
+    $nannyUser->assignRole('nanny');
+    $nanny = Nanny::factory()->create(['user_id' => $nannyUser->id]);
+
+    $otherNanny = Nanny::factory()->create();
+
+    $tutor = Tutor::factory()->create();
+    $booking = Booking::factory()->create(['tutor_id' => $tutor->id]);
+
+    // Create appointment for other nanny
+    BookingAppointment::factory()->create([
+        'booking_id' => $booking->id,
+        'nanny_id' => $otherNanny->id,
+        'status' => 'pending',
+    ]);
+
+    // Create appointment for current nanny
+    BookingAppointment::factory()->create([
+        'booking_id' => $booking->id,
+        'nanny_id' => $nanny->id,
+        'status' => 'confirmed',
+    ]);
+
+    expect(Gate::forUser($nannyUser)->allows('view', $booking))->toBeTrue();
+});
+
+test('nanny cannot view booking with no appointments', function () {
+    $nannyUser = User::factory()->create();
+    $nannyUser->assignRole('nanny');
+    Nanny::factory()->create(['user_id' => $nannyUser->id]);
+
+    $tutor = Tutor::factory()->create();
+    $booking = Booking::factory()->create(['tutor_id' => $tutor->id]);
+
+    expect(Gate::forUser($nannyUser)->allows('view', $booking))->toBeFalse();
+});

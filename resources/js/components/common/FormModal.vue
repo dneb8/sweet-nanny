@@ -19,7 +19,6 @@ defineProps<{
 
 const emit = defineEmits<{
   (e: "update:modelValue", v: boolean): void
-  // Reemitimos el/los argumentos que envíe el form (address, {address}, etc.)
   (e: "saved", ...args: any[]): void
 }>()
 
@@ -29,13 +28,11 @@ function close() {
   emit("update:modelValue", false)
 }
 
-// Reemite TODO el payload del form y cierra el modal
 function handleSaved(...args: any[]) {
   emit("saved", ...args)
   close()
 }
 
-// Mantén el two-way binding con Dialog (open)
 function onOpenChange(val: boolean) {
   emit("update:modelValue", !!val)
 }
@@ -43,30 +40,35 @@ function onOpenChange(val: boolean) {
 
 <template>
   <Dialog :open="modelValue" @update:open="onOpenChange">
-    <!-- Solo renderizamos el trigger si lo usas -->
     <DialogTrigger v-if="slots.trigger" as-child>
       <slot name="trigger" />
     </DialogTrigger>
 
+    <!-- 👇 Aquí está la versión corregida -->
     <DialogContent
       @escapeKeyDown="close"
       @interactOutside="close"
+      class="sm:max-w-[425px] grid-rows-[auto_minmax(0,1fr)_auto] p-0 max-h-[90dvh]"
     >
-      <DialogHeader>
+      <!-- HEADER FIJO -->
+      <DialogHeader class="p-6 pb-0">
         <DialogTitle>{{ title }}</DialogTitle>
         <DialogDescription>
           <slot name="description" />
         </DialogDescription>
       </DialogHeader>
 
-      <!-- Form dinámico -->
-      <component
-        :is="formComponent"
-        v-bind="formProps"
-        @saved="handleSaved"
-      />
+      <!-- CONTENIDO SCROLLABLE -->
+      <div class="grid gap-4 py-4 overflow-y-auto px-6">
+        <component
+          :is="formComponent"
+          v-bind="formProps"
+          @saved="handleSaved"
+        />
+      </div>
 
-      <DialogFooter>
+      <!-- FOOTER FIJO -->
+      <DialogFooter class="p-6 pt-0">
         <slot name="footer" />
       </DialogFooter>
     </DialogContent>

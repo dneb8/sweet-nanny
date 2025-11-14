@@ -45,12 +45,6 @@
 
   <hr style="border:none; border-top:1px solid #E5E7EB; margin: 20px 0;">
 
-  {{-- Fallback de enlace plano --}}
-  <p style="color:#6B7280; font-size: 12px;">
-    Si el botón no funciona, copia y pega esta URL en tu navegador:<br>
-    <a href="{{ $url }}" style="color: {{ $textOnPrimary }}; word-break: break-all;">{{ $url }}</a>
-  </p>
-
   <p style="margin-top: 16px;">
     Saludos,<br>
     {{ config('app.name') }}

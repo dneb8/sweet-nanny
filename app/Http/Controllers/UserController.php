@@ -152,7 +152,6 @@ class UserController extends Controller
             // Delete related nanny or tutor profile
             if ($user->hasRole(RoleEnum::NANNY->value) && $user->nanny) {
                 // Delete media associated with nanny
-                $user->nanny->clearMediaCollection();
                 $user->nanny->delete();
             }
 
