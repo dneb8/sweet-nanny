@@ -6,6 +6,7 @@ use App\Enums\Career\NameCareerEnum;
 use App\Enums\Children\KinkshipEnum;
 use App\Enums\Course\NameEnum as CourseNameEnum;
 use App\Enums\Nanny\QualityEnum;
+use App\Enums\User\RoleEnum;
 use App\Http\Requests\Bookings\CreateBookingRequest;
 use App\Http\Requests\Bookings\UpdateBookingRequest;
 use App\Models\Booking;
@@ -57,14 +58,27 @@ class BookingController extends Controller
     {
         Gate::authorize('view', $booking);
 
+        $user = Auth::user();
+
         $booking->refresh()->load([
             'tutor.user',
             'tutor.children',
             'tutor.addresses',
-            'bookingAppointments.nanny.user',
-            'bookingAppointments.addresses',
-            'bookingAppointments.children' => fn ($q) => $q->withTrashed(),
         ]);
+
+        // Filter appointments for nannies to only show their own
+        if ($user->hasRole(RoleEnum::NANNY->value)) {
+            $booking->load([
+                'bookingAppointments' => fn ($q) => $q->where('nanny_id', $user->nanny?->id)
+                    ->with(['nanny.user', 'addresses', 'children' => fn ($q) => $q->withTrashed()]),
+            ]);
+        } else {
+            $booking->load([
+                'bookingAppointments.nanny.user',
+                'bookingAppointments.addresses',
+                'bookingAppointments.children' => fn ($q) => $q->withTrashed(),
+            ]);
+        }
 
         // Actualizar estado basado en horarios de citas
         $statusService->updateStatus($booking);
