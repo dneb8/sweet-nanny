@@ -19,7 +19,7 @@ enum BookingPermission: string
     {
         return [
             self::ViewAny->value => [RoleEnum::ADMIN, RoleEnum::TUTOR],
-            self::View->value => [RoleEnum::ADMIN, RoleEnum::TUTOR],
+            self::View->value => [RoleEnum::ADMIN, RoleEnum::TUTOR, RoleEnum::NANNY],
             self::Create->value => [RoleEnum::ADMIN, RoleEnum::TUTOR],
             self::Update->value => [RoleEnum::ADMIN, RoleEnum::TUTOR],
             self::Delete->value => [RoleEnum::ADMIN, RoleEnum::TUTOR],

@@ -39,6 +39,13 @@ class BookingPolicy
             return $booking->tutor?->user_id === $user->id;
         }
 
+        // Nanny can view booking if assigned to at least one appointment
+        if ($user->hasRole(RoleEnum::NANNY->value)) {
+            return $booking->bookingAppointments()
+                ->where('nanny_id', $user->nanny?->id)
+                ->exists();
+        }
+
         return false;
     }
 
@@ -55,12 +62,12 @@ class BookingPolicy
      */
     public function update(User $user, Booking $booking): bool
     {
-        if (!$user->hasRole(RoleEnum::TUTOR->value)) {
+        if (! $user->hasRole(RoleEnum::TUTOR->value)) {
             return false;
         }
 
         $booking->loadMissing('tutor');
-        
+
         if ($booking->tutor_id !== $user->tutor?->id) {
             return false;
         }
@@ -78,12 +85,12 @@ class BookingPolicy
      */
     public function delete(User $user, Booking $booking): bool
     {
-        if (!$user->hasRole(RoleEnum::TUTOR->value)) {
+        if (! $user->hasRole(RoleEnum::TUTOR->value)) {
             return false;
         }
 
         $booking->loadMissing('tutor');
-        
+
         if ($booking->tutor_id !== $user->tutor?->id) {
             return false;
         }
