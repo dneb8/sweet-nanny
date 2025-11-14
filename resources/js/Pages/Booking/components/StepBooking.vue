@@ -242,7 +242,7 @@ async function confirmDelete() {
       </ScrollArea>
 
       <div class="space-y-2">
-        <Label for="booking-description" class="text-sm font-medium">Descripción</Label>
+        <Label for="booking-description" class="text-sm font-medium">Cuidados, recomendaciones y necesidades</Label>
         <Textarea
           id="booking-description"
           v-model.trim="desc"
