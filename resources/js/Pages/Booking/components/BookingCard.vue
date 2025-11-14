@@ -127,33 +127,6 @@ const {
             <span>{{ new Date(props.booking.created_at).toLocaleDateString('es-ES') }}</span>
         </div>
 
-        <!-- Acciones -->
-        <div class="flex gap-3 pt-2 border-t border-foreground/20">
-            <div
-                @click="verBooking(props.booking)"
-                class="flex justify-center items-center w-max text-green-600 dark:text-green-500 hover:text-green-600/80 dark:hover:text-green-400 hover:cursor-pointer"
-                title="Ver detalles"
-            >
-                <Icon icon="mdi:eye-outline" :size="22" />
-            </div>
-
-            <div
-                @click="editarBooking(props.booking)"
-                class="flex justify-center items-center w-max text-blue-600 dark:text-blue-500 hover:text-blue-600/80 dark:hover:text-blue-400 hover:cursor-pointer"
-                title="Editar booking"
-            >
-                <Icon icon="mdi:edit-outline" :size="22" />
-            </div>
-
-            <div
-                @click="abrirModalEliminarBooking(props.booking)"
-                class="flex justify-center items-center w-max text-rose-600 dark:text-rose-500 hover:text-rose-600/80 dark:hover:text-rose-400 hover:cursor-pointer"
-                title="Eliminar booking"
-            >
-                <Icon icon="fluent:delete-12-regular" :size="22" />
-            </div>
-        </div>
-
         <!-- Modal eliminar -->
         <DeleteModal
             v-model:show="modalEliminarBooking"
