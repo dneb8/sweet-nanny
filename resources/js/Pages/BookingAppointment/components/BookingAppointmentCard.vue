@@ -5,6 +5,8 @@ import { getUserInitials } from '@/utils/getUserInitials';
 import Badge from '@/components/common/Badge.vue';
 import { BookingAppointmentTableService } from '@/services/bookingAppointmentTableService';
 import { Users } from 'lucide-vue-next';
+import { getBookingStatusBadgeClass, getBookingStatusLabelByString } from '@/enums/booking/status.enum';
+import { getZoneLabel, getZoneBadgeClass } from '@/enums/addresses/zone.enum';
 
 defineProps<{
     appointment: BookingAppointment;
@@ -24,7 +26,8 @@ const formatDate = (dateString: string) => {
 </script>
 
 <template>
-    <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-4 space-y-3">
+    <!-- Card with styling matching desktop table rows -->
+    <div class="bg-white/50 dark:bg-background/50 border border-foreground/20 rounded-lg p-3 space-y-3">
         <!-- Tutor -->
         <div class="flex items-center gap-3">
             <Avatar shape="square" size="sm" class="overflow-hidden">
@@ -38,9 +41,9 @@ const formatDate = (dateString: string) => {
                     {{ getUserInitials(appointment?.booking?.tutor?.user) }}
                 </AvatarFallback>
             </Avatar>
-            <div>
-                <div class="text-sm font-medium">Tutor</div>
-                <div class="text-sm text-muted-foreground">
+            <div class="min-w-0">
+                <div class="text-xs text-muted-foreground font-medium">Tutor</div>
+                <div class="text-sm text-foreground/80 truncate">
                     {{ appointment?.booking?.tutor?.user?.name ?? '—' }}
                     {{ appointment?.booking?.tutor?.user?.surnames ?? '' }}
                 </div>
@@ -48,18 +51,18 @@ const formatDate = (dateString: string) => {
         </div>
 
         <!-- Servicio y Niños -->
-        <div class="grid grid-cols-2 gap-2">
+        <div class="grid grid-cols-2 gap-3">
             <div>
-                <div class="text-sm font-medium">Servicio</div>
+                <div class="text-xs text-muted-foreground font-medium">Servicio</div>
                 <span
-                    class="text-sm text-primary hover:underline cursor-pointer"
+                    class="text-sm text-primary hover:underline cursor-pointer font-mono"
                     @click.stop="service.verBooking(appointment?.booking_id)"
                 >
                     #{{ appointment?.booking_id }}
                 </span>
             </div>
             <div>
-                <div class="text-sm font-medium">Niños</div>
+                <div class="text-xs text-muted-foreground font-medium">Niños</div>
                 <Badge
                     v-if="appointment?.children && appointment.children.length > 0"
                     :label="`${appointment.children.length}`"
@@ -73,34 +76,37 @@ const formatDate = (dateString: string) => {
             </div>
         </div>
 
-        <!-- Dirección y Estado -->
-        <div class="grid grid-cols-2 gap-2">
+        <!-- Zona y Estado -->
+        <div class="grid grid-cols-2 gap-3">
             <div>
-                <div class="text-sm font-medium">Zona</div>
-                <div class="text-sm text-muted-foreground">
-                    {{ appointment?.addresses?.[0]?.neighborhood ?? '—' }}
-                </div>
+                <div class="text-xs text-muted-foreground font-medium">Zona</div>
+                <Badge
+                    v-if="appointment?.addresses?.[0]?.zone"
+                    :label="getZoneLabel(appointment.addresses[0].zone)"
+                    :customClass="getZoneBadgeClass(appointment.addresses[0].zone)"
+                />
+                <span v-else class="text-sm text-muted-foreground">—</span>
             </div>
             <div>
-                <div class="text-sm font-medium">Estado</div>
-                <Badge :label="service.getStatusLabel(appointment?.status ?? '')" :customClass="service.getStatusColor(appointment?.status ?? '')" />
+                <div class="text-xs text-muted-foreground font-medium">Estado</div>
+                <Badge :label="getBookingStatusLabelByString(appointment?.status ?? '')" :customClass="getBookingStatusBadgeClass(appointment?.status ?? '')" />
             </div>
         </div>
 
         <!-- Fechas -->
-        <div class="grid grid-cols-2 gap-2">
+        <div class="grid grid-cols-2 gap-3">
             <div>
-                <div class="text-sm font-medium">Inicio</div>
-                <div class="text-sm text-muted-foreground">{{ formatDate(appointment?.start_date) }}</div>
+                <div class="text-xs text-muted-foreground font-medium">Inicio</div>
+                <div class="text-sm text-foreground/80">{{ formatDate(appointment?.start_date) }}</div>
             </div>
             <div>
-                <div class="text-sm font-medium">Fin</div>
-                <div class="text-sm text-muted-foreground">{{ formatDate(appointment?.end_date) }}</div>
+                <div class="text-xs text-muted-foreground font-medium">Fin</div>
+                <div class="text-sm text-foreground/80">{{ formatDate(appointment?.end_date) }}</div>
             </div>
         </div>
 
         <!-- Niñera -->
-        <div v-if="appointment?.nanny" class="flex items-center gap-3 pt-2 border-t">
+        <div v-if="appointment?.nanny" class="flex items-center gap-3 pt-2 border-t border-foreground/20">
             <Avatar shape="square" size="sm" class="overflow-hidden">
                 <AvatarImage
                     v-if="appointment?.nanny?.user?.avatar_url"
@@ -112,14 +118,14 @@ const formatDate = (dateString: string) => {
                     {{ getUserInitials(appointment?.nanny?.user) }}
                 </AvatarFallback>
             </Avatar>
-            <div>
-                <div class="text-sm font-medium">Niñera</div>
-                <div class="text-sm text-muted-foreground">
+            <div class="min-w-0">
+                <div class="text-xs text-muted-foreground font-medium">Niñera</div>
+                <div class="text-sm text-foreground/80 truncate">
                     {{ appointment?.nanny?.user?.name ?? '—' }}
                     {{ appointment?.nanny?.user?.surnames ?? '' }}
                 </div>
             </div>
         </div>
-        <div v-else class="text-sm text-muted-foreground pt-2 border-t">Sin niñera asignada</div>
+        <div v-else class="text-sm text-muted-foreground pt-2 border-t border-foreground/20">Sin niñera asignada</div>
     </div>
 </template>
