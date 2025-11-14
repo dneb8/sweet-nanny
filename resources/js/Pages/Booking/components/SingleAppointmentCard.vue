@@ -113,9 +113,6 @@ const props = defineProps<{
   fmtTimeTZ?: (iso: string) => string
 }>()
 
-console.log('appointment in card', props.appointment, 'can change nanny', props.canChangeNanny, 'appointment status', props.appointment.status)
-
-
 /* ==== Wrappers (usan +6 h por defecto) ==== */
 const safeGetDisabledReason = (a: BookingAppointment) =>
   (props.getEditDisabledReason ? props.getEditDisabledReason(a) : '') || ''

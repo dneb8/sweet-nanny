@@ -223,8 +223,7 @@ class BookingAppointmentController extends Controller
 
             $payload = ['start_date' => $start, 'end_date' => $end];
             if ($appointment->isFillable('duration')) {
-                $payload['duration'] = $dur;
-            }
+                $payload['duration'] = $dur;            }
 
             $appointment->update($payload);
         });
