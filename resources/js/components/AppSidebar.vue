@@ -59,10 +59,10 @@ const bookingsNavItems = computed<NavItem[]>(() => {
       href: '/bookings',
       icon: 'ph:baby-carriage',
     })
-  }
+  } 
 
   // Citas (para tutor y nanny)
-  if (isTutor.value || isNanny.value) {
+  if (isAdmin.value || isNanny.value) {
     items.push({
       title: 'Citas',
       href: '/booking-appointments',
