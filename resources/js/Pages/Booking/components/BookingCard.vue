@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -15,6 +14,8 @@ import type { Booking } from '@/types/Booking';
 import { BookingTableService } from '@/services/bookingTableService';
 import DeleteModal from '@/components/common/DeleteModal.vue';
 import Badge from '@/components/common/Badge.vue';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { getUserInitials } from '@/utils/getUserInitials';
 
 const props = defineProps<{
     booking: Booking;
@@ -27,13 +28,12 @@ const {
     abrirModalEliminarBooking,
     cerrarModalEliminarBooking,
     eliminarBooking,
-    getStatusColor,
-    getStatusLabel,
 } = new BookingTableService();
 </script>
 
 <template>
-    <Card class="relative overflow-hidden">
+    <!-- Card with styling matching desktop table rows -->
+    <div class="bg-white/50 dark:bg-background/50 border border-foreground/20 rounded-lg p-3 space-y-3 relative">
         <!-- Menú de acciones -->
         <div class="absolute top-2 right-2 z-20">
             <DropdownMenu>
@@ -69,65 +69,90 @@ const {
             </DropdownMenu>
         </div>
 
-        <!-- Cabecera -->
-        <CardHeader
-            class="flex flex-row gap-4 items-start px-4 transition-transform duration-200 hover:scale-105 cursor-pointer"
-            @click="verBooking(props.booking)"
-        >
-            <!-- Avatar/Icon -->
-            <div class="flex-none w-20 flex flex-col items-center">
-                <div class="w-16 h-16 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center border overflow-hidden">
-                    <Icon icon="mdi:calendar-check" class="w-8 h-8 text-slate-400" />
-                </div>
-            </div>
+        <!-- ID and Tutor -->
+        <div class="flex items-center gap-3 pr-8">
+            <div class="flex items-center gap-3">
+                <Avatar shape="square" size="sm" class="overflow-hidden">
+                    <AvatarImage
+                        v-if="props.booking.tutor?.user?.avatar_url"
+                        :src="props.booking.tutor.user.avatar_url"
+                        :alt="props.booking.tutor?.user?.name ?? 'avatar'"
+                        class="h-8 w-8 object-cover"
+                    />
+                    <AvatarFallback v-else>
+                        {{ getUserInitials(props.booking.tutor?.user) }}
+                    </AvatarFallback>
+                </Avatar>
 
-            <!-- Info booking -->
-            <div class="flex-1 min-w-0">
-                <!-- Badge de estado -->
-                <Badge :label="getStatusLabel(props.booking.status)" :customClass="getStatusColor(props.booking.status)" />
-
-                <!-- Tutor -->
-                <div class="mt-2 flex items-center gap-2 min-w-0">
-                    <h3 class="text-sm font-semibold truncate">
+                <div class="min-w-0">
+                    <div class="text-sm font-semibold truncate text-foreground/80">
                         {{ props.booking.tutor?.user?.name ?? '—' }} {{ props.booking.tutor?.user?.surnames ?? '' }}
-                    </h3>
-                </div>
-
-                <!-- Recurrente badge -->
-                <div class="mt-1 flex items-center gap-2">
-                    <span v-if="props.booking.recurrent" class="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                        Recurrente
-                    </span>
-                    <span v-else class="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
-                        Fijo
-                    </span>
+                    </div>
+                    <div class="font-mono text-xs text-muted-foreground">
+                        #{{ props.booking.id }}
+                    </div>
                 </div>
             </div>
-        </CardHeader>
+        </div>
 
-        <!-- Contenido: detalles del booking -->
-        <CardContent class="px-4 pb-4 space-y-2">
-            <!-- Descripción -->
-            <div v-if="props.booking.description" class="text-sm text-muted-foreground">
-                {{ props.booking.description }}
+        <!-- Tipo badge -->
+        <div class="flex items-center gap-2">
+            <span class="text-xs text-muted-foreground font-medium">Tipo:</span>
+            <Badge
+                v-if="props.booking.recurrent"
+                label="Recurrente"
+                customClass="bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:border dark:border-indigo-200 dark:text-indigo-200"
+            />
+            <Badge v-else label="Fijo" customClass="bg-gray-100 text-gray-800 dark:bg-gray-800/40 dark:border dark:border-gray-100 dark:border-gray-700 dark:text-gray-200" />
+        </div>
+
+        <!-- Citas -->
+        <div class="flex items-center gap-2">
+            <span class="text-xs text-muted-foreground font-medium">Citas:</span>
+            <Badge
+                v-if="props.booking?.booking_appointments && props.booking.booking_appointments.length > 0"
+                :label="`${props.booking.booking_appointments.length}`"
+                customClass="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 flex items-center gap-1"
+            >
+                <template #icon>
+                    <Calendar class="w-3 h-3" />
+                </template>
+            </Badge>
+            <span v-else class="text-sm text-muted-foreground">Sin citas</span>
+        </div>
+
+        <!-- Fecha de creación -->
+        <div class="flex items-center gap-2 text-sm text-foreground/80">
+            <span class="text-xs text-muted-foreground font-medium">Creado:</span>
+            <span>{{ new Date(props.booking.created_at).toLocaleDateString('es-ES') }}</span>
+        </div>
+
+        <!-- Acciones -->
+        <div class="flex gap-3 pt-2 border-t border-foreground/20">
+            <div
+                @click="verBooking(props.booking)"
+                class="flex justify-center items-center w-max text-green-600 dark:text-green-500 hover:text-green-600/80 dark:hover:text-green-400 hover:cursor-pointer"
+                title="Ver detalles"
+            >
+                <Icon icon="mdi:eye-outline" :size="22" />
             </div>
 
-            <!-- ID del booking -->
-            <div class="flex items-center gap-2 text-xs font-mono text-muted-foreground">
-                ID: #{{ props.booking.id }}
+            <div
+                @click="editarBooking(props.booking)"
+                class="flex justify-center items-center w-max text-blue-600 dark:text-blue-500 hover:text-blue-600/80 dark:hover:text-blue-400 hover:cursor-pointer"
+                title="Editar booking"
+            >
+                <Icon icon="mdi:edit-outline" :size="22" />
             </div>
 
-            <!-- Citas -->
-            <div class="flex items-center gap-2 text-xs">
-                <Calendar class="w-3 h-3 text-muted-foreground" />
-                <span>{{ props.booking.booking_appointments?.length ?? 0 }} cita(s)</span>
+            <div
+                @click="abrirModalEliminarBooking(props.booking)"
+                class="flex justify-center items-center w-max text-rose-600 dark:text-rose-500 hover:text-rose-600/80 dark:hover:text-rose-400 hover:cursor-pointer"
+                title="Eliminar booking"
+            >
+                <Icon icon="fluent:delete-12-regular" :size="22" />
             </div>
-
-            <!-- Fecha de creación -->
-            <div class="text-xs text-muted-foreground pt-1">
-                Creado: {{ new Date(props.booking.created_at).toLocaleDateString('es-ES') }}
-            </div>
-        </CardContent>
+        </div>
 
         <!-- Modal eliminar -->
         <DeleteModal
@@ -138,5 +163,5 @@ const {
             confirmText="Sí, eliminar"
             cancelText="No, cancelar"
         />
-    </Card>
+    </div>
 </template>
