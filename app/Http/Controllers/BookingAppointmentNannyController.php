@@ -42,12 +42,8 @@ class BookingAppointmentNannyController extends Controller
             abort(404);
         }
 
-        if ($appointment->nanny_id !== null) {
-            return Inertia::render('Error', [
-                'status' => 400,
-                'message' => 'Esta cita ya tiene una niñera asignada.',
-            ]);
-        }
+        // Allow reassignment - policy already checked if status allows it
+        // No need to check nanny_id here
 
         // Disponibilidad base local
         $availableNannies = Nanny::availableBetween($appointment->start_date, $appointment->end_date)
