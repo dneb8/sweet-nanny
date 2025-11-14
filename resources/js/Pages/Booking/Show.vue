@@ -246,7 +246,7 @@ const hasAnyRequirements = computed(() => {
         </DialogHeader>
         <EditAppointmentDatesModal
           v-if="svc.selectedAppointment"
-          :appointment="svc.selectedAppointment.value"
+          :appointment="svc.selectedAppointment"
           :booking="booking"
           @close="svc.closeDatesModal"
           @saved="svc.handleModalSaved"
@@ -261,7 +261,7 @@ const hasAnyRequirements = computed(() => {
         </DialogHeader>
         <EditAppointmentAddressModal
           v-if="svc.selectedAppointment"
-          :appointment="svc.selectedAppointment.value"
+          :appointment="svc.selectedAppointment"
           :booking="booking"
           @close="svc.closeAddressModal"
           @saved="svc.handleModalSaved"
@@ -276,7 +276,7 @@ const hasAnyRequirements = computed(() => {
         </DialogHeader>
         <EditAppointmentChildrenModal
           v-if="svc.selectedAppointment"
-          :appointment="svc.selectedAppointment.value"
+          :appointment="svc.selectedAppointment"
           :booking="booking"
           :kinkships="kinkships"
           @close="svc.closeChildrenModal"
