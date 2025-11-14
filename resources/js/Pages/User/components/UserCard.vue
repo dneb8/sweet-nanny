@@ -114,25 +114,6 @@ const { showDeleteModal, showUser, editUser, deleteUser, confirmDeleteUser, getR
             </ScrollArea>
         </div>
 
-        <!-- Acciones -->
-        <div class="flex gap-3 pt-2 border-t border-foreground/20">
-            <div
-                @click="editUser"
-                class="flex justify-center items-center w-max text-blue-600 dark:text-blue-500 hover:text-blue-600/80 dark:hover:text-blue-400 hover:cursor-pointer"
-                title="Editar usuario"
-            >
-                <Icon icon="mdi:edit-outline" :width="20" />
-            </div>
-
-            <div
-                @click="deleteUser"
-                class="flex justify-center items-center w-max text-rose-600 dark:text-rose-500 hover:text-rose-600/80 dark:hover:text-rose-400 hover:cursor-pointer"
-                title="Eliminar usuario"
-            >
-                <Icon icon="fluent:delete-12-regular" :width="20" />
-            </div>
-        </div>
-
         <!-- Modal eliminar -->
         <DeleteModal v-model:show="showDeleteModal" :message="`¿Estás seguro de eliminar a ${props.user.name}?`" :onConfirm="confirmDeleteUser" />
     </div>
