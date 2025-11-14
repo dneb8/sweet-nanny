@@ -35,14 +35,6 @@ class BookingAppointmentNannyController extends Controller
             abort(404);
         }
 
-        // Si la cita ya tiene niñera asignada, no se puede elegir de nuevo.
-        if ($appointment->nanny_id !== null) {
-            return Inertia::render('Error', [
-                'status' => 400,
-                'message' => 'Esta cita ya tiene una niñera asignada.',
-            ]);
-        }
-
         // 1) Disponibilidad base:
         //    - Se toma de nuestros servicios internos (availableBetween)
         //    - Esta es la lista local de niñeras disponibles en ese rango.
@@ -185,7 +177,7 @@ class BookingAppointmentNannyController extends Controller
             $oldNanny->loadMissing('user');
             $tutorUser = $appointment->booking?->tutor?->user;
             $currentUser = Auth::user();
-            
+
             // ALWAYS notify the old nanny that their appointment was cancelled
             // This is critical - the old nanny must know they're no longer assigned
             if ($oldNanny->user) {
@@ -194,15 +186,15 @@ class BookingAppointmentNannyController extends Controller
                 // Log if old nanny has no user (shouldn't happen but helps debugging)
                 Log::warning('Old nanny has no user', [
                     'nanny_id' => $oldNanny->id,
-                    'appointment_id' => $appointment->id
+                    'appointment_id' => $appointment->id,
                 ]);
             }
-            
+
             // If admin made the change, notify the tutor about the nanny change
             if ($currentUser && $currentUser->hasRole('admin') && $tutorUser && $tutorUser->id !== $currentUser->id) {
                 $tutorUser->notify(new NannyChanged($appointment, $oldNanny, $nanny));
             }
-            
+
             // ALWAYS notify the new nanny about their new assignment
             if ($nanny->user) {
                 $nanny->user->notify(new NannyAssigned($appointment));
@@ -210,10 +202,10 @@ class BookingAppointmentNannyController extends Controller
                 // Log if new nanny has no user (shouldn't happen but helps debugging)
                 Log::warning('New nanny has no user', [
                     'nanny_id' => $nanny->id,
-                    'appointment_id' => $appointment->id
+                    'appointment_id' => $appointment->id,
                 ]);
             }
-            
+
             $message = 'Niñera cambiada correctamente.';
         } else {
             // First assignment - notify nanny
@@ -223,13 +215,16 @@ class BookingAppointmentNannyController extends Controller
                 // Log if nanny has no user
                 Log::warning('Nanny has no user on first assignment', [
                     'nanny_id' => $nanny->id,
-                    'appointment_id' => $appointment->id
+                    'appointment_id' => $appointment->id,
                 ]);
             }
             $message = 'Niñera asignada correctamente';
         }
 
-        return redirect()->route('bookings.show', $booking->id)->with('success', $message);
+        return redirect()
+            ->route('bookings.show', $booking->id)
+            ->with('openAppointmentId', $appointment->id)
+            ->with('success', $message);
     }
 
     /**

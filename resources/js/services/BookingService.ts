@@ -10,10 +10,27 @@ import { getCourseNameLabelByString as courseLabel } from '@/enums/courses/cours
 
 const MX_TZ = 'America/Mexico_City'
 
+/** Add hours to a date without mutating */
+function addHours(date: Date, hours: number): Date {
+  const d = new Date(date.getTime())
+  d.setHours(d.getHours() + hours)
+  return d
+}
+
 /* Formateadores */
-const fmtDateTZ = (iso: string) => new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium', timeZone: MX_TZ }).format(new Date(iso))
-const fmtTimeTZ = (iso: string) => new Intl.DateTimeFormat('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: MX_TZ }).format(new Date(iso))
-const fmtReadableDateTime = (iso: string) => `${fmtDateTZ(iso)} · ${fmtTimeTZ(iso)} h`
+const fmtDateTZ = (iso: string) => {
+  const date = new Date(iso)
+  const shifted = addHours(date, 6)
+  return new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium', timeZone: MX_TZ }).format(shifted)
+}
+
+const fmtTimeTZ = (iso: string) => {
+  const date = new Date(iso)
+  const shifted = addHours(date, 6)
+  return new Intl.DateTimeFormat('es-MX', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: MX_TZ }).format(shifted)
+}
+
+const fmtReadableDateTime = (iso: string) => `${fmtDateTZ(iso)} · ${fmtTimeTZ(iso)}`
 const fmtDateTime = (value?: string | Date | null) => {
   if (!value) return '—'
   const d = typeof value === 'string' ? new Date(value) : value
@@ -144,8 +161,14 @@ export function useBookingService(booking: Booking) {
     return type === 'dates' || type === 'address'
   }
 
-  function openEditModal(type: 'dates' | 'address' | 'children') {
+  function openEditModal(type: 'dates' | 'address' | 'children', appointment: BookingAppointment) {
+    // CRITICAL: Set the selected appointment FIRST before any checks
+    // This ensures the modal uses the correct appointment, not the first one
+    selectedAppointmentId.value = appointment.id ?? null
+    
+    // Now check permissions based on the newly selected appointment
     if (!canEditAppointment()) return
+    
     if (needsConfirmation(type)) {
       pendingModalAction.value = type
       showConfirmModal.value = true

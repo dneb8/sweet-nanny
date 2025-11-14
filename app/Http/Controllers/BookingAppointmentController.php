@@ -12,10 +12,10 @@ use App\Services\BookingAppointmentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -46,7 +46,7 @@ class BookingAppointmentController extends Controller
             return back()->with('error', 'Solo se pueden aceptar citas en estado pendiente');
         }
 
-        if (!$appointment->nanny_id) {
+        if (! $appointment->nanny_id) {
             return back()->with('error', 'No hay niñera asignada para aceptar');
         }
 
@@ -77,13 +77,13 @@ class BookingAppointmentController extends Controller
             return back()->with('error', 'Solo se pueden rechazar citas en estado pendiente');
         }
 
-        if (!$appointment->nanny_id) {
+        if (! $appointment->nanny_id) {
             return back()->with('error', 'No hay niñera asignada para rechazar');
         }
 
         $appointment->update([
             'nanny_id' => null,
-            'status'   => StatusEnum::DRAFT->value,
+            'status' => StatusEnum::DRAFT->value,
         ]);
 
         // Notify tutor & admin
@@ -94,6 +94,7 @@ class BookingAppointmentController extends Controller
         if ($admin = \App\Models\User::role('admin')->first()) {
             $admin->notify(new AppointmentRejected($appointment));
         }
+
         return back()->with('success', 'Solicitud rechazada exitosamente');
     }
 
@@ -109,7 +110,7 @@ class BookingAppointmentController extends Controller
             return back()->with('error', 'Solo se puede cancelar la niñera de citas confirmadas');
         }
 
-        if (!$appointment->nanny_id) {
+        if (! $appointment->nanny_id) {
             return back()->with('error', 'No hay niñera asignada');
         }
 
@@ -129,22 +130,30 @@ class BookingAppointmentController extends Controller
 
         $appointment->update([
             'nanny_id' => null,
-            'status'   => StatusEnum::DRAFT->value,
+            'status' => StatusEnum::DRAFT->value,
         ]);
 
         if ($cancelledBy === 'tutor') {
-            if ($nannyUser) $nannyUser->notify(new NannyCancelledFromAppointment($appointment, $cancelledBy));
+            if ($nannyUser) {
+                $nannyUser->notify(new NannyCancelledFromAppointment($appointment, $cancelledBy));
+            }
             if ($admin = \App\Models\User::role('admin')->first()) {
                 $admin->notify(new NannyCancelledFromAppointment($appointment, $cancelledBy));
             }
         } elseif ($cancelledBy === 'nanny') {
-            if ($tutorUser) $tutorUser->notify(new NannyCancelledFromAppointment($appointment, $cancelledBy));
+            if ($tutorUser) {
+                $tutorUser->notify(new NannyCancelledFromAppointment($appointment, $cancelledBy));
+            }
             if ($admin = \App\Models\User::role('admin')->first()) {
                 $admin->notify(new NannyCancelledFromAppointment($appointment, $cancelledBy));
             }
         } else {
-            if ($tutorUser) $tutorUser->notify(new NannyCancelledFromAppointment($appointment, $cancelledBy));
-            if ($nannyUser) $nannyUser->notify(new NannyCancelledFromAppointment($appointment, $cancelledBy));
+            if ($tutorUser) {
+                $tutorUser->notify(new NannyCancelledFromAppointment($appointment, $cancelledBy));
+            }
+            if ($nannyUser) {
+                $nannyUser->notify(new NannyCancelledFromAppointment($appointment, $cancelledBy));
+            }
         }
 
         return back()->with('success', 'Niñera cancelada exitosamente');
@@ -178,6 +187,7 @@ class BookingAppointmentController extends Controller
 
         return redirect()
             ->route('bookings.show', $booking->id)
+            ->with('openAppointmentId', $appointment->id)
             ->with('success', 'Cita cancelada exitosamente');
     }
 
@@ -190,36 +200,38 @@ class BookingAppointmentController extends Controller
 
         $v = Validator::make($request->all(), [
             'start_date' => ['required', 'date', 'after:now'],
-            'end_date'   => ['required', 'date', 'after:start_date'],
-            'duration'   => ['nullable', 'integer', 'min:1', 'max:8'],
+            'end_date' => ['required', 'date', 'after:start_date'],
+            'duration' => ['nullable', 'integer', 'min:1', 'max:8'],
         ]);
 
         if ($v->fails()) {
             return back()->withErrors($v)->withInput()->with('error', 'Error al actualizar las fechas');
         }
 
-        $data  = $v->validated();
+        $data = $v->validated();
         $start = Carbon::parse($data['start_date']);
-        $end   = Carbon::parse($data['end_date']);
-        $dur   = $data['duration'] ?? max(1, (int) ceil($start->floatDiffInHours($end)));
+        $end = Carbon::parse($data['end_date']);
+        $dur = $data['duration'] ?? max(1, (int) ceil($start->floatDiffInHours($end)));
 
         DB::transaction(function () use ($appointment, $start, $end, $dur) {
             if (! is_null($appointment->nanny_id)) {
                 $appointment->forceFill([
                     'nanny_id' => null,
-                    'status'   => StatusEnum::DRAFT->value,
+                    'status' => StatusEnum::DRAFT->value,
                 ])->save();
             }
 
             $payload = ['start_date' => $start, 'end_date' => $end];
             if ($appointment->isFillable('duration')) {
-                $payload['duration'] = $dur;
-            }
+                $payload['duration'] = $dur;            }
 
             $appointment->update($payload);
         });
 
-        return back()->with('success', 'Fechas actualizadas exitosamente');
+        return redirect()
+            ->route('bookings.show', $booking->id)
+            ->with('openAppointmentId', $appointment->id)
+            ->with('success', 'Fechas actualizadas exitosamente');
     }
 
     /**
@@ -237,6 +249,7 @@ class BookingAppointmentController extends Controller
             if ($request->expectsJson()) {
                 return response()->json(['errors' => $validator->errors()], 422);
             }
+
             return back()->withErrors($validator)->withInput()->with('error', 'Error al actualizar la dirección');
         }
 
@@ -246,7 +259,7 @@ class BookingAppointmentController extends Controller
             if (! is_null($appointment->nanny_id)) {
                 $appointment->forceFill([
                     'nanny_id' => null,
-                    'status'   => StatusEnum::DRAFT->value,
+                    'status' => StatusEnum::DRAFT->value,
                 ])->save();
             }
 
@@ -256,8 +269,11 @@ class BookingAppointmentController extends Controller
         if ($request->expectsJson()) {
             return response()->json(['ok' => true], 200);
         }
-        
-        return back()->with('success', 'Dirección actualizada exitosamente');
+
+        return to_route('bookings.show', $booking->id)
+            ->with('openAppointmentId', $appointment->id)
+            ->with('success', 'Dirección actualizada exitosamente');
+
     }
 
     /**
@@ -268,7 +284,7 @@ class BookingAppointmentController extends Controller
         Gate::authorize('updateChildren', $appointment);
 
         $validator = Validator::make($request->all(), [
-            'child_ids'   => ['required', 'array', 'min:1', 'max:4'],
+            'child_ids' => ['required', 'array', 'min:1', 'max:4'],
             'child_ids.*' => ['required', 'integer', 'exists:children,id'],
         ]);
 
@@ -276,6 +292,7 @@ class BookingAppointmentController extends Controller
             if ($request->expectsJson()) {
                 return response()->json(['errors' => $validator->errors()], 422);
             }
+
             return back()->withErrors($validator)->withInput()->with('error', 'Error al actualizar los niños');
         }
 
@@ -286,6 +303,9 @@ class BookingAppointmentController extends Controller
             return response()->json(['ok' => true], 200);
         }
 
-        return back()->with('success', 'Niños actualizados exitosamente');
+        return redirect()
+            ->route('bookings.show', $booking->id)
+            ->with('openAppointmentId', $appointment->id)
+            ->with('success', 'Niños actualizados exitosamente');
     }
 }

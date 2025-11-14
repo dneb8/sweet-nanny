@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useForm as useInertiaForm } from '@inertiajs/vue3'
+import { ref, computed, unref } from 'vue'
+import { useForm as useInertiaForm, router } from '@inertiajs/vue3'
 import axios from 'axios'
 import { route } from 'ziggy-js'
 import { Button } from '@/components/ui/button'
@@ -94,12 +94,12 @@ function submit() {
         return
     }
     form.address_id = selectedAddressId.value
-    form.patch(route('bookings.appointments.update-address', { booking: props.booking.id, appointment: props.appointment.id }), {
+    form.patch(route('bookings.appointments.update-address', { booking: props.booking.id, appointment: props.appointment.value.id }), {
+        preserveScroll: true,
+        preserveState: false,
         onSuccess: () => {
-            emit('saved')
             emit('close')
         },
-        preserveScroll: true,
     })
 }
 </script>
