@@ -137,21 +137,12 @@ function submit() {
     if (selectedIds.value.length === 0) {
         return
     }
-    console.log('DEBUG EditAppointmentChildrenModal - appointment:', props.appointment, 'id:', props.appointment?.id)
     form.child_ids = selectedIds.value
     form.patch(route('bookings.appointments.update-children', { booking: props.booking.id, appointment: props.appointment.value.id }), {
+        preserveScroll: true,
+        preserveState: false,
         onSuccess: () => {
-            const appt = unref(props.appointment)
             emit('close')
-            // Force full reload of Booking/Show with the edited appointment tab open
-            router.visit(
-                route('bookings.show', appt.booking_id),
-                {
-                    data: { openAppointmentId: appt.id },
-                    preserveScroll: true,
-                    preserveState: false,
-                }
-            )
         },
     })
 }

@@ -93,21 +93,12 @@ function submit() {
     if (!selectedAddressId.value) {
         return
     }
-    console.log('DEBUG EditAppointmentAddressModal - appointment:', props.appointment, 'id:', props.appointment?.id)
     form.address_id = selectedAddressId.value
     form.patch(route('bookings.appointments.update-address', { booking: props.booking.id, appointment: props.appointment.value.id }), {
+        preserveScroll: true,
+        preserveState: false,
         onSuccess: () => {
-            const appt = unref(props.appointment)
             emit('close')
-            // Force full reload of Booking/Show with the edited appointment tab open
-            router.visit(
-                route('bookings.show', appt.booking_id),
-                {
-                    data: { openAppointmentId: appt.id },
-                    preserveScroll: true,
-                    preserveState: false,
-                }
-            )
         },
     })
 }

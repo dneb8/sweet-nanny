@@ -270,10 +270,10 @@ class BookingAppointmentController extends Controller
             return response()->json(['ok' => true], 200);
         }
 
-        return redirect()
-            ->route('bookings.show', $booking->id)
+        return to_route('bookings.show', $booking->id)
             ->with('openAppointmentId', $appointment->id)
             ->with('success', 'Dirección actualizada exitosamente');
+
     }
 
     /**
