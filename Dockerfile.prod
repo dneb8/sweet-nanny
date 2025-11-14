@@ -1,11 +1,7 @@
-# 🔹 Imagen base oficial de PHP con FPM
 FROM php:8.2-fpm
 
-# 🔹 Directorio de trabajo
 WORKDIR /var/www/html
 
-# 🔹 Dependencias del sistema y extensiones PHP
-# - Agregamos ca-certificates + libcurl + php-curl para HTTPS
 RUN apt-get update && apt-get install -y \
     libzip-dev libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
     libicu-dev libonig-dev libpq-dev git unzip curl npm zip \
@@ -16,13 +12,7 @@ RUN apt-get update && apt-get install -y \
  && update-ca-certificates \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 🔹 Copiar package.json primero para cache de npm
 COPY package*.json ./
-
-# 🔹 Build args para Vite (Google Maps y frontend)
-ARG VITE_APP_URL
-ARG VITE_DEFAULT_CENTER_LAT
-ARG VITE_DEFAULT_CENTER_LNG
 ARG VITE_GMAPS_API_KEY
 ARG VITE_GMAPS_MAP_ID
 
@@ -32,38 +22,30 @@ ENV VITE_APP_URL=$VITE_APP_URL \
     VITE_GMAPS_API_KEY=$VITE_GMAPS_API_KEY \
     VITE_GMAPS_MAP_ID=$VITE_GMAPS_MAP_ID
 
-# 🔹 Instalar dependencias de frontend
 RUN npm ci
 
-# 🔹 Copiar el resto del proyecto
+
 COPY . .
 
-# 🔹 Instalar Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# 🔹 Instalar dependencias de Laravel (producción)
+
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-# 🔹 Build de frontend (Vite)
+
 RUN npm run build
 
-# 🔹 Crear directorios y permisos
 RUN mkdir -p storage bootstrap/cache \
  && chmod -R 775 storage bootstrap/cache \
  && chown -R www-data:www-data storage bootstrap/cache
 
-# 🔹 Exponer puerto
+
 EXPOSE 8080
 
-# 🔹 Comando de inicio (runtime)
-# - NUNCA borrar BD en prod
-# - Migrar, enlazar storage, optimizar y servir
-# - Si quieres sembrar datos en arranque, usa SEED_ON_BOOT=true en env
-CMD set -e; \
-    php artisan optimize:clear; \
-    php artisan migrate:fresh --force; \
+
+CMD php artisan optimize:clear && \
+    php artisan migrate:fresh --force --seed && \
+    php artisan optimize && \
     php artisan storage:link || true; \
-    php artisan db:seed --force; \
-    php artisan optimize; \
     php artisan serve --host=0.0.0.0 --port=8080
- 
+#sin llaves

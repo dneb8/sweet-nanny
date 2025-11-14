@@ -10,6 +10,7 @@ use App\Enums\Nanny\QualityEnum;
 use App\Models\Booking;
 use App\Models\BookingAppointment;
 use App\Models\Nanny;
+use App\Services\NannySearchService;
 use App\Notifications\NannyAssigned;
 use App\Notifications\NannyChanged;
 use App\Notifications\NannyUnassigned;
@@ -23,6 +24,13 @@ use Inertia\Response;
 
 class BookingAppointmentNannyController extends Controller
 {
+    protected NannySearchService $nannySearchService;
+
+    public function __construct(NannySearchService $nannySearchService)
+    {
+        $this->nannySearchService = $nannySearchService;
+    }
+
     /**
      * Display the nanny selection view with Top 3 available nannies
      */
@@ -30,72 +38,73 @@ class BookingAppointmentNannyController extends Controller
     {
         Gate::authorize('chooseNanny', $appointment);
 
-        // Asegura que la cita pertenezca al booking.
         if ($appointment->booking_id !== $booking->id) {
             abort(404);
         }
 
-        // 1) Disponibilidad base:
-        //    - Se toma de nuestros servicios internos (availableBetween)
-        //    - Esta es la lista local de niñeras disponibles en ese rango.
+        if ($appointment->nanny_id !== null) {
+            return Inertia::render('Error', [
+                'status' => 400,
+                'message' => 'Esta cita ya tiene una niñera asignada.',
+            ]);
+        }
+
+        // Disponibilidad base local
         $availableNannies = Nanny::availableBetween($appointment->start_date, $appointment->end_date)
             ->with(['user', 'qualities', 'careers', 'courses'])
             ->get();
 
-        // 2) Llamada a la API (asíncrona vía Job o similar):
-        //    - Enviar al Job los campos necesarios:
-        //        * booking: qualities, courses, careers
-        //        * appointment: address->zone  (NOTA: zone ya no está en booking)
-        //    - El Job debe manejar validación/errores de la API y, si falla,
-        //      aplicar un "fallback" de emergencia para no romper el flujo.
-        //
-        //    Resultado esperado del Job/API:
-        //      $apiResponse = [
-        //        'nanny_ids' => [/* IDs válidos y disponibles según API */]
-        //      ];
+        // Preparar filtros para API
+        $filters = [
+            'qualities'    => $booking->qualities ?? [],
+            'courses'      => $booking->courses ?? [],
+            'career'       => $booking->careers ?? [],
+            'zone'         => $appointment->addresses->first()->zone ?? null,
+            'availability' => true,
+        ];
 
-        // 3) Cruce de resultados:
-        //    - Conservar SOLO los IDs devueltos por la API que existan en $availableNannies.
-        //    - Esto descarta cualquier ID que no esté realmente disponible en nuestra lista local.
-        //
-        //    Ejemplo de cruce (cuando integres la API real):
-        //    $apiIds = collect($apiResponse['nanny_ids'] ?? []);
-        //    $finalIds = $availableNannies->pluck('id')->intersect($apiIds);
-        //
+        //  Llamada a Flask con manejo de errores
+        try {
+            $flaskResponse = $this->nannySearchService->sendFiltersToFlask($filters);
+            $apiNannyIds = collect($flaskResponse['flask_response']['nanny_ids'] ?? []);
+        } catch (\Exception $e) {
+            $apiNannyIds = collect([]);
+        }
 
-        // 4) Top 3:
-        //    - Tomar el Top 3 a partir de los IDs que vengan en el apiResponse (ya cruzados).
-        //    - Ese Top 3 reemplaza al random actual.
-        //
-        //    Implementación futura (cuando se tengan los $finalIds):
-        //    $top3 = $availableNannies->whereIn('id', $finalIds)->take(3);
-        //
-        //    Mientras tanto (provisional): random de los disponibles locales.
-        $count = $availableNannies->count();
-        $randomCount = min(3, $count);
-        $top3 = $randomCount > 0 ? $availableNannies->random($randomCount) : collect([]);
+        // Cruzar con IDs de disponibilidad local
+        $finalIds = $availableNannies->pluck('id')->intersect($apiNannyIds);
+
+        // Tomar Top 3 según la API
+        $top3 = $availableNannies->whereIn('id', $finalIds)->take(3);
+
+        // Fallback local si API falla o no hay suficientes
+        if ($top3->count() < 3 && $availableNannies->count() > 0) {
+            $remaining = 3 - $top3->count();
+            $top3 = $top3->concat(
+                $availableNannies->whereNotIn('id', $top3->pluck('id'))->random(
+                    min($remaining, $availableNannies->count() - $top3->count())
+                )
+            );
+        }
 
         return Inertia::render('BookingAppointment/ChooseNanny', [
-            'booking' => $booking->load(['tutor.user']),
-            'appointment' => $appointment->load(['addresses', 'children']),
-            'top3Nannies' => $top3->map(fn ($nanny) => $this->formatNannyData($nanny)),
-            'qualities' => QualityEnum::labels(),
-            'careers' => NameCareerEnum::labels(),
-            'courseNames' => CourseNameEnum::labels(),
+            'booking'      => $booking->load(['tutor.user']),
+            'appointment'  => $appointment->load(['addresses', 'children']),
+            'top3Nannies'  => $top3->map(fn($nanny) => $this->formatNannyData($nanny)),
+            'qualities'    => QualityEnum::labels(),
+            'careers'      => NameCareerEnum::labels(),
+            'courseNames'  => CourseNameEnum::labels(),
         ]);
     }
 
     /**
-     * Get paginated list of available nannies with filters
+     * Paginated list of available nannies
      */
     public function availableNannies(Booking $booking, BookingAppointment $appointment): JsonResponse
     {
         Gate::authorize('chooseNanny', $appointment);
 
-        // Ensure appointment belongs to booking
-        if ($appointment->booking_id !== $booking->id) {
-            abort(404);
-        }
+        if ($appointment->booking_id !== $booking->id) abort(404);
 
         $nanniesQuery = Nanny::availableBetween($appointment->start_date, $appointment->end_date)
             ->with(['user', 'qualities', 'careers', 'courses'])
@@ -106,32 +115,13 @@ class BookingAppointmentNannyController extends Controller
         $nannies = Fetcher::for($nanniesQuery)
             ->allowSearch($searchables)
             ->allowFilters([
-                'quality' => [
-                    'using' => function ($filter) {
-                        $filter->query->whereHas('qualities', function ($q) use ($filter) {
-                            $q->where('name', $filter->value);
-                        });
-                    },
-                ],
-                'career' => [
-                    'using' => function ($filter) {
-                        $filter->query->whereHas('careers', function ($q) use ($filter) {
-                            $q->where('name', $filter->value);
-                        });
-                    },
-                ],
-                'course' => [
-                    'using' => function ($filter) {
-                        $filter->query->whereHas('courses', function ($q) use ($filter) {
-                            $q->where('name', $filter->value);
-                        });
-                    },
-                ],
+                'quality' => ['using' => fn($filter) => $filter->query->whereHas('qualities', fn($q) => $q->where('name', $filter->value))],
+                'career'  => ['using' => fn($filter) => $filter->query->whereHas('careers', fn($q) => $q->where('name', $filter->value))],
+                'course'  => ['using' => fn($filter) => $filter->query->whereHas('courses', fn($q) => $q->where('name', $filter->value))],
             ])
             ->paginate(15);
 
-        // Transform the data
-        $nannies->getCollection()->transform(fn ($nanny) => $this->formatNannyData($nanny));
+        $nannies->getCollection()->transform(fn($nanny) => $this->formatNannyData($nanny));
 
         return response()->json($nannies);
     }
@@ -143,17 +133,13 @@ class BookingAppointmentNannyController extends Controller
     {
         Gate::authorize('chooseNanny', $appointment);
 
-        // Ensure appointment belongs to booking
-        if ($appointment->booking_id !== $booking->id) {
-            abort(404);
-        }
+        if ($appointment->booking_id !== $booking->id) abort(404);
 
         // Store old nanny if changing
         $oldNannyId = $appointment->nanny_id;
         $oldNanny = $oldNannyId ? Nanny::find($oldNannyId) : null;
         $isChanging = $oldNannyId !== null;
 
-        // Revalidate availability (don't trust client)
         $isAvailable = Nanny::availableBetween($appointment->start_date, $appointment->end_date)
             ->where('id', $nanny->id)
             ->exists();
@@ -162,7 +148,6 @@ class BookingAppointmentNannyController extends Controller
             return back()->withErrors(['general' => 'La niñera seleccionada ya no está disponible en este horario.']);
         }
 
-        // Assign the nanny
         $appointment->nanny_id = $nanny->id;
         $appointment->status = StatusEnum::PENDING->value;
         $appointment->save();
@@ -228,20 +213,18 @@ class BookingAppointmentNannyController extends Controller
     }
 
     /**
-     * Format nanny data for frontend consumption
+     * Format nanny data for frontend
      */
     private function formatNannyData(Nanny $nanny): array
     {
         return [
             'id' => $nanny->ulid,
-            'name' => $nanny->user?->name.' '.$nanny->user?->surnames,
+            'name' => $nanny->user?->name . ' ' . $nanny->user?->surnames,
             'profile_photo_url' => $nanny->avatarUrl(),
             'qualities' => $nanny->qualities->pluck('name')->toArray(),
             'careers' => $nanny->careers->pluck('name')->toArray(),
             'courses' => $nanny->courses->pluck('name')->toArray(),
-            'experience' => $nanny->start_date ? [
-                'start_date' => $nanny->start_date,
-            ] : null,
+            'experience' => $nanny->start_date ? ['start_date' => $nanny->start_date] : null,
             'description' => $nanny->bio,
         ];
     }

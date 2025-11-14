@@ -35,8 +35,16 @@ return [
         ],
     ],
 
+
     'google_maps' => [
         'server_key' => env('GMAPS_SERVER_API_KEY'),
     ],
+
+
+
+    'flask' => [
+    'url' => env('FLASK_API_URL', 'http://127.0.0.1:5000'),
+    'nanny_api_key' => env('NANNY_API_KEY'),
+],
 
 ];

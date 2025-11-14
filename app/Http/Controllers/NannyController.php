@@ -42,7 +42,6 @@ class NannyController extends Controller
             'careers',
             'qualities',
             'reviews',
-            'bookingAppointments.booking',
         ]);
 
         // Trigger validation if needed for pending avatars
