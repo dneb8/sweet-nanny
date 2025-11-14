@@ -5,13 +5,20 @@ import { Badge } from '@/components/ui/badge'
 import GoogleMap from '@/components/GoogleMap.vue'
 import type { Booking } from '@/types/Booking'
 import type { BookingAppointment } from '@/types/BookingAppointment'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import { getBookingStatusLabelByString, getBookingStatusBadgeClass, getBookingStatusIconByString } from '@/enums/booking/status.enum'
 import { getAddressTypeLabelByString, getAddressTypeBadgeClass } from '@/enums/addresses/type.enum'
 import { router } from '@inertiajs/vue3'
+import CtaModal from '@/components/common/CtaModal.vue'
 
-function cancelarCita() {
+const showCancelModal = ref(false)
+
+function openCancelModal() {
+  showCancelModal.value = true
+}
+
+function confirmCancelCita() {
   router.post(
     route('bookings.appointments.cancel', {
       booking: props.booking.id,        // {booking}
@@ -19,6 +26,7 @@ function cancelarCita() {
     }),
     {}
   )
+  showCancelModal.value = false
 }
 
 
@@ -318,6 +326,28 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
             <Icon icon="lucide:check-circle2" class="h-4 w-4" />
             Cita completada
           </div>
+
+          <div v-else class="flex flex-col sm:flex-row gap-2">
+            <Button
+              variant="destructive"
+              size="sm"
+              class="flex-1 rounded-xl"
+              @click="openCancelModal()"
+            >
+              <Icon icon="lucide:x-circle" class="mr-2 h-4 w-4" />
+              Cancelar cita
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              class="flex-1 rounded-xl"
+              @click="emit('openEditModal','dates')"
+            >
+              <Icon icon="lucide:calendar-clock" class="mr-2 h-4 w-4" />
+              Reprogramar
+            </Button>
+          </div>
         </div>
       </div>
     </div>
@@ -379,5 +409,17 @@ const appointmentAddress  = computed(() => props.appointment?.addresses?.[0] ?? 
       </div>
     </aside>
   </div>
+
+  <!-- Cancel Appointment Confirmation Modal -->
+  <CtaModal
+    :show="showCancelModal"
+    @update:show="showCancelModal = $event"
+    type="warning"
+    title="Cancelar cita"
+    message="¿Estás seguro de que deseas cancelar esta cita? Esta acción no se puede deshacer."
+    confirmText="Sí, cancelar cita"
+    cancelText="No, mantener cita"
+    :onConfirm="confirmCancelCita"
+  />
 </template>
 

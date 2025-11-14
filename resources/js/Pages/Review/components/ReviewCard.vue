@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Icon } from '@iconify/vue';
 import type { Review } from '@/types/Review';
 import { ReviewTableService } from '@/services/reviewTableService';
 import Badge from '@/components/common/Badge.vue';
-import { Star } from 'lucide-vue-next';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { getUserInitials } from '@/utils/getUserInitials';
+import { getRoleLabelByString } from '@/enums/role.enum';
 
 const props = defineProps<{
     review: Review;
 }>();
 
-const { toggleApproved, getReviewableName, getReviewableType } = new ReviewTableService();
+const { toggleApproved, getReviewableName, getRoleBadgeClasses } = new ReviewTableService();
 
 // Helper para generar estrellas
 const getStars = (rating: number): string => {
@@ -20,72 +20,80 @@ const getStars = (rating: number): string => {
 </script>
 
 <template>
-    <Card class="relative overflow-hidden">
-        <!-- Cabecera -->
-        <CardHeader class="flex flex-row gap-4 items-start px-4">
-            <!-- Icon -->
-            <div class="flex-none w-20 flex flex-col items-center">
-                <div class="w-16 h-16 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center border overflow-hidden">
-                    <Star class="w-8 h-8 text-yellow-500 fill-yellow-500" />
-                </div>
-            </div>
+    <!-- Card with styling matching desktop table rows -->
+    <div class="bg-white/50 dark:bg-background/50 border border-foreground/20 rounded-lg p-3 space-y-3">
+        <!-- Calificación y Avatar -->
+        <div class="flex items-center gap-3">
+            <Avatar shape="square" size="sm" class="overflow-hidden">
+                <AvatarImage
+                    v-if="props.review?.reviewable?.user?.avatar_url"
+                    :src="props.review.reviewable.user.avatar_url"
+                    :alt="props.review?.reviewable?.user?.name ?? 'avatar'"
+                    class="h-8 w-8 object-cover"
+                />
+                <AvatarFallback v-else>
+                    {{ getUserInitials(props.review?.reviewable?.user) }}
+                </AvatarFallback>
+            </Avatar>
 
-            <!-- Info review -->
             <div class="flex-1 min-w-0">
-                <!-- Calificación -->
                 <div class="flex items-center gap-2">
                     <span class="text-lg">{{ getStars(props.review.rating) }}</span>
                     <span class="text-sm text-muted-foreground">{{ props.review.rating }}/5</span>
                 </div>
-
-                <!-- Estado -->
-                <div class="mt-2">
-                    <Badge
-                        v-if="props.review.approved"
-                        label="Aprobado"
-                        customClass="bg-emerald-200/70 text-emerald-500 dark:bg-emerald-400/25 dark:border dark:border-emerald-400 dark:text-emerald-200"
-                    />
-                    <Badge
-                        v-else
-                        label="Pendiente"
-                        customClass="bg-amber-200/70 text-amber-500 dark:bg-amber-400/25 dark:border dark:border-amber-400 dark:text-amber-200"
-                    />
-                </div>
-
-                <!-- Para quién -->
-                <div class="mt-2">
-                    <Badge label="Para:" customClass="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300" />
-                    <span class="ml-2 text-sm font-medium">{{ getReviewableName(props.review) }}</span>
-                    <span class="ml-1 text-xs text-muted-foreground">({{ getReviewableType(props.review) }})</span>
+                <div class="text-sm text-foreground/80 truncate">
+                    {{ getReviewableName(props.review) ?? 'Sin nombre' }}
                 </div>
             </div>
-        </CardHeader>
+        </div>
 
-        <!-- Contenido: comentario -->
-        <CardContent class="px-4 pb-4">
-            <p class="text-sm text-muted-foreground line-clamp-3">{{ props.review.comments || 'Sin comentarios' }}</p>
+        <!-- Rol -->
+        <div class="flex items-center gap-2">
+            <span class="text-xs text-muted-foreground font-medium">Rol:</span>
+            <Badge
+                :label="getRoleLabelByString(props.review?.reviewable?.user?.roles?.[0]?.name ?? '') || 'Sin rol'"
+                :customClass="getRoleBadgeClasses(props.review?.reviewable?.user?.roles?.[0]?.name ?? '')"
+            />
+        </div>
 
-            <!-- Fecha -->
-            <div class="text-xs text-muted-foreground mt-3">
-                {{ new Date(props.review.created_at).toLocaleDateString('es-ES') }}
+        <!-- Comentario -->
+        <div>
+            <div class="text-xs text-muted-foreground font-medium mb-1">Comentario</div>
+            <div class="text-sm text-foreground/80 line-clamp-3">
+                {{ props.review.comments || 'Sin comentarios' }}
             </div>
+        </div>
 
-            <!-- Acción de toggle -->
-            <div class="mt-3 flex justify-end">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    @click="toggleApproved(props.review)"
-                    :class="[
-                        props.review.approved
-                            ? 'text-emerald-600 hover:text-emerald-700 border-emerald-200'
-                            : 'text-amber-600 hover:text-amber-700 border-amber-200',
-                    ]"
-                >
-                    <Icon :icon="props.review.approved ? 'mdi:earth' : 'mdi:earth-off'" class="w-4 h-4 mr-2" />
-                    {{ props.review.approved ? 'Público' : 'Privado' }}
-                </Button>
-            </div>
-        </CardContent>
-    </Card>
+        <!-- Estado -->
+        <div class="flex items-center gap-2">
+            <span class="text-xs text-muted-foreground font-medium">Estado:</span>
+            <Badge
+                v-if="props.review.approved"
+                label="Aprobado"
+                customClass="bg-emerald-200/70 text-emerald-500 dark:bg-emerald-400/25 dark:border dark:border-emerald-400 dark:text-emerald-200"
+            />
+            <Badge
+                v-else
+                label="Pendiente"
+                customClass="bg-amber-200/70 text-amber-500 dark:bg-amber-400/25 dark:border dark:border-amber-400 dark:text-amber-200"
+            />
+        </div>
+
+        <!-- Fecha -->
+        <div class="text-xs text-muted-foreground">{{ new Date(props.review.created_at).toLocaleDateString('es-ES') }}</div>
+
+        <!-- Acción de toggle -->
+        <div class="flex justify-end pt-2 border-t border-foreground/20">
+            <button
+                @click="toggleApproved(props.review)"
+                :title="props.review.approved ? 'Desaprobar' : 'Aprobar'"
+                :class="[
+                    'flex h-8 w-8 items-center justify-center rounded-md',
+                    props.review.approved ? 'text-emerald-600 dark:text-emerald-500' : 'text-amber-600 dark:text-amber-500',
+                ]"
+            >
+                <Icon :icon="props.review.approved ? 'mdi:earth' : 'mdi:earth-off'" class="block leading-none" :width="18" :height="18" />
+            </button>
+        </div>
+    </div>
 </template>
