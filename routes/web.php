@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Http;
+
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -25,3 +27,28 @@ require __DIR__.'/children.php';
 require __DIR__.'/enums.php';
 require __DIR__.'/reviews.php';
 require __DIR__.'/notifications.php';
+
+
+// Prueba api (entorno local)
+Route::get('/test-env', function () {
+    return response()->json([
+        'env_var' => env('NANNY_API_KEY'),
+        'config_var' => config('services.flask.nanny_api_key')
+    ]);
+});
+
+Route::get('/test-flask', function () {
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . config('services.flask.nanny_api_key'),
+    ])->get(config('services.flask.url') . '/test');
+
+    return $response->json();
+});
+
+if (env('ENABLE_TEST_ROUTES', false)) {
+    require __DIR__.'/test.php';
+}
+
+
+
+

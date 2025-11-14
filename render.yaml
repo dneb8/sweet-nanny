@@ -8,23 +8,19 @@ services:
     dockerfilePath: ./Dockerfile.prod
 
     envVars:
+      # --- Variables mínimas necesarias en build ---
+      - key: APP_NAME
+        value: SweetNanny
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
-        value: false
+        value: true
       - key: APP_URL
         value: https://sweet-nanny.onrender.com
-
-      # Variables sensibles: agrégalas manualmente en Render Dashboard
-      - key: APP_KEY
-        sync: false
-      - key: DB_CONNECTION
-        value: mysql
-      - key: DB_HOST
-        sync: false
-      - key: DB_DATABASE
-        sync: false
-      - key: DB_USERNAME
-        sync: false
-      - key: DB_PASSWORD
-        sync: false
+      - key: APP_TIMEZONE
+        value: America/Mexico_City
+      - key: APP_LOCALE
+        value: es
+      - key: APP_FALLBACK_LOCALE
+        value: en
+# sin llaves 
